@@ -21,22 +21,20 @@ function table.deepcopy(t)
 	end
 end
 
+-- The '~' character is used for filesystem storage, while the '/' character is canonical.
 function wikiPathParse(path)
 	local res = {}
-	for v in string.gmatch(path, "[^%.]+") do
-		if v == "" then
-			-- prevents .. / .
-			return nil, "empty components"
+	for v in string.gmatch(path, "[^/_]+") do
+		if v == "." or v == ".." then
+			return nil, "traversal components"
 		end
 		if v:find("\\") then
-			return nil, "traversal"
-		end
-		if v:find("/") then
 			return nil, "traversal"
 		end
 		table.insert(res, v)
 	end
 	if #res == 0 then
+		-- this is relied upon to resolve all empty paths
 		return nil, "empty"
 	end
 	return res
@@ -46,31 +44,100 @@ function wikiPathUnparse(wp)
 	local path = ""
 	for k, v in ipairs(wp) do
 		if k ~= 1 then
-			path = path .. "."
+			path = path .. "/"
 		end
 		path = path .. v
 	end
 	return path
 end
 
+-- In order to avoid having to deal with directory nonsense, we play a game here.
+-- Namely, '/' is used 'internally' while '_' is used 'externally'.
 function wikiPathToDisk(path)
 	local parsed, err = wikiPathParse(path)
 	if not parsed then
 		return nil, err
 	end
-	return WIKI_BASE .. wikiPathUnparse(parsed)
+	local path = WIKI_BASE
+	for k, v in ipairs(parsed) do
+		if k ~= 1 then
+			path = path .. "_"
+		end
+		path = path .. v
+	end
+	return path
 end
 
 function safeSlurp(path)
 	local path2, err = wikiPathToDisk(path)
-	assert(path2, "invalid path (" .. tostring(err) .. "): " .. path)
+	if not path2 then
+		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+	end
 	return Slurp(path2)
 end
 
 function safeBarf(path, data)
 	local path2, err = wikiPathToDisk(path)
-	assert(path2, "invalid path (" .. tostring(err) .. "): " .. path)
+	if not path2 then
+		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+	end
 	return Barf(path2, data)
+end
+
+function wikiPathTable(prefix)
+	local total = {}
+	if prefix then
+		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
+			local parsed, err = wikiPathParse(name)
+			if parsed then
+				local unparse = wikiPathUnparse(parsed)
+				if unparse:sub(1, #prefix) == prefix then
+					total[unparse] = true
+				end
+			end
+		end
+	else
+		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
+			local parsed, err = wikiPathParse(name)
+			total[wikiPathUnparse(parsed)] = true
+		end
+	end
+	return total
+end
+
+function wikiPathList(prefix)
+	local total = {}
+	for k, _ in pairs(wikiPathTable(prefix)) do
+		table.insert(total, k)
+	end
+	table.sort(total)
+	return total
+end
+
+function wikiReadConfig(file, default)
+	local value = safeSlurp(file) or ""
+	value = value:match("[^\r\n]+") or default
+	return value
+end
+
+function wikiResolvePage(wikiPath)
+	local wikiPathParsed, err = wikiPathParse(wikiPath)
+	if err == "empty" then
+		wikiPathParsed = {"start"}
+	end
+	wikiPath = wikiPathUnparse(wikiPathParsed)
+	-- does the file have an extension?
+	local extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)
+	if not extIdx then
+		-- no extension; find one or make one
+		wikiPath = wikiPathList(wikiPath .. ".")[1] or (wikiPath .. "." .. wikiReadConfig("system/extensions/default.txt", "txt"))
+		wikiPathParsed, err = wikiPathParse(wikiPath)
+		assert(wikiPathParsed)
+		extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)
+		assert(extIdx)
+	end
+	local ext = wikiPathParsed[#wikiPathParsed]:sub(extIdx + 1)
+	return wikiPath, ext
 end
 
 function makeSandbox()
@@ -83,17 +150,40 @@ function makeSandbox()
 		return load(contents, filename, "t", env)
 	end
 
+	local function safeLoadfile(path, mode, env)
+		local code, err = safeSlurp(path)
+		if not code then
+			return nil, err
+		end
+		return safeLoad(code, path, mode, env)
+	end
+
+	local function safeDofile(path, ...)
+		assert(path, "no path to dofile")
+		local code, err = safeLoadfile(path)
+		assert(code, err)
+		return code(...)
+	end
+
+	local packageLoaded = {}
+	local function safeRequire(path)
+		if packageLoaded[path] then
+			return packageLoaded[path]
+		end
+		packageLoaded[path] = safeDofile(path) or true
+	end
+
 	sandboxEnv = {
 		-- Lua 5.4 global --
 		assert = assert,
 		collectgarbage = collectgarbage,
-		-- dofile skipped...
+		dofile = safeDofile,
 		error = error,
 		-- _G is added
 		getmetatable = getmetatable,
 		ipairs = ipairs,
 		load = safeLoad,
-		-- loadfile skipped...
+		loadfile = safeLoadfile,
 		next = next,
 		pairs = pairs,
 		pcall = pcall,
@@ -116,6 +206,8 @@ function makeSandbox()
 		utf8 = table.deepcopy(utf8),
 		table = table.deepcopy(table),
 		math = table.deepcopy(math),
+		package = { loaded = packageLoaded },
+		require = safeRequire,
 		-- Redbean --
 		Write = Write,
 		SetStatus = SetStatus,
@@ -185,8 +277,7 @@ function makeSandbox()
 		GetRedbeanVersion = GetRedbeanVersion,
 		GetZipPaths = GetZipPaths,
 		HasParam = HasParam,
-		HidePath = HidePath,
-		IsHiddenPath = IsHiddenPath,
+		-- HidePath / IsHiddenPath skipped
 		IsPublicIp = IsPublicIp,
 		IsPrivateIp = IsPrivateIp,
 		IsLoopbackIp = IsLoopbackIp,
@@ -255,7 +346,11 @@ function makeSandbox()
 		kUrlPlus = kUrlPlus,
 		-- TemplateWiki --
 		wikiPathParse = wikiPathParse,
-		wikiPathUnparse = wikiPathUnparse
+		wikiPathUnparse = wikiPathUnparse,
+		wikiPathTable = wikiPathTable,
+		wikiPathList = wikiPathList,
+		wikiReadConfig = wikiReadConfig,
+		wikiResolvePage = wikiResolvePage
 	}
 	sandboxEnv._G = sandboxEnv
 	return sandboxEnv
@@ -283,6 +378,7 @@ function checkSandbox()
 		GetUser = true,
 		GetVersion = true,
 		HasControlCodes = true,
+		HidePath = true,
 		HighwayHash64 = true,
 		IsAcceptableHost = true,
 		IsAcceptablePort = true,
@@ -290,6 +386,7 @@ function checkSandbox()
 		IsCompressed = true,
 		IsDaemon = true,
 		IsHeaderRepeatable = true,
+		IsHiddenPath = true,
 		IsValidHttpToken = true,
 		LaunchBrowser = true,
 		LoadAsset = true,
@@ -340,14 +437,11 @@ function checkSandbox()
 		dofile = true,
 		finger = true,
 		io = true,
-		loadfile = true,
 		lsqlite3 = true,
 		maxmind = true,
 		os = true,
-		package = true,
 		path = true,
 		re = true,
-		require = true,
 		unix = true,
 	}
 	local res = {}
@@ -370,4 +464,25 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
+	local wikiPath, ext = wikiResolvePage(GetPath())
+	local action = GetParam("action") or "default"
+
+	local sandbox = makeSandbox()
+	sandbox.wikiRequestPath = wikiPath
+	sandbox.wikiRequestExtension = ext
+	sandbox.wikiRequestAction = action
+
+	-- Kernel routes to system/action/{action}.lua
+	local where = "system/action/" .. action .. ".lua"
+	local code, err = safeSlurp(where)
+	if not code then
+		if action ~= "default" then
+			ServeRedirect(303, GetPath())
+			return
+		else
+			Write(safeSlurp(wikiPath))
+			return
+		end
+	end
+	load(code, where, "t", sandbox)()
 end
