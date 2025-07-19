@@ -48,9 +48,13 @@ local rendererCache = {
 		if not fn then
 			Write("<pre>Lua template " .. EscapeHtml(tostring(path)) .. " load error: " .. EscapeHtml(tostring(err)) .. "</pre>")
 		end
-		fn, err = pcall(fn, opts)
+		local savedTraceback
+		fn, err = xpcall(fn, function (obj)
+			savedTraceback = debug.traceback()
+			return obj
+		end, opts)
 		if not fn then
-			Write("<pre>Lua template " .. EscapeHtml(tostring(path)) .. " run error: " .. EscapeHtml(tostring(err)) .. "</pre>")
+			Write("<pre>Lua template " .. EscapeHtml(tostring(path)) .. "\nrun error: " .. EscapeHtml(tostring(err)) .. "\n" .. EscapeHtml(tostring(savedTraceback)) .. "</pre>")
 		end
 	end
 }

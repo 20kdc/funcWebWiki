@@ -23,6 +23,9 @@ end
 
 -- The '~' character is used for filesystem storage, while the '/' character is canonical.
 function wikiPathParse(path)
+	if path:sub(1, 1) == "." then
+		return nil, "hidden"
+	end
 	local res = {}
 	for v in string.gmatch(path, "[^/_]+") do
 		if v == "." or v == ".." then
@@ -99,7 +102,9 @@ function wikiPathTable(prefix)
 	else
 		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
 			local parsed, err = wikiPathParse(name)
-			total[wikiPathUnparse(parsed)] = true
+			if parsed then
+				total[wikiPathUnparse(parsed)] = true
+			end
 		end
 	end
 	return total
@@ -208,6 +213,7 @@ function makeSandbox()
 		math = table.deepcopy(math),
 		package = { loaded = packageLoaded },
 		require = safeRequire,
+		debug = { traceback = debug.traceback },
 		-- Redbean --
 		Write = Write,
 		SetStatus = SetStatus,
@@ -433,7 +439,6 @@ function checkSandbox()
 		StoreAsset = true,
 		Uncompress = true,
 		__signal_handlers = true,
-		debug = true,
 		dofile = true,
 		finger = true,
 		io = true,
