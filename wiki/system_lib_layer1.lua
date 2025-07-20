@@ -133,7 +133,7 @@ function wikiLoadTemplate(template)
 			-- (built-in)
 			local missingTemplate = wikiLoadTemplate("system/templates/missingTemplate")
 			res = function (opts)
-				missingTemplate({
+				return missingTemplate({
 					path = templatePath,
 					opts = opts
 				})
