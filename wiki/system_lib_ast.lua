@@ -9,7 +9,7 @@ Wiki AST elements are either:
 
 As a convenience feature, the `wastCanonChild` and `wastCanonNode` functions run embedded functions.
 
-]]
+--]]
 
 wikiHtmlVoidElements = {
 	area = true,

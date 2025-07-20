@@ -10,37 +10,43 @@ require("system/lib/wikilink.lua")
 
 return h("html", {},
 	h("head", {},
-		h("title", {}, title)
+		h("title", {}, title),
+		h("style", {}, "body {display: flex;}")
 	),
 	h("body", {},
 		"\n",
-		h("h1", {}, title),
+		h("div", {style = "padding-right: 32pt;"},
+			wikiLoadTemplate("system/templates/logo")({}),
+			h("ul", {}, function (res)
+				local leftBar = wikiPathList()
+				local stylizedPlain = {}
+				for _, v in ipairs(leftBar) do
+					stylizedPlain[v] = wikiTitleStylize(v)
+				end
+				table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
+				for _, v in ipairs(leftBar) do
+					res(h("li", {},
+						WikiLink(v)
+					))
+					res("\n")
+				end
+			end)
+		),
 		"\n",
-		h("ul", {}, function (res)
-			local leftBar = wikiPathList()
-			local stylizedPlain = {}
-			for _, v in ipairs(leftBar) do
-				stylizedPlain[v] = wikiTitleStylize(v)
-			end
-			table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
-			for _, v in ipairs(leftBar) do
-				res(h("li", {},
-					WikiLink(v)
-				))
-				res("\n")
-			end
-		end),
-		"\n",
-		h("ul", {}, function (res)
-			for k, v in ipairs(wikiPathList("system/action/")) do
-				local action = v:sub(15):match("[^.]+")
-				res(h("li", {},
-					WikiLink(wikiRequestPath, action, action)
-				))
-				res("\n")
-			end
-		end),
-		"\n",
-		wikiLoadTemplate(opts.path)(opts.opts)
+		h("div", {},
+			h("h1", {}, title),
+			"\n",
+			h("ul", {}, function (res)
+				for k, v in ipairs(wikiPathList("system/action/")) do
+					local action = v:sub(15):match("[^.]+")
+					res(h("li", {},
+						WikiLink(wikiRequestPath, action, action)
+					))
+					res("\n")
+				end
+			end),
+			"\n",
+			wikiLoadTemplate(opts.path)(opts.opts)
+		)
 	)
 )
