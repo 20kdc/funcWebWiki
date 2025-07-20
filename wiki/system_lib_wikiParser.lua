@@ -4,11 +4,13 @@ Simple parsing library. wikiParser is based on the 'visitor' model similar to le
 
 To create a parser, wikiParser is called. This creates a parsing function, passed the 'remainder' (what is left to parse).
 
-Each pair of args to wikiParser makes up a pair (pattern, handler).
+Each pair of args to wikiParser makes up a pair (pattern, handler). These patterns are evaluated one at a time until one matches; then the loop restarts.
 
 The pattern is always implicitly prefixed with "^(" and suffixed with ")"; this is to anchor it at the start of the string and ensure the first capture is always the entire pattern.
 
 The handler is a function that is passed the remainder (the match has been skipped already, so 'return remainder' works), followed by the results of string.match. The handler returns the new remainder.
+
+If the new remainder the handler returns is equal to the original (before the match was skipped), it is as if it hadn't matched at all; the loop does not restart.
 
 If there is a 'loose' arg at the end, this represents a fallback handler, passed the remainder to parse. A wikiParser is itself a valid fallback handler.
 
@@ -30,7 +32,10 @@ local function wikiParser(...)
 				local match = {string.match(remainder, "^(" .. pattern .. ")", 1)}
 				if match[1] then
 					remainder = handler(remainder:sub(#match[1] + 1), table.unpack(match))
-					break
+					if inputRemainder ~= remainder then
+						-- made forward progress, restart loop
+						break
+					end
 				end
 				i = i + 2
 			end

@@ -1,0 +1,7 @@
+body {
+	display: flex;
+}
+
+.code-string {
+	color: red;
+}

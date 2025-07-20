@@ -9,7 +9,7 @@ local title = opts.title or "?"
 return h("html", {},
 	h("head", {},
 		h("title", {}, title),
-		h("style", {}, "body {display: flex;}")
+		h("link", {rel="stylesheet", type="text/css", href=(wikiAbsoluteBase .. "system/stylesheet.css?action=raw")})
 	),
 	h("body", {},
 		"\n",
