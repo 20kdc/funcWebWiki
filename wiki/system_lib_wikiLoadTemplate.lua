@@ -29,7 +29,6 @@ local function wikiLoadTemplate(template, codeFlag)
 				return {
 					"(",
 					WikiLink(tostring(opts.path), nil, "edit"),
-					")",
 					" missing)"
 				}
 			end

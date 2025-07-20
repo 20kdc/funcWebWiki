@@ -1,9 +1,13 @@
 -- Editor action.
+if wikiAuthCheckThenRenderFail("edit", wikiRequestPath) then
+	return
+end
+
 local code = GetParam("code")
 if code then
 	code = code:gsub("\r", "")
 end
-if code and (GetParam("confirm") or "") ~= "" then
+if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	-- confirmed edit; do it
 	Barf(wikiRequestPath, code)
 	ServeRedirect(303, wikiAbsoluteBase .. wikiRequestPath)

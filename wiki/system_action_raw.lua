@@ -1,3 +1,4 @@
+-- Just return the raw asset.
 local mimetype = wikiExtToMime(wikiRequestExtension)
 if mimetype then
 	SetHeader("Content-Type", mimetype)
