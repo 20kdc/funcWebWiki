@@ -7,8 +7,8 @@ end
 
 ProgramMaxPayloadSize(0x1000000)
 
-WIKI_BASE = argv[1] or "wiki/"
-URL_BASE = argv[2] or "/"
+WIKI_BASE = "wiki/"
+URL_BASE = "/"
 
 function table.deepcopy(t)
 	if type(t) == "table" then
