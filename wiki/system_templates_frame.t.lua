@@ -1,6 +1,10 @@
--- The 'frame' template:
--- * Creates the outer document frame
--- * Provides the action links for the current page.
+--[[
+
+The 'frame' template:
+ * Creates the outer document frame
+ * Provides the action links for the current page.
+
+--]]
 
 local opts = ...
 
@@ -44,7 +48,7 @@ return h("html", {},
 				end
 			end),
 			"\n",
-			wikiLoadTemplate(opts.path)(opts.opts)
+			wikiLoadTemplate(opts.path, opts.code)(opts.opts)
 		)
 	)
 )

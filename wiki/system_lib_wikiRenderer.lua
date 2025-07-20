@@ -52,7 +52,7 @@ local function wikiRenderer(templateExt)
 			renderer = renderer or function (path, code, opts)
 				return {
 					h("p", {}, "Renderer " .. rendererPath .. " could not be loaded."),
-					h("pre", {}, tostring(rendererErr)),
+					h("pre", {}, tostring(err)),
 					lastResortRenderer(path, code, opts)
 				}
 			end

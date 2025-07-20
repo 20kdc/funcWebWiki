@@ -27,4 +27,8 @@ local remainder = wikiParser(
 
 assert(remainder == "", remainder)
 
-return h("pre", {}, contents)
+if opts.inline then
+	return contents
+else
+	return h("pre", {}, contents)
+end

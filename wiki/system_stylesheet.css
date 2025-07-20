@@ -5,3 +5,11 @@ body {
 .code-string {
 	color: red;
 }
+
+.code-comment {
+	color: green;
+}
+
+a, a:visited, a:hover, a:active {
+	color: blue;
+}
