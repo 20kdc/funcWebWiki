@@ -1,7 +1,7 @@
 local path, code, opts = ...
 local total = {}
 
-local mdRenderer = wikiLoadRenderer("md")
+local mdRenderer = wikiRenderer("md")
 
 local function doPureLua(code)
 	table.insert(total, h("pre", {}, code))

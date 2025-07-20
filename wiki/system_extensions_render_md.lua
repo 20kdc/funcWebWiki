@@ -1,7 +1,5 @@
 local path, code, opts = ...
 
-require("system/lib/wikilink.lua")
-
 local contents = {}
 
 while #code > 0 do

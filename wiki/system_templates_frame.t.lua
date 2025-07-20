@@ -6,8 +6,6 @@ local opts = ...
 
 local title = opts.title or "?"
 
-require("system/lib/wikilink.lua")
-
 return h("html", {},
 	h("head", {},
 		h("title", {}, title),

@@ -15,5 +15,6 @@ The kernel looks for the following wiki files:
 
 * <system/extensions/default.txt> provides the default extension for `wikiResolvePage`.
 * <system/action/default.lua> (actions in general, but particularly that one) is launched.
+* `system/lib/*.lua` (whenever a global is missing)
 
 --]]

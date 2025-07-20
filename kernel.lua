@@ -166,7 +166,7 @@ function makeSandbox()
 	local function safeDofile(path, ...)
 		assert(path, "no path to dofile")
 		local code, err = safeLoadfile(path)
-		assert(code, err)
+		assert(code, "package '" .. path .. "': " .. tostring(err))
 		return code(...)
 	end
 
@@ -175,7 +175,9 @@ function makeSandbox()
 		if packageLoaded[path] then
 			return packageLoaded[path]
 		end
-		packageLoaded[path] = safeDofile(path) or true
+		local res = safeDofile(path) or true
+		packageLoaded[path] = res
+		return res
 	end
 
 	sandboxEnv = {
@@ -477,6 +479,20 @@ function OnHttpRequest()
 	sandbox.wikiRequestExtension = ext
 	sandbox.wikiRequestAction = action
 	sandbox.wikiAbsoluteBase = "/"
+
+	setmetatable(sandbox, {
+		__index = function (table, key)
+			-- print("__index on sandbox, " .. tostring(key))
+			local value = table.require("system/lib/" .. key .. ".lua")
+			assert(value ~= nil, "nil global '" .. key .. "' is erroneous")
+			rawset(table, key, value)
+			return value
+		end,
+		__newindex = function (table, key, value)
+			error("Globals that are not part of kernel should only be declared using system/lib pages. key: " .. tostring(key))
+		end,
+		__metatable = "globals protector"
+	})
 
 	-- Kernel routes to system/action/{action}.lua
 	local where = "system/action/" .. action .. ".lua"

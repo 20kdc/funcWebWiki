@@ -7,11 +7,11 @@ Wiki AST elements are either:
 * Tables-with-metatables (components which output specific HTML)
 * Everything else is converted to string with tostring()
 
-As a convenience feature, the `wastCanonChild` and `wastCanonNode` functions run embedded functions.
+As a convenience feature, the `canonChild` function runs embedded functions.
 
 --]]
 
-wikiHtmlVoidElements = {
+local wikiHtmlVoidElements = {
 	area = true,
 	base = true,
 	br = true,
@@ -28,8 +28,34 @@ wikiHtmlVoidElements = {
 	wbr = true
 }
 
+local wikiAST = {}
+
+-- Cleans up embedded functions, arrays-in-arrays, etc.
+-- This must be run as early as possible to keep errors contained properly; in particular it should be run at any error boundary.
+function wikiAST.canonChild(children, v)
+	if v == nil then
+		return
+	end
+	local tn = type(v)
+	if tn == "table" then
+		if not getmetatable(v) then
+			for _, c in ipairs(v) do
+				wikiAST.canonChild(children, c)
+			end
+		else
+			table.insert(children, v)
+		end
+	elseif tn == "function" then
+		v(function (c)
+			wikiAST.canonChild(children, c)
+		end)
+	else
+		table.insert(children, tostring(v))
+	end
+end
+
 -- wiki tag metatable
-WikiTag = {
+wikiAST.Tag = {
 	renderHtml = function (self, writer)
 		writer("<")
 		local tagNameEsc = EscapeHtml(self.tagName)
@@ -45,20 +71,27 @@ WikiTag = {
 			writer(" />")
 		else
 			writer(" >")
-			wastRender(writer, self.children, false)
+			wikiAST.render(writer, self.children, false)
 			writer("</")
 			writer(tagNameEsc)
 			writer(">")
 		end
 	end,
 	renderPlain = function (self, writer)
-		wastRender(writer, self.children, true)
+		wikiAST.render(writer, self.children, true)
 	end
 }
-WikiTag.__index = WikiTag
+wikiAST.Tag.__index = wikiAST.Tag
+setmetatable(wikiAST.Tag, {__call = function (self, type, props, ...)
+	local children = {}
+	for _, v in ipairs({...}) do
+		wikiAST.canonChild(children, v)
+	end
+	return setmetatable({tagName = type, props = props, children = children}, self)
+end})
 
 -- wiki raw HTML metatable
-WikiRaw = {
+wikiAST.Raw = {
 	renderHtml = function (self, writer)
 		writer(self.html)
 	end,
@@ -67,46 +100,13 @@ WikiRaw = {
 		writer(self.html)
 	end
 }
-WikiRaw.__index = WikiRaw
-setmetatable(WikiRaw, {__call = function (_, html)
-	return setmetatable({html = html}, WikiRaw)
+wikiAST.Raw.__index = wikiAST.Raw
+setmetatable(wikiAST.Raw, {__call = function (self, html)
+	return setmetatable({html = html}, self)
 end})
 
--- Cleans up embedded functions, arrays-in-arrays, etc.
--- This must be run as early as possible to keep errors contained properly; in particular it should be run at any error boundary.
-function wastCanonChild(children, v)
-	if v == nil then
-		return
-	end
-	local tn = type(v)
-	if tn == "table" then
-		if not getmetatable(v) then
-			for _, c in ipairs(v) do
-				wastCanonChild(children, c)
-			end
-		else
-			table.insert(children, v)
-		end
-	elseif tn == "function" then
-		v(function (c)
-			wastCanonChild(children, c)
-		end)
-	else
-		table.insert(children, tostring(v))
-	end
-end
-
--- AST
-function h(type, props, ...)
-	local children = {}
-	for _, v in ipairs({...}) do
-		wastCanonChild(children, v)
-	end
-	return setmetatable({tagName = type, props = props, children = children}, WikiTag)
-end
-
 -- Renders an AST node into HTML or plaintext.
-function wastRender(writer, n, plainText)
+function wikiAST.render(writer, n, plainText)
 	if n == nil then
 		return
 	end
@@ -124,7 +124,7 @@ function wastRender(writer, n, plainText)
 			fn(n, writer)
 		else
 			for _, v in ipairs(n) do
-				wastRender(writer, v, plainText)
+				wikiAST.render(writer, v, plainText)
 			end
 		end
 	else
@@ -135,15 +135,15 @@ function wastRender(writer, n, plainText)
 		end
 	end
 end
-function wastRenderToString(...)
+function wikiAST.renderToString(...)
 	local tmp = ""
-	wastRender(function (v)
+	wikiAST.render(function (v)
 		tmp = tmp .. v
 	end, ...)
 	return tmp
 end
 -- Visits elements and text segments in an AST. (Anything that would be text is normalized to be string.)
-function wastVisit(visitor, n)
+function wikiAST.visit(visitor, n)
 	if n == nil then
 		return
 	end
@@ -151,13 +151,15 @@ function wastVisit(visitor, n)
 	if tn == "table" then
 		if getmetatable(n) then
 			visitor(n)
-			wastVisit(visitor, n.children)
+			wikiAST.visit(visitor, n.children)
 		else
 			for _, v in ipairs(n) do
-				wastVisit(visitor, v)
+				wikiAST.visit(visitor, v)
 			end
 		end
 	else
 		visitor(tostring(n))
 	end
 end
+
+return wikiAST
