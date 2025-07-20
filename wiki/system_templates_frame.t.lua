@@ -18,7 +18,7 @@ return h("html", {},
 	h("body", {},
 		"\n",
 		h("div", {style = "padding-right: 32pt;"},
-			wikiLoadTemplate("system/templates/logo")({}),
+			wikiTemplate("system/templates/logo"),
 			h("ul", {}, function (res)
 				local leftBar = wikiPathList()
 				local stylizedPlain = {}
@@ -48,7 +48,7 @@ return h("html", {},
 				end
 			end),
 			"\n",
-			wikiLoadTemplate(opts.path, opts.code)(opts.opts)
+			wikiTemplate(opts.path, opts.opts, opts.code)
 		)
 	)
 )

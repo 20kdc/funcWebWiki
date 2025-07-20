@@ -6,7 +6,7 @@ This flag causes <wikiLoadTemplate> to use a level of indirection, i.e. <system/
 
 --]]
 
-wikiAST.render(Write, wikiLoadTemplate("system/templates/frame")({
+wikiAST.render(Write, wikiTemplate("system/templates/frame", {
 	title = wikiTitleStylize(wikiRequestPath),
 	path = wikiRequestPath,
 	opts = {
@@ -14,4 +14,4 @@ wikiAST.render(Write, wikiLoadTemplate("system/templates/frame")({
 		opts = {}
 	},
 	code = true
-}), false)
+}))

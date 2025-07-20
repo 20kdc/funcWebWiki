@@ -506,5 +506,7 @@ function OnHttpRequest()
 			return
 		end
 	end
-	load(code, where, "t", sandbox)()
+	local actionFn, actionFnErr = load(code, where, "t", sandbox)
+	assert(actionFn, actionFnErr)
+	actionFn()
 end
