@@ -54,7 +54,7 @@ function wikiAST.canonChild(children, v)
 	end
 end
 
--- wiki tag metatable
+-- HTML tag node: wikiAST.Tag("a", {href = "..."}, "Link text.")
 wikiAST.Tag = {
 	renderHtml = function (self, writer)
 		writer("<")
@@ -90,7 +90,9 @@ setmetatable(wikiAST.Tag, {__call = function (self, type, props, ...)
 	return setmetatable({tagName = type, props = (props or {}), children = children}, self)
 end})
 
--- wiki raw HTML metatable
+-- Raw HTML node: `wikiAST.Raw("...")`
+-- A word of warning: Do not pass rendered output here.
+-- That will break link tracking, which is no fun!
 wikiAST.Raw = {
 	renderHtml = function (self, writer)
 		writer(self.html)
@@ -135,6 +137,8 @@ function wikiAST.render(writer, n, plainText)
 		end
 	end
 end
+
+-- Convenience function to create a string.
 function wikiAST.renderToString(...)
 	local tmp = ""
 	wikiAST.render(function (v)
@@ -142,6 +146,7 @@ function wikiAST.renderToString(...)
 	end, ...)
 	return tmp
 end
+
 -- Visits elements and text segments in an AST. (Anything that would be text is normalized to be string.)
 function wikiAST.visit(visitor, n)
 	if n == nil then

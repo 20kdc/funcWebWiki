@@ -20,7 +20,7 @@ The kernel looks for the following wiki files:
 local where = "system/action/" .. wikiRequestAction .. ".lua"
 local code, err = Slurp(where)
 if not code then
-	if action ~= "default" then
+	if action ~= wikiDefaultAction then
 		ServeRedirect(303, GetPath())
 		return
 	else

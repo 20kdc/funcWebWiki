@@ -33,6 +33,11 @@ body {
 	padding-bottom: 1px;
 }
 
+.logo {
+	min-width: 8em;
+	text-align: center;
+}
+
 .nav-panel {
 	padding-right: 2em;
 }

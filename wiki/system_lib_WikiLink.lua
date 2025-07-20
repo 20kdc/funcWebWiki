@@ -2,7 +2,7 @@
 local WikiLink = {
 	renderHtml = function (self, writer)
 		local actionSfx = ""
-		if self.action ~= "default" then
+		if self.action ~= wikiDefaultAction then
 			actionSfx = "?action=" .. self.action
 		end
 		local href = wikiAbsoluteBase .. self.page .. actionSfx
@@ -26,6 +26,6 @@ local WikiLink = {
 }
 WikiLink.__index = WikiLink
 setmetatable(WikiLink, {__call = function (_, page, children, action, type)
-	return setmetatable({page = tostring(page), children = children or wikiTitleStylize(page), action = tostring(action or "default"), type = (type or "link")}, WikiLink)
+	return setmetatable({page = tostring(page), children = children or wikiTitleStylize(page), action = tostring(action or wikiDefaultAction), type = (type or "link")}, WikiLink)
 end})
 return WikiLink

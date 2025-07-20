@@ -4,10 +4,7 @@ This function resolves a 'page path' (can be extension-less) to a 'real' wiki pa
 
 Be careful with when you call this!
 
-Assumes:
-
-* <system/extensions/default.txt> provides the default extension.
-* <start> is the default page.
+Also note the 'default' globals.
 
 Returns the resolved path and the extension.
 
@@ -16,14 +13,15 @@ Returns the resolved path and the extension.
 return function (wikiPath)
 	local wikiPathParsed, err = wikiPathParse(wikiPath)
 	if err == "empty" then
-		wikiPathParsed = {"start"}
+		wikiPathParsed = wikiPathParse(wikiDefaultPage)
+		assert(wikiPathParsed, "invalid default page")
 	end
 	wikiPath = wikiPathUnparse(wikiPathParsed)
 	-- does the file have an extension?
 	local extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)
 	if not extIdx then
 		-- no extension; find one or make one
-		wikiPath = wikiPathList(wikiPath .. ".")[1] or (wikiPath .. "." .. wikiReadConfig("system/extensions/default.txt", "txt"))
+		wikiPath = wikiPathList(wikiPath .. ".")[1] or (wikiPath .. "." .. wikiDefaultExt)
 		wikiPathParsed, err = wikiPathParse(wikiPath)
 		assert(wikiPathParsed)
 		extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)

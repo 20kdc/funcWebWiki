@@ -1,8 +1,8 @@
 --[[
 
-Similar to <system/action/default> but sets the 'code' flag.
+Similar to <system/action/view> but sets the 'code' flag.
 
-This flag causes <wikiLoadTemplate> to use a level of indirection, i.e. <system/extensions/code/t.lua.txt>
+This flag causes <system/lib/wikiLoadTemplate> to use a level of indirection, i.e. <system/extensions/code/t.lua.txt>
 
 --]]
 
