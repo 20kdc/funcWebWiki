@@ -1,10 +1,6 @@
 -- A renderer receives (path, code, opts) and returns a <system/lib/wikiAST> node.
 
 local rendererCache = {
-	-- Renderer for raw HTML
-	["html"] = function (path, code, opts)
-		return WikiRaw(code)
-	end,
 	-- Renderer for raw Lua templates
 	["t.lua"] = function (path, code, opts)
 		local fn, err = load(code, path)
@@ -46,20 +42,22 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 	local renderer = rendererCache[templateExt]
 	local err
 	if not renderer then
-		local rendererPath = "system/extensions/render/" .. templateExt .. ".lua"
-		local rendererCode = Slurp(rendererPath)
-		if not rendererCode then
-			renderer = lastResortRenderer
-		else
-			renderer, err = load(rendererCode, rendererPath)
-			renderer = renderer or function (path, code, opts)
-				return {
-					h("p", {}, "Renderer " .. rendererPath .. " could not be loaded."),
-					h("pre", {}, tostring(err)),
-					lastResortRenderer(path, code, opts)
-				}
+		for ext in wikiExtIter(templateExt) do
+			local rendererPath = "system/extensions/render/" .. ext .. ".lua"
+			local rendererCode = Slurp(rendererPath)
+			if rendererCode then
+				renderer, err = load(rendererCode, rendererPath)
+				renderer = renderer or function (path, code, opts)
+					return {
+						h("p", {}, "Renderer " .. rendererPath .. " could not be loaded."),
+						h("pre", {}, tostring(err)),
+						lastResortRenderer(path, code, opts)
+					}
+				end
+				break
 			end
 		end
+		renderer = renderer or lastResortRenderer
 		rendererCache[templateExt] = renderer
 	end
 	return renderer

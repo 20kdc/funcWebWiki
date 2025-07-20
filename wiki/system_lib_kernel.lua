@@ -7,7 +7,6 @@ The kernel provides the environment for actions, which consists of:
 * A large quantity of Redbean and Lua functions.
 * `Slurp`, `Barf`, `wikiDelete` (wrapped to work with the wiki's FS only)
 * `wikiPathParse`, `wikiPathUnparse`, `wikiPathTable`, `wikiPathList`
-* `wikiRequestPath`, `wikiRequestAction`, `wikiRequestExtension`
 * `wikiAbsoluteBase`
 
 The kernel looks for the following wiki files:

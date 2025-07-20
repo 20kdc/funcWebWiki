@@ -8,7 +8,7 @@ end
 ProgramMaxPayloadSize(0x1000000)
 
 WIKI_BASE = "wiki/"
-URL_BASE = "/"
+wikiAbsoluteBase = "/"
 
 function table.deepcopy(t)
 	if type(t) == "table" then
@@ -100,6 +100,7 @@ function wikiDelete(path)
 end
 
 function wikiPathTable(prefix)
+	-- print("called WPT: ", prefix)
 	local total = {}
 	if prefix then
 		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
@@ -343,7 +344,8 @@ function makeSandbox()
 		wikiPathUnparse = wikiPathUnparse,
 		wikiPathTable = wikiPathTable,
 		wikiPathList = wikiPathList,
-		wikiDelete = wikiDelete
+		wikiDelete = wikiDelete,
+		wikiAbsoluteBase = wikiAbsoluteBase
 	}
 	sandboxEnv._G = sandboxEnv
 	return sandboxEnv
@@ -452,13 +454,8 @@ end
 
 checkSandbox()
 
-function OnWorkerStart()
-end
-
-function OnHttpRequest()
+function makeEnv()
 	local sandbox = makeSandbox()
-	sandbox.wikiAbsoluteBase = URL_BASE
-
 	setmetatable(sandbox, {
 		__index = function (table, key)
 			-- print("__index on sandbox, " .. tostring(key))
@@ -472,6 +469,12 @@ function OnHttpRequest()
 		end,
 		__metatable = "globals protector"
 	})
+	return sandbox
+end
 
-	sandbox.dofile("system/lib/kernel.lua")
+function OnWorkerStart()
+end
+
+function OnHttpRequest()
+	makeEnv().dofile("system/lib/kernel.lua")
 end
