@@ -31,9 +31,9 @@ local rendererCache = {
 	end
 }
 
-local function wikiRenderer(templateExt)
+local function wikiRenderer(templateExt, promiseThisIsText)
 	local function lastResortRenderer(path, code, opts)
-		if wikiExtToMime(templateExt):sub(1, 5) == "text/" then
+		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)
 		else
 			return h("img", {src=(wikiAbsoluteBase .. path .. "?action=raw")}, code)

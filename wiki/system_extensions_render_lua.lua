@@ -1,5 +1,7 @@
 local path, code, opts = ...
 
+code = code:gsub("\r", "")
+
 local mdRenderer = wikiRenderer("md")
 
 local contents = {}
