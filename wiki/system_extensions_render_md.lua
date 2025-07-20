@@ -12,15 +12,24 @@ local function parserWithContents(fn, ...)
 	return res
 end
 
+local function implLink(href, stuff)
+	local isExternalLink = href:sub(1, 5) == "http:" or href:sub(1, 6) == "https:"
+	if isExternalLink then
+		table.insert(contents, h("a", {href = href}, (stuff or href)))
+	else
+		table.insert(contents, WikiLink(href, stuff))
+	end
+end
+
 local inlineParser
 inlineParser = wikiParser(
 	"<([^>]+)>", function (remainder, m, href)
-		local isExternalLink = href:sub(1, 5) == "http:" or href:sub(1, 6) == "https:"
-		if isExternalLink then
-			table.insert(contents, h("a", {href = href}, href))
-		else
-			table.insert(contents, WikiLink(href))
-		end
+		implLink(href)
+		return remainder
+	end,
+	"%[([^%]]+)%]%(([^%)]+)%)", function (remainder, m, stuff, href)
+		local res = parserWithContents(inlineParser, stuff)
+		implLink(href, stuff)
 		return remainder
 	end,
 	"_([^_]+)_", function (remainder, m, stuff)
@@ -34,7 +43,7 @@ inlineParser = wikiParser(
 		return remainder
 	end,
 	-- fastpath
-	"[^<*_`]+",
+	"[^<*_`%[]+",
 	function (remainder, m)
 		table.insert(contents, m)
 		return remainder
@@ -52,6 +61,11 @@ paraParser = wikiParser(
 	"(#+)%s*([^\n]*)\n", function (remainder, m, depth, text)
 		local res = parserWithContents(inlineParser, text)
 		table.insert(contents, h("h" .. tostring(#depth), {}, res))
+		return remainder
+	end,
+	-- image or include
+	"!%[([^%]]*)%]%(([^%)]+)%)\n", function (remainder, m, stuff, href)
+		table.insert(contents, wikiTemplate(href, {alt = stuff}))
 		return remainder
 	end,
 	-- mixed-mode

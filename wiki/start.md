@@ -1,8 +1,10 @@
-# 'TemplateWiki' - a Redbean-based customizable single-user-wiki system aimed at Git users
+# 'funcWebWiki' - a Redbean-based customizable single-user-wiki system aimed at Git/file backup users
 
-TemplateWiki is intended to provide the ease of installation and deep integrated customization of TiddlyWiki with the managability and ability to use Git for change-tracking of flat-file wikis such as DokuWiki.
+## Introduction
 
-Almost all of the code that makes up the wiki itself, apart from a small 'kernel', is represented as pages in the wiki, such as <system/action/default>.
+funcWebWiki is intended to provide the ease of installation and deep integrated customization of TiddlyWiki with the ease-of-management and ability to use Git for change-tracking of flat-file wikis.
+
+Almost all of the code that makes up the wiki itself, apart from [Redbean](https://redbean.dev/) and a small 'kernel', is represented as pages in the wiki, such as <system/action/default>.
 
 Global variables inside the wiki always map to respective Lua files; this is to allow for reasonably simple but effective navigation through the code, as so:
 
@@ -28,4 +30,26 @@ The 'kernel' provides some level of sandboxing; the rest of the wiki is dynamic 
 return h("p", {}, "For example, this paragraph calculates ", 6 * 7, " from 6 * 7.")
 ```
 
-TemplateWiki is not the most robust system, and the markup engine could use some work. (As of this writing, the edit button hasn't been implemented; everything else is the 'hard bit', after all...)
+## Scary Parts
+
+funcWebWiki is not the most robust system, and the markup engine could use some work.
+
+Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
+
+There are probably a _lot_ of scary bottlenecks in the code.
+
+## Installation
+
+A funcWebWiki consists of the `wiki/` directory, the `kernel.lua` file, and the Redbean server. (funcWebWiki was tested with standard Redbean 3.0.0 on Linux; there might be some reason this is important if Redbean doesn't expose some functions in some compile configurations or something. Shouldn't do, but you never know...)
+
+The wiki is started with the following command:
+
+```
+redbean -l 127.0.0.1 -F kernel.lua
+```
+
+## Things To Explore
+
+* <system/lib/kernel> doesn't contain a copy of the kernel, but does describe what role it has, versus the much more tightly-coupled rest of the system.
+* <system/extensions/render/md.lua> contains the somewhat cobbled-together semi-Markdown parser.
+* <system/extensions/render/lua.lua> contains the code which displays Lua, including mixed Lua/Markdown content.

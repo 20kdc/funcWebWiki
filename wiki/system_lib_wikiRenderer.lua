@@ -36,7 +36,10 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)
 		else
-			return h("img", {src=(wikiAbsoluteBase .. path .. "?action=raw")}, code)
+			return h("img", {
+				src = (wikiAbsoluteBase .. path .. "?action=raw"),
+				alt = opts.alt
+			}, code)
 		end
 	end
 

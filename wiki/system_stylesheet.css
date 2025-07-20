@@ -1,16 +1,55 @@
 body {
-	display: flex;
+	margin: 0;
+	background: white;
+	color: black;
+}
+
+.frame-table, .frame-table td, .frame-table tr {
+	border-spacing: 0;
+	padding: 0;
+}
+
+.frame-left {
+	vertical-align: top;
+	background: #f0f0f0;
+}
+
+.frame-right {
+	vertical-align: top;
+}
+
+.frame-right-body {
+	padding-bottom: 4em;
+	padding-left: 1em;
+	padding-top: 1em;
+	padding-right: 1em;
+}
+
+.logo-panel {
+	background: black;
+	color: white;
+	padding-left: 8pt;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+.nav-panel {
+	padding-right: 2em;
 }
 
 .action-bar {
+	padding-top: 1px;
+	padding-bottom: 1px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	margin: 0;
+	background: #f0f0f0;
 }
 
 .action-bar li {
 	display: block;
-	padding: 0.5em;
+	padding-right: 0.5em;
 }
 
 .action-bar li h1 {
@@ -31,6 +70,7 @@ pre {
 	padding: 0.5em;
 	background: #f0f0f0;
 	color: black;
+	margin: 0;
 }
 
 code {

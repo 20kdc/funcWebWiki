@@ -1,4 +1,4 @@
--- TemplateWiki Kernel
+-- wiki kernel --
 
 local initialGlobals = {}
 for k, v in pairs(_G) do
@@ -7,7 +7,8 @@ end
 
 ProgramMaxPayloadSize(0x1000000)
 
-WIKI_BASE = "wiki/"
+WIKI_BASE = argv[1] or "wiki/"
+URL_BASE = argv[2] or "/"
 
 function table.deepcopy(t)
 	if type(t) == "table" then
@@ -128,32 +129,6 @@ function wikiPathList(prefix)
 	end
 	table.sort(total)
 	return total
-end
-
-function wikiReadConfig(file, default)
-	local value = safeSlurp(file) or ""
-	value = value:match("[^\r\n]+") or default
-	return value
-end
-
-function wikiResolvePage(wikiPath)
-	local wikiPathParsed, err = wikiPathParse(wikiPath)
-	if err == "empty" then
-		wikiPathParsed = {"start"}
-	end
-	wikiPath = wikiPathUnparse(wikiPathParsed)
-	-- does the file have an extension?
-	local extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)
-	if not extIdx then
-		-- no extension; find one or make one
-		wikiPath = wikiPathList(wikiPath .. ".")[1] or (wikiPath .. "." .. wikiReadConfig("system/extensions/default.txt", "txt"))
-		wikiPathParsed, err = wikiPathParse(wikiPath)
-		assert(wikiPathParsed)
-		extIdx = wikiPathParsed[#wikiPathParsed]:find(".", 1, true)
-		assert(extIdx)
-	end
-	local ext = wikiPathParsed[#wikiPathParsed]:sub(extIdx + 1)
-	return wikiPath, ext
 end
 
 function makeSandbox()
@@ -363,13 +338,11 @@ function makeSandbox()
 		kLogWarn = kLogWarn,
 		kUrlLatin1 = kUrlLatin1,
 		kUrlPlus = kUrlPlus,
-		-- TemplateWiki --
+		-- wiki --
 		wikiPathParse = wikiPathParse,
 		wikiPathUnparse = wikiPathUnparse,
 		wikiPathTable = wikiPathTable,
 		wikiPathList = wikiPathList,
-		wikiReadConfig = wikiReadConfig,
-		wikiResolvePage = wikiResolvePage,
 		wikiDelete = wikiDelete
 	}
 	sandboxEnv._G = sandboxEnv
@@ -483,14 +456,8 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
-	local wikiPath, ext = wikiResolvePage(GetPath())
-	local action = GetParam("action") or "default"
-
 	local sandbox = makeSandbox()
-	sandbox.wikiRequestPath = wikiPath
-	sandbox.wikiRequestExtension = ext
-	sandbox.wikiRequestAction = action
-	sandbox.wikiAbsoluteBase = "/"
+	sandbox.wikiAbsoluteBase = URL_BASE
 
 	setmetatable(sandbox, {
 		__index = function (table, key)
@@ -506,19 +473,5 @@ function OnHttpRequest()
 		__metatable = "globals protector"
 	})
 
-	-- Kernel routes to system/action/{action}.lua
-	local where = "system/action/" .. action .. ".lua"
-	local code, err = safeSlurp(where)
-	if not code then
-		if action ~= "default" then
-			ServeRedirect(303, GetPath())
-			return
-		else
-			Write(safeSlurp(wikiPath))
-			return
-		end
-	end
-	local actionFn, actionFnErr = load(code, where, "t", sandbox)
-	assert(actionFn, actionFnErr)
-	actionFn()
+	sandbox.dofile("system/lib/kernel.lua")
 end
