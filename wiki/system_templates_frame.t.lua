@@ -4,26 +4,43 @@
 
 local opts = ...
 
-local titleEscaped = EscapeHtml(opts.title or "?")
+local title = opts.title or "?"
 
-Write("<html><head>\n")
-Write("<title>" .. titleEscaped .. "</title>\n")
-Write("</head><body>\n")
-Write("<h1>" .. titleEscaped .. "</h1>\n")
+require("system/lib/wikilink.lua")
 
-local leftBar = wikiPathList()
-table.sort(leftBar, function (a, b) return wikiTitleStylize(a) < wikiTitleStylize(b) end)
-Write("<ul>")
-for k, v in ipairs(leftBar) do
-	Write("<li><a href=\"/" .. EscapeHtml(v) .. "\">" .. EscapeHtml(wikiTitleStylize(v)) .. "</a></li>\n")
-end
-Write("</ul>")
-
-Write("<ul>")
-for k, v in ipairs(wikiPathList("system/action/")) do
-	local action = v:sub(15):match("[^.]+")
-	Write("<li><a href=\"/" .. EscapeHtml(wikiRequestPath) .. "?action=" .. EscapeHtml(action) .. "\">" .. EscapeHtml(action) .. "</a></li>\n")
-end
-Write("</ul>")
-wikiLoadTemplate(opts.path)(opts.opts)
-Write("</body></html>")
+return h("html", {},
+	h("head", {},
+		h("title", {}, title)
+	),
+	h("body", {},
+		"\n",
+		h("h1", {}, title),
+		"\n",
+		h("ul", {}, function (res)
+			local leftBar = wikiPathList()
+			local stylizedPlain = {}
+			for _, v in ipairs(leftBar) do
+				stylizedPlain[v] = wikiTitleStylize(v)
+			end
+			table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
+			for _, v in ipairs(leftBar) do
+				res(h("li", {},
+					WikiLink(v)
+				))
+				res("\n")
+			end
+		end),
+		"\n",
+		h("ul", {}, function (res)
+			for k, v in ipairs(wikiPathList("system/action/")) do
+				local action = v:sub(15):match("[^.]+")
+				res(h("li", {},
+					WikiLink(wikiRequestPath, action, action)
+				))
+				res("\n")
+			end
+		end),
+		"\n",
+		wikiLoadTemplate(opts.path)(opts.opts)
+	)
+)

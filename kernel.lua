@@ -476,6 +476,7 @@ function OnHttpRequest()
 	sandbox.wikiRequestPath = wikiPath
 	sandbox.wikiRequestExtension = ext
 	sandbox.wikiRequestAction = action
+	sandbox.wikiAbsoluteBase = "/"
 
 	-- Kernel routes to system/action/{action}.lua
 	local where = "system/action/" .. action .. ".lua"

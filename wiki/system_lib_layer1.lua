@@ -7,6 +7,8 @@ This layer provides the actual architecture of the templating system.
 This layer is made up of the following:
 
 * <system/lib/layer1>: This file.
+* <system/lib/ast>: The AST core.
+* <system/lib/wikilink>: Related to AST core - Handles the styling of wiki page names and links.
 * <system/action/default>: Passes to <system/templates/frame?action=raw>.
 * <system/action/raw>: Used for images, etc.
 
@@ -19,9 +21,9 @@ This layer looks for the following:
 
 --]]
 
-function wikiHtmlSimpleLink(href, text)
-	Write("<a href=\"" .. EscapeHtml(tostring(href)) .. "\">" .. EscapeHtml(tostring(text)) .. "</a>")
-end
+require("system/lib/ast.lua")
+
+-- Extension-to-MIME
 
 function wikiExtToMime(ext)
 	while true do
@@ -40,32 +42,41 @@ end
 local rendererCache = {
 	-- Renderer for raw HTML
 	["html"] = function (path, code, opts)
-		Write(code)
+		return WikiRaw(code)
 	end,
 	-- Renderer for raw Lua templates
 	["t.lua"] = function (path, code, opts)
 		local fn, err = load(code, path)
 		if not fn then
-			Write("<pre>Lua template " .. EscapeHtml(tostring(path)) .. " load error: " .. EscapeHtml(tostring(err)) .. "</pre>")
+			return h("pre", {},
+				"Lua template ",
+				tostring(path),
+				" load error: ",
+				tostring(err)
+			)
 		end
-		local savedTraceback
-		fn, err = xpcall(fn, function (obj)
-			savedTraceback = debug.traceback()
-			return obj
+		local ok, res = xpcall(fn, function (obj)
+			return debug.traceback(coroutine.running(), EncodeLua(obj))
 		end, opts)
-		if not fn then
-			Write("<pre>Lua template " .. EscapeHtml(tostring(path)) .. "\nrun error: " .. EscapeHtml(tostring(err)) .. "\n" .. EscapeHtml(tostring(savedTraceback)) .. "</pre>")
+		if not ok then
+			return h("pre", {},
+				"Lua template ",
+				tostring(path),
+				"\n",
+				tostring(res)
+			)
 		end
+		return res
 	end
 }
 
--- A renderer receives (path, code, opts) and calls Write.
+-- A renderer receives (path, code, opts) and returns AST.
 function wikiLoadRenderer(templateExt)
 	local function lastResortRenderer(path, code, opts)
 		if wikiExtToMime(templateExt):sub(1, 5) == "text/" then
-			Write("<pre>" .. EscapeHtml(code) .. "</pre>")
+			return h("pre", {}, code)
 		else
-			Write("<img src=\"" .. EscapeHtml(path) .. "?action=raw\"/>")
+			return h("img", {src=(wikiAbsoluteBase .. path .. "?action=raw")}, code)
 		end
 	end
 
@@ -79,9 +90,11 @@ function wikiLoadRenderer(templateExt)
 		else
 			renderer, err = load(rendererCode, rendererPath)
 			renderer = renderer or function (path, code, opts)
-				Write("<p>Renderer " .. EscapeHtml(rendererPath) .. " could not be loaded.</p>")
-				Write("<pre>" .. EscapeHtml(tostring(rendererErr)) .. "</pre>")
-				lastResortRenderer(path, code, opts)
+				return {
+					h("p", {}, "Renderer " .. rendererPath .. " could not be loaded."),
+					h("pre", {}, tostring(rendererErr)),
+					lastResortRenderer(path, code, opts)
+				}
 			end
 		end
 		rendererCache[templateExt] = renderer
@@ -105,9 +118,13 @@ function wikiLoadTemplate(template)
 		if template == "system/templates/missingTemplate" then
 			-- system/templates/missingTemplate has a fallback to prevent recursion
 			res = function (opts)
-				Write("(")
-				wikiHtmlSimpleLink(tostring(opts.path) .. "?action=edit", tostring(opts.path))
-				Write(" missing)")
+				return {
+					"(",
+					h("a", {href = tostring(opts.path) .. "?action=edit"},
+						tostring(opts.path)
+					),
+					" missing)"
+				}
 			end
 		else
 			-- so the order proceeds:
@@ -127,7 +144,7 @@ function wikiLoadTemplate(template)
 	end
 	local renderer = wikiLoadRenderer(templateExt)
 	local res = function (opts)
-		renderer(templatePath, code, opts)
+		return renderer(templatePath, code, opts)
 	end
 	templateCache[templatePath] = res
 	return res

@@ -9,6 +9,7 @@ The kernel provides the environment for actions, which consists of:
 * `wikiReadConfig`
 * `wikiResolvePage`
 * `wikiRequestPath`, `wikiRequestAction`, `wikiRequestExtension`
+* `wikiAbsoluteBase`
 
 The kernel looks for the following wiki files:
 
