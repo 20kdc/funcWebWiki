@@ -28,8 +28,13 @@ inlineParser = wikiParser(
 		table.insert(contents, h("i", {}, res))
 		return remainder
 	end,
+	"`([^`]+)`", function (remainder, m, stuff)
+		local res = parserWithContents(inlineParser, stuff)
+		table.insert(contents, h("code", {}, res))
+		return remainder
+	end,
 	-- fastpath
-	"[^<*_]+",
+	"[^<*_`]+",
 	function (remainder, m)
 		table.insert(contents, m)
 		return remainder

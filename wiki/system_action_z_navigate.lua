@@ -1,0 +1,1 @@
+ServeRedirect(302, wikiAbsoluteBase .. tostring(GetParam("to") or ""))

@@ -3,7 +3,7 @@ wikiAST.render(Write, wikiTemplate("system/templates/frame", {
 	title = wikiTitleStylize(wikiRequestPath),
 	path = wikiRequestPath,
 	opts = {
-		path = "system/templates/recursion",
+		path = wikiResolvePage("system/templates/recursion"),
 		opts = {}
 	}
 }))

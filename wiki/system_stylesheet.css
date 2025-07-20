@@ -2,6 +2,48 @@ body {
 	display: flex;
 }
 
+.action-bar {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.action-bar li {
+	display: block;
+	padding: 0.5em;
+}
+
+.action-bar li h1 {
+	padding-right: 1em;
+}
+
+.editor2pane {
+	display: flex;
+	flex-direction: row;
+}
+
+.editor2pane div {
+	padding-right: 1em;
+}
+
+pre {
+	tab-size: 4;
+	padding: 0.5em;
+	background: #f0f0f0;
+	color: black;
+}
+
+code {
+	tab-size: 4;
+	padding: 0.5em;
+	background: #f0f0f0;
+	color: black;
+}
+
+textarea {
+	tab-size: 4;
+}
+
 .code-string {
 	color: red;
 }

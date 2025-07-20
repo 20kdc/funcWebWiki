@@ -19,6 +19,10 @@ return h("html", {},
 		"\n",
 		h("div", {style = "padding-right: 32pt;"},
 			wikiTemplate("system/templates/logo"),
+			WikiLink(wikiRequestPath, {
+				h("input", {name = "to", value = wikiRequestPath}),
+				h("input", {type = "submit", value = "Go"})
+			}, "z/navigate", "formPost"),
 			h("ul", {}, function (res)
 				local leftBar = wikiPathList()
 				local stylizedPlain = {}
@@ -36,15 +40,16 @@ return h("html", {},
 		),
 		"\n",
 		h("div", {},
-			h("h1", {}, title),
-			"\n",
-			h("ul", {}, function (res)
+			h("ul", {class = "action-bar"}, function (res)
+				res(h("li", {}, h("h1", {}, title)))
 				for k, v in ipairs(wikiPathList("system/action/")) do
 					local action = v:sub(15):match("[^.]+")
-					res(h("li", {},
-						WikiLink(wikiRequestPath, action, action)
-					))
-					res("\n")
+					if action:sub(1, 2) ~= "z/" then
+						res(h("li", {},
+							WikiLink(wikiRequestPath, action, action)
+						))
+						res("\n")
+					end
 				end
 			end),
 			"\n",

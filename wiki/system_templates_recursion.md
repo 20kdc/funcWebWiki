@@ -1,0 +1,1 @@
+_This is the default `path` value passed in options for templates that may expect an interior page._

@@ -10,6 +10,10 @@ local WikiLink = {
 			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"post\">")
 			wikiAST.render(writer, self.children, false)
 			writer("</form>")
+		elseif self.type == "formGet" then
+			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"get\">")
+			wikiAST.render(writer, self.children, false)
+			writer("</form>")
 		else
 			writer("<a href=\"" .. EscapeHtml(href) .. "\">")
 			wikiAST.render(writer, self.children, false)

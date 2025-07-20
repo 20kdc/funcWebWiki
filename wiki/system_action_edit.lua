@@ -11,12 +11,22 @@ if code and (GetParam("confirm") or "") ~= "" then
 end
 local preview = not not code
 code = code or Slurp(wikiRequestPath)
-wikiAST.render(Write, wikiTemplate("system/templates/frame", {
-	title = {"Editing: ", wikiTitleStylize(wikiRequestPath)},
-	path = "system/templates/editor",
-	opts = {
-		path = wikiRequestPath,
-		code = code,
-		preview = preview
-	}
-}))
+if preview then
+	wikiAST.render(Write, wikiTemplate("system/templates/frame", {
+		title = {"Editing: ", wikiTitleStylize(wikiRequestPath)},
+		path = "system/templates/editorAndPreview",
+		opts = {
+			path = wikiRequestPath,
+			code = code
+		}
+	}))
+else
+	wikiAST.render(Write, wikiTemplate("system/templates/frame", {
+		title = {"Editing: ", wikiTitleStylize(wikiRequestPath)},
+		path = "system/templates/editor",
+		opts = {
+			path = wikiRequestPath,
+			code = code
+		}
+	}))
+end
