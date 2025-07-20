@@ -16,7 +16,12 @@ The kernel looks for the following wiki files:
 
 --]]
 
--- Kernel routes to system/action/{action}.lua
+-- as a half-hearted effort towards security; case-fold the action for the auth check.
+-- this risks non-obvious behaviour but means case-folding OSes won't instantly brick even the most basic of read-only locks.
+if wikiAuthCheckThenRenderFail(wikiRequestAction:lower(), wikiRequestPath) then
+	return
+end
+
 local where = "system/action/" .. wikiRequestAction .. ".lua"
 local code, err = Slurp(where)
 if not code then

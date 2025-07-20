@@ -1,7 +1,4 @@
 -- Editor action.
-if wikiAuthCheckThenRenderFail("edit", wikiRequestPath) then
-	return
-end
 
 local code = GetParam("code")
 if code then
@@ -23,6 +20,9 @@ if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	ServeRedirect(303, wikiAbsoluteBase .. wikiRequestPath)
 	return
 end
+
+SetHeader("Content-Type", "text/html")
+
 local preview = not not code
 code = code or Slurp(wikiRequestPath)
 if preview then

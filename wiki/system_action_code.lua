@@ -6,6 +6,8 @@ This flag causes <system/lib/wikiLoadTemplate> to use a level of indirection, i.
 
 --]]
 
+SetHeader("Content-Type", "text/html")
+
 wikiAST.render(Write, wikiTemplate("system/templates/frame", {
 	title = wikiTitleStylize(wikiRequestPath),
 	path = wikiRequestPath,

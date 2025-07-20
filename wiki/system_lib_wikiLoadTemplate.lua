@@ -49,7 +49,14 @@ local function wikiLoadTemplate(template, codeFlag)
 		return res
 	end
 	if codeFlag then
-		templateExt = wikiReadConfig("system/extensions/code/" .. templateExt .. ".txt", "txt")
+		local repExt = nil
+		for ext in wikiExtIter(templateExt) do
+			repExt = wikiReadConfig("system/extensions/code/" .. ext .. ".txt", nil)
+			if repExt then
+				break
+			end
+		end
+		templateExt = repExt or wikiDefaultCodeExt
 	end
 	local renderer = wikiRenderer(templateExt)
 	local res = function (opts)

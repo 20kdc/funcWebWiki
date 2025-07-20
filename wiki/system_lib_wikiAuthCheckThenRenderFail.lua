@@ -3,6 +3,7 @@
 return function (...)
 	if not wikiAuthCheck(...) then
 		local action, path = ...
+		SetHeader("Content-Type", "text/html")
 		wikiAST.render(Write, wikiTemplate("system/templates/frame", {
 			title = wikiTitleStylize(wikiRequestPath),
 			path = "system/templates/authError",
