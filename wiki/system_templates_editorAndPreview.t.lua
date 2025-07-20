@@ -9,10 +9,7 @@ local rightColumn = nil
 local templatePath, templateExt = wikiResolvePage(opts.path)
 local renderer = wikiRenderer(templateExt)
 
-rightColumn = renderer(templatePath, code, {
-	path = wikiResolvePage("system/templates/recursion"),
-	opts = {}
-})
+rightColumn = renderer(templatePath, code, wikiDefaultOpts)
 
 return h("div", {class = "editor2pane"},
 	h("div", {class = "editor2pane-left"}, leftColumn),

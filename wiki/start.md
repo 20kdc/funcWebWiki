@@ -50,6 +50,8 @@ redbean -l 127.0.0.1 -F kernel.lua
 
 ## Things To Explore
 
+* <special/systemPages> contains the full list of system pages.
+* <system/templates/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
 * <system/lib/kernel> doesn't contain a copy of the kernel, but does describe what role it has, versus the much more tightly-coupled rest of the system.
 * <system/extensions/render/md.lua> contains the somewhat cobbled-together semi-Markdown parser.
 * <system/extensions/render/lua.lua> contains the code which displays Lua, including mixed Lua/Markdown content.

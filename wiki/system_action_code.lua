@@ -9,9 +9,6 @@ This flag causes <wikiLoadTemplate> to use a level of indirection, i.e. <system/
 wikiAST.render(Write, wikiTemplate("system/templates/frame", {
 	title = wikiTitleStylize(wikiRequestPath),
 	path = wikiRequestPath,
-	opts = {
-		path = "system/templates/recursion",
-		opts = {}
-	},
+	opts = wikiDefaultOpts,
 	code = true
 }))

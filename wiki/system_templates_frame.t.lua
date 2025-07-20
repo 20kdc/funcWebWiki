@@ -27,6 +27,9 @@ local frameLeft = {
 			end
 			table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
 			for _, v in ipairs(leftBar) do
+				if v:sub(1, 7) == "system/" then
+					return
+				end
 				res(h("li", {},
 					WikiLink(v)
 				))
