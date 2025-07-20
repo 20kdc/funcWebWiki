@@ -5,16 +5,23 @@ local WikiLink = {
 		if self.action ~= "default" then
 			actionSfx = "?action=" .. self.action
 		end
-		writer("<a href=\"" .. EscapeHtml(wikiAbsoluteBase .. self.page .. actionSfx) .. "\">")
-		wikiAST.render(writer, self.children, false)
-		writer("</a>")
+		local href = wikiAbsoluteBase .. self.page .. actionSfx
+		if self.type == "formPost" then
+			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"post\">")
+			wikiAST.render(writer, self.children, false)
+			writer("</form>")
+		else
+			writer("<a href=\"" .. EscapeHtml(href) .. "\">")
+			wikiAST.render(writer, self.children, false)
+			writer("</a>")
+		end
 	end,
 	renderPlain = function (self, writer)
 		wikiAST.render(writer, self.children, true)
 	end
 }
 WikiLink.__index = WikiLink
-setmetatable(WikiLink, {__call = function (_, page, children, action)
-	return setmetatable({page = tostring(page), children = children or wikiTitleStylize(page), action = tostring(action or "default")}, WikiLink)
+setmetatable(WikiLink, {__call = function (_, page, children, action, type)
+	return setmetatable({page = tostring(page), children = children or wikiTitleStylize(page), action = tostring(action or "default"), type = (type or "link")}, WikiLink)
 end})
 return WikiLink

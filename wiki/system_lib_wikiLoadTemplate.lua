@@ -28,9 +28,8 @@ local function wikiLoadTemplate(template, codeFlag)
 			res = function (opts)
 				return {
 					"(",
-					h("a", {href = tostring(opts.path) .. "?action=edit"},
-						tostring(opts.path)
-					),
+					WikiLink(tostring(opts.path), nil, "edit"),
+					")",
 					" missing)"
 				}
 			end

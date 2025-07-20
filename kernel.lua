@@ -76,7 +76,8 @@ function safeSlurp(path)
 	if not path2 then
 		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
 	end
-	return Slurp(path2)
+	local a, b = Slurp(path2)
+	return a, b and tostring(b)
 end
 
 function safeBarf(path, data)
@@ -84,7 +85,17 @@ function safeBarf(path, data)
 	if not path2 then
 		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
 	end
-	return Barf(path2, data)
+	local a, b = Barf(path2, data)
+	return a, b and tostring(b)
+end
+
+function wikiDelete(path)
+	local path2, err = wikiPathToDisk(path)
+	if not path2 then
+		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+	end
+	local a, b = unix.unlink(path2)
+	return a, b and tostring(b)
 end
 
 function wikiPathTable(prefix)
@@ -358,7 +369,8 @@ function makeSandbox()
 		wikiPathTable = wikiPathTable,
 		wikiPathList = wikiPathList,
 		wikiReadConfig = wikiReadConfig,
-		wikiResolvePage = wikiResolvePage
+		wikiResolvePage = wikiResolvePage,
+		wikiDelete = wikiDelete
 	}
 	sandboxEnv._G = sandboxEnv
 	return sandboxEnv

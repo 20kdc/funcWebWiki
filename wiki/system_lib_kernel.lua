@@ -4,7 +4,8 @@ The kernel you seek is, in fact, not actually here.
 
 The kernel provides the environment for actions, which consists of:
 
-* A large quantity of Redbean and Lua functions. (`Slurp` and `Barf` are wrapped to operate in-wiki only.)
+* A large quantity of Redbean and Lua functions.
+* `Slurp`, `Barf`, `wikiDelete` (wrapped to work with the wiki's FS only)
 * `wikiPathParse`, `wikiPathUnparse`, `wikiPathTable`, `wikiPathList`
 * `wikiReadConfig`
 * `wikiResolvePage`

@@ -87,7 +87,7 @@ setmetatable(wikiAST.Tag, {__call = function (self, type, props, ...)
 	for _, v in ipairs({...}) do
 		wikiAST.canonChild(children, v)
 	end
-	return setmetatable({tagName = type, props = props, children = children}, self)
+	return setmetatable({tagName = type, props = (props or {}), children = children}, self)
 end})
 
 -- wiki raw HTML metatable
