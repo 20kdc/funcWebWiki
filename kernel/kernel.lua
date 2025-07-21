@@ -539,12 +539,12 @@ function OnHttpRequest()
 				safeBarf(path, code)
 			end
 		end
-		Write("<h2>funcWebWiki: tactical witch mode, editing: " .. EscapeHtml(path) .. "</h2>")
-		Write("<form method=\"post\">")
+		Write("<h2>funcWebWiki: tactical witch mode, editing: " .. EscapeHtml(path) .. "</h2>\n")
+		Write("<form method=\"post\">\n")
 		Write("<textarea id=\"editor\" name=\"code\" cols=80 rows=25>")
 		Write(EscapeHtml(safeSlurp(path)))
-		Write("</textarea><br/>")
-		Write("<style>textarea { tab-size: 4; }</style>")
+		Write("</textarea><br/>\n")
+		Write("<style>textarea { tab-size: 4; }</style>\n")
 		Write([[<script>
 		var editor = document.getElementById("editor");
 		if (editor) {
@@ -557,8 +557,14 @@ function OnHttpRequest()
 			}
 		}
 		</script>]])
-		Write("<input type=\"submit\">")
-		Write("</form>")
+		Write("\n<input type=\"submit\">\n")
+		Write("</form>\n")
+		Write("<h2>all files...</h2>\n")
+		Write("<ul>\n")
+		for _, v in ipairs(wikiPathList()) do
+			Write("<li><a href=\"" .. EscapeHtml(v .. "?_twm=" .. ewm) .. "\">" .. EscapeHtml(v) .. "</a></li>\n")
+		end
+		Write("</ul>")
 		return
 	end
 	makeEnv().dofile("system/lib/kernel.lua")
