@@ -1,10 +1,4 @@
---[[
-
-Finds backlinks to this page.
-
-Since this pulls from the template AST, it should be very accurate.
-
---]]
+-- Finds backlinks to the page.
 
 local lst = wikiPathList()
 

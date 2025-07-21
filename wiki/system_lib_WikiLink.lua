@@ -1,4 +1,11 @@
--- in-wiki link
+--[[
+
+In-wiki link.
+
+Almost all in-wiki links should use this class, as it is used to determine linkage between pages for fancy graphs, missing page detection, etc.
+
+--]]
+
 local WikiLink = {
 	renderHtml = function (self, writer, renderOptions)
 		local actionSfx = ""

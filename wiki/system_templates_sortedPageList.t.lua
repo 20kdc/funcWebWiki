@@ -4,7 +4,7 @@ local leftBar = opts.pageList or {}
 
 local stylizedPlain = {}
 for _, v in ipairs(leftBar) do
-	stylizedPlain[v] = wikiTitleStylize(v)
+	stylizedPlain[v] = wikiAST.renderToString(wikiTitleStylize(v), {renderType = "renderPlain"})
 end
 table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
 

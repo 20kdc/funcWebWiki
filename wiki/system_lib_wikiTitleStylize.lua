@@ -1,4 +1,5 @@
 -- Stylizes titles. This can conceivably return any <system/lib/wikiAST> node.
+-- For bug-prevention, this always returns a table.
 
 return function (path)
 	local pfx = ""
@@ -9,11 +10,11 @@ return function (path)
 	end
 	if path:sub(1, 7) == "system/" then
 		-- System pages are rendered with their extensions.
-		return "~/" .. path:sub(8)
+		return {"~/", path:sub(8)}
 	end
 	local idx = path:find(".", 1, true)
 	if idx then
-		return pfx .. path:sub(1, idx - 1)
+		return {pfx, path:sub(1, idx - 1)}
 	end
-	return pfx .. path
+	return {pfx, path}
 end

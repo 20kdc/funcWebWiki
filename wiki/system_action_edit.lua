@@ -1,4 +1,6 @@
 -- Editor action.
+-- This must handle text and uploads; uploads are a bit weird here as it seems while Redbean can parse POST payloads, it cannot parse multipart forms.
+-- Rather than trying, it is easiest simply to store the payload in base64; all workarounds other than a multipart form parser would involve JavaScript anyway, and this is the simplest.
 
 local code = GetParam("code")
 if code then

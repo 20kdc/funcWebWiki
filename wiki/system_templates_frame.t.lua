@@ -10,6 +10,14 @@ local opts = ...
 
 local title = opts.title or "?"
 
+local nonSystemPages = {}
+
+for _, v in ipairs(wikiPathList()) do
+	if v:sub(1, 7) ~= "system/" then
+		table.insert(nonSystemPages, v)
+	end
+end
+
 local frameLeft = {
 	h("div", {class = "logo-panel"},
 		wikiTemplate("system/templates/logo")
@@ -19,23 +27,9 @@ local frameLeft = {
 			h("input", {name = "to", value = wikiRequestPath}),
 			h("input", {type = "submit", value = "Go"})
 		}, "z/navigate", "formPost"),
-		h("ul", {}, function (res)
-			local leftBar = wikiPathList()
-			local stylizedPlain = {}
-			for _, v in ipairs(leftBar) do
-				stylizedPlain[v] = wikiTitleStylize(v)
-			end
-			table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
-			for _, v in ipairs(leftBar) do
-				if v:sub(1, 7) == "system/" then
-					return
-				end
-				res(h("li", {},
-					WikiLink(v)
-				))
-				res("\n")
-			end
-		end)
+		wikiTemplate("system/templates/sortedPageList", {
+			pageList = nonSystemPages
+		})
 	)
 }
 local frameRight = {
