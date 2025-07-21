@@ -60,7 +60,7 @@ local frameRight = {
 return h("html", {},
 	h("head", {},
 		h("title", {}, title),
-		h("link", {rel="stylesheet", type="text/css", href=(wikiAbsoluteBase .. "system/stylesheet.css?action=raw")})
+		WikiLink("system/stylesheet.css", {}, "raw", "stylesheet")
 	),
 	h("body", {},
 		"\n",

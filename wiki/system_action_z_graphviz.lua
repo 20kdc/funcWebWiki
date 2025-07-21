@@ -28,7 +28,7 @@ local lst = wikiPathList()
 for k, v in ipairs(lst) do
 	if checkFilter(v) then
 		map[v] = "n" .. tostring(k)
-		Write("\"n" .. tostring(k) .. "\" [label=\"" .. wikiAST.renderToString(wikiTitleStylize(v), true) .. "\"]\n")
+		Write("\"n" .. tostring(k) .. "\" [label=\"" .. wikiAST.renderToString(wikiTitleStylize(v), {renderType = "renderPlain"}) .. "\"]\n")
 	end
 end
 for k, v in ipairs(lst) do

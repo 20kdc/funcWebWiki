@@ -56,7 +56,7 @@ end
 
 -- HTML tag node: wikiAST.Tag("a", {href = "..."}, "Link text.")
 wikiAST.Tag = {
-	renderHtml = function (self, writer)
+	renderHtml = function (self, writer, renderOptions)
 		writer("<")
 		local tagNameEsc = EscapeHtml(self.tagName)
 		writer(tagNameEsc)
@@ -71,14 +71,14 @@ wikiAST.Tag = {
 			writer(" />")
 		else
 			writer(" >")
-			wikiAST.render(writer, self.children, false)
+			wikiAST.render(writer, self.children, renderOptions)
 			writer("</")
 			writer(tagNameEsc)
 			writer(">")
 		end
 	end,
-	renderPlain = function (self, writer)
-		wikiAST.render(writer, self.children, true)
+	renderPlain = function (self, writer, renderOptions)
+		wikiAST.render(writer, self.children, renderOptions)
 	end
 }
 wikiAST.Tag.__index = wikiAST.Tag
@@ -94,10 +94,10 @@ end})
 -- A word of warning: Do not pass rendered output here.
 -- That will break link tracking, which is no fun!
 wikiAST.Raw = {
-	renderHtml = function (self, writer)
+	renderHtml = function (self, writer, renderOptions)
 		writer(self.html)
 	end,
-	renderPlain = function (self, writer)
+	renderPlain = function (self, writer, renderOptions)
 		-- 'best-effort'
 		writer(self.html)
 	end
@@ -108,29 +108,28 @@ setmetatable(wikiAST.Raw, {__call = function (self, html)
 end})
 
 -- Renders an AST node into HTML or plaintext.
-function wikiAST.render(writer, n, plainText)
+-- `renderOptions` can contain `renderType`, which can be `renderPlain` to render plain text.
+function wikiAST.render(writer, n, renderOptions)
 	if n == nil then
 		return
 	end
+	renderOptions = renderOptions or {}
 	local tn = type(n)
 	if tn == "table" then
 		if getmetatable(n) then
-			local name = "renderHtml"
-			if plainText then
-				name = "renderPlain"
-			end
+			local name = renderOptions.renderType or "renderHtml"
 			local fn = n[name]
 			if not fn then
 				error("bad node: " .. tostring(n))
 			end
-			fn(n, writer)
+			fn(n, writer, renderOptions)
 		else
 			for _, v in ipairs(n) do
-				wikiAST.render(writer, v, plainText)
+				wikiAST.render(writer, v, renderOptions)
 			end
 		end
 	else
-		if plainText then
+		if renderOptions.renderType == "renderPlain" then
 			writer(tostring(n))
 		else
 			writer(EscapeHtml(tostring(n)))
