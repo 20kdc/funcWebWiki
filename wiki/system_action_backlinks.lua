@@ -14,7 +14,7 @@ for _, v in ipairs(lst) do
 	end
 end
 
-wikiAST.render(Write, wikiTemplate("system/templates/frame", {
+wikiAST.render(Write, wikiTemplate("system/index/frame", {
 	title = {"Links to: ", wikiTitleStylize(requestPath)},
 	parentPath = requestPath,
 	path = "system/templates/sortedPageList",

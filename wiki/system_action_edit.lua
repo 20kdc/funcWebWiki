@@ -31,7 +31,7 @@ SetHeader("Content-Type", "text/html")
 local preview = not not code
 code = code or Slurp(requestPath)
 if preview then
-	wikiAST.render(Write, wikiTemplate("system/templates/frame", {
+	wikiAST.render(Write, wikiTemplate("system/index/frame", {
 		title = {"Editing: ", wikiTitleStylize(requestPath)},
 		parentPath = requestPath,
 		path = "system/templates/editorAndPreview",
@@ -41,7 +41,7 @@ if preview then
 		}
 	}))
 else
-	wikiAST.render(Write, wikiTemplate("system/templates/frame", {
+	wikiAST.render(Write, wikiTemplate("system/index/frame", {
 		title = {"Editing: ", wikiTitleStylize(requestPath)},
 		parentPath = requestPath,
 		path = "system/templates/editor",

@@ -1,6 +1,10 @@
 -- This is where the caching layer would go for page links.
 -- Beware: The path given must be resolved, or bad weird things may happen.
 return function (path)
+	if path:sub(1, 13) == "system/cache/" then
+		-- don't even consider this for a cache file
+		return {}
+	end
 	local cachePath = "system/cache/link/" .. path .. ".json"
 	local existing = Slurp(cachePath)
 	if existing then

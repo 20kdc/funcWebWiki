@@ -61,7 +61,7 @@ return h("p", {}, "For instance, ", h("code", {}, "makeEnv().wikiDefaultExt"), "
 ## Things To Explore
 
 * <start?action=z/graphviz> -- DOT file for the whole wiki! (<system/action/z/graphviz> for code.)
-* <system/templates/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
+* <system/index/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
 * <system/templates/logo> is the logo.
 * <system/lib/kernel> doesn't contain a copy of the kernel, but does describe what role it has, versus the much more tightly-coupled rest of the system.
 * <system/extensions/render/md> contains the somewhat cobbled-together semi-Markdown parser.
