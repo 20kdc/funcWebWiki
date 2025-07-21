@@ -9,12 +9,20 @@ body {
 	padding: 0;
 }
 
+.frame-table {
+	width: 100%;
+	min-height: 100%;
+	/* firefox */
+	height: 100%;
+}
+
 .frame-left {
 	vertical-align: top;
 	background: #f0f0f0;
 }
 
 .frame-right {
+	width: 100%;
 	vertical-align: top;
 }
 
