@@ -12,7 +12,7 @@ local WikiLink = {
 		if self.query ~= "" then
 			actionSfx = "?" .. self.query
 		end
-		local href = (renderOptions.absoluteBase or wikiAbsoluteBase) .. self.page .. actionSfx
+		local href = (renderOptions.absoluteBase or wikiAbsoluteBase) .. wikiExtStripIfClear(self.page) .. actionSfx
 		if self.type == "formPost" then
 			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"post\">\n")
 			wikiAST.render(writer, self.children, renderOptions)
