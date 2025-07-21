@@ -5,8 +5,6 @@ for k, v in pairs(_G) do
 	initialGlobals[k] = v
 end
 
-ProgramMaxPayloadSize(0x1000000)
-
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 

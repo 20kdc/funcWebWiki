@@ -26,7 +26,9 @@ Stuck link caches are to be expected if updates are made in templates; that kind
 
 funcWebWiki's License is the Unlicense, good luck and have fun, no warranty etc.
 
-## How To Run It
+## How To Run It -- out-of-wiki administration
+
+(This section is as opposed to in-wiki administration, which is covered inside the wiki where it can link to the relevant files.)
 
 A funcWebWiki consists of the `wiki/` directory, the `kernel/` directory (really just two files, one of which is a proxy `.init.lua` because that's a hidden file; this part can be embedded into a Redbean), and the Redbean server.
 
@@ -40,7 +42,14 @@ The wiki is started with the following command:
 redbean -l 127.0.0.1 -D kernel
 ```
 
-It is also possible to embed the `wiki` directory directly into a Redbean server along with the contents of `kernel`
+(The use of `-l 127.0.0.1` here is because the wiki does not have any built-in authentication. While the sandbox should prevent any catastrophic damage, it is bad practice to expose this across the network.)
+
+It is also possible to embed the `wiki` directory directly into a Redbean server along with the contents of `kernel`; that would look like this:
+
+* `wiki/system_lib_kernel.lua`
+* `wiki/` (...the rest of the wiki directory)
+* `kernel.lua`
+* `.init.lua`
 
 Doing this sets up the wiki in a read-only mode which should not have any persistence; but the code on the wiki is still running.
 
