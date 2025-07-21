@@ -1,7 +1,6 @@
 #!/bin/sh
-cp "`which redbean`" ro-bean.com
-zip -r ro-bean.com wiki
+./build
+rm -rf kernel/wiki
+# run it here so it doesn't see the "real" wiki
 cd kernel
-zip -r ../ro-bean.com .
-cd ..
-./ro-bean.com -l 127.0.0.1 -- --prefer-asset-wiki
+ape ../funcWebWiki.com

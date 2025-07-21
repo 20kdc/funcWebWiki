@@ -1,0 +1,5 @@
+#!/bin/sh
+cp redbean-3.0.0.com funcWebWiki.com
+zip -r funcWebWiki.com wiki
+cd kernel
+zip -r ../funcWebWiki.com .

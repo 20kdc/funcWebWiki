@@ -1,3 +1,5 @@
 graph.dot
 graph.svg
-ro-bean.com
+*.com
+unpack-dir/*
+wiki.sum

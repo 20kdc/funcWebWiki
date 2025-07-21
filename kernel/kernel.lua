@@ -11,8 +11,9 @@ WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 wikiReadOnly = false
 local assetWikiLooksPresent = not not LoadAsset("/wiki/system_lib_kernel.lua")
-local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_lib_kernel.lua")
 local preferAssetWiki = false
+local publicUnsafe = false
+local doUnpack = false
 
 local KEDIT_PASSWORD = os.getenv("WIKI_TWM_PASSWORD")
 if KEDIT_PASSWORD == "" then
@@ -31,14 +32,17 @@ can serve from either a directory (default `wiki/`) or Redbean zip assets
 Redbean options accepted as normal; '--' divides between Redbean options and
  funcWebWiki options, which are:
 
-	--help : this text
-	--url-base /mywiki/ : sets the URL base to `/mywiki/`
-		the URL base is useful for reverse-proxy-subdirectory layouts
-	--wiki-base wiki/ : sets the wiki base to the default, `wiki/`
-		the wiki base is the directory wiki files are stored in
-	--read-only : the wiki cannot write or delete files
-	--prefer-asset-wiki : even if a file wiki is present,
-		prefer the read-only 'asset wiki', if found
+  --help : this text
+  --url-base /mywiki/ : sets the URL base to `/mywiki/`
+    the URL base is useful for reverse-proxy-subdirectory layouts
+  --wiki-base wiki/ : sets the wiki base to the default, `wiki/`
+    the wiki base is the directory wiki files are stored in
+  --read-only : the wiki cannot write or delete files
+  --prefer-asset-wiki : even if a file wiki is present,
+    prefer the read-only 'asset wiki', if found
+  --public-unsafe : by default, -l 127.0.0.1 is applied.
+    beware that funcWebWiki is not safe for public access by default.
+  --unpack : attempts to unpack the assets into the wiki base.
 
 environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
  for live editing of even broken wikis / remote bootstrapping
@@ -66,16 +70,33 @@ local function parseArgs()
 			wikiAbsoluteBase = assert(getNextArg(), "no parameter given to --url-base")
 		elseif arg == "--wiki-base" then
 			WIKI_BASE = assert(getNextArg(), "no parameter given to --wiki-base")
+			if WIKI_BASE:sub(#WIKI_BASE) ~= "/" then
+				WIKI_BASE = WIKI_BASE .. "/"
+			end
 		elseif arg == "--read-only" then
 			wikiReadOnly = true
 		elseif arg == "--prefer-asset-wiki" then
 			preferAssetWiki = true
+		elseif arg == "--public-unsafe" then
+			publicUnsafe = true
+		elseif arg == "--unpack" then
+			-- force disk backend
+			assetWikiLooksPresent = false
+			doUnpack = true
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
 	end
 end
 parseArgs()
+
+-- now that things like wiki base are set...
+
+if not publicUnsafe then
+	ProgramAddr("127.0.0.1")
+end
+
+local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_lib_kernel.lua")
 
 if not preferAssetWiki then
 	if assetWikiLooksPresent and fileWikiLooksPresent then
@@ -232,6 +253,21 @@ else
 		end
 		return total
 	end
+end
+
+if doUnpack then
+	unix.makedirs(WIKI_BASE)
+	local count = 0
+	for _, namePre in ipairs(GetZipPaths("/wiki/")) do
+		local parsed, err = wikiPathParse(namePre:sub(7))
+		if parsed then
+			local unparse = wikiPathUnparse(parsed)
+			safeBarf(unparse, LoadAsset(namePre))
+			count = count + 1
+		end
+	end
+	print(tostring(count) .. " files unpacked")
+	os.exit(0)
 end
 
 if wikiReadOnly then

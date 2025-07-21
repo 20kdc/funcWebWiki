@@ -33,29 +33,28 @@ funcWebWiki's License is the Unlicense, good luck and have fun, no warranty etc.
 A funcWebWiki consists of:
 
 * The `wiki/` directory, containing all the mutable contents of the wiki.
-* The `kernel/` directory, essentially a 'standard' embeddable Redbean application; really just two files, one of which is a proxy `.init.lua` because that's a hidden file.
+* The `kernel/` directory, essentially a 'standard' embeddable Redbean application; really just three files, one of which is a proxy `.init.lua` because that's a hidden file.
 * The Redbean server itself.
 
 funcWebWiki was tested with standard Redbean 3.0.0 on Linux; there might be some reason this is important if Redbean doesn't expose some functions in some compile configurations or something. (Shouldn't do, but you never know.)
 
 I would recommend making a checksum of all `system` files in the wiki when you make your personal on-disk fork so you can figure out what you've changed and probably don't want to overwrite if you ever need to do some kind of update.
 
-The wiki can be started in various ways; if you're working with a Git clone of this repository, start with the following command:
+The wiki can be started in various ways; if you're working with a Git clone of this repository, start with `redbean -D kernel`.
 
-```
-redbean -l 127.0.0.1 -D kernel
-```
+The wiki performs `-l 127.0.0.1` by itself to prevent remote access by default; this can be skipped with `-- --public-unsafe`.
+
+Beware that a writable funcWebWiki has no authentication by default and thus is not safe for public access.
 
 If a standalone single-file release with embedded Redbean is made at some point, then the `-D kernel` option will not be necessary.
-
-(The use of `-l 127.0.0.1` here is because the wiki does not have any built-in authentication. While the sandbox should prevent any catastrophic damage, it is bad practice to expose this across the network.)
 
 It is also possible to embed the `wiki` directory directly into a Redbean server along with the contents of `kernel`; that would look like this:
 
 * `wiki/system_lib_kernel.lua`
 * `wiki/` (...the rest of the wiki directory)
-* `kernel.lua`
+* `.args`
 * `.init.lua`
+* `kernel.lua`
 
 Doing this sets up the wiki in a read-only mode which should not have any persistence; but the code on the wiki is still running.
 

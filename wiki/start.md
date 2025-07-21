@@ -2,7 +2,32 @@
 
 If you're reading this, you either looked into the `wiki/` directory, or you have a working **funcWebWiki**. Congratulations!
 
-I've tried to keep the amount of 'initial content' pages relatively lean in order to avoid complicating things; you should be able to start writing right away.
+```t.lua
+if wikiReadOnly then
+	return {
+		h("p", {}, h("b", {}, "Before you continue; your wiki is ", h("i", {}, "read-only!"))),
+		h("p", {}, "To make it writable, you need to unzip the ", h("code", {}, "wiki"), " directory from the ", h("code", {}, "funcWebWiki.com"), " file."),
+		h("p", {}, "If conventional tools fail, try passing ", h("code", {}, "-- --unpack"), " when launching."),
+		h("p", {}, "Your directory structure should look something like this once you're done:"),
+		h("ul", {},
+			h("li", {},
+				"wiki/",
+				h("ul", {},
+					h("li", {}, "start.md"),
+					h("li", {}, "(many more...)")
+				)
+			),
+			h("li", {}, "funcWebWiki.com")
+		),
+		h("p", {}, "In the meantime, you can explore, but nothing will be editable.")
+	}
+else
+	return {
+		h("p", {}, "Before we start; your wiki is writable! That's good. (This message would have changed if it wasn't.)"),
+		h("p", {}, "I've tried to keep the amount of 'initial content' pages relatively lean in order to avoid complicating things; you should be able to start writing right away.")
+	}
+end
+```
 
 ## How Things Work
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+./build
+rm -rf unpack-dir
+ape ./funcWebWiki.com -- --wiki-base unpack-dir --unpack
+cd wiki
+sha1sum * > ../wiki.sum
+cd ../unpack-dir
+sha1sum -c ../wiki.sum --quiet
