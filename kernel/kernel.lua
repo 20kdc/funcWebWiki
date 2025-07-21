@@ -5,6 +5,11 @@ for k, v in pairs(_G) do
 	initialGlobals[k] = v
 end
 
+local KEDIT_PASSWORD = os.getenv("WIKI_TWM_PASSWORD")
+if KEDIT_PASSWORD == "" then
+	KEDIT_PASSWORD = nil
+end
+
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 
@@ -524,6 +529,37 @@ function OnHttpRequest()
 	local path = GetPath()
 	if path:sub(1, 9) == "/_assets/" then
 		return ServeAsset(path:sub(9))
+	end
+	local ewm = GetParam("_twm")
+	if KEDIT_PASSWORD and (ewm == KEDIT_PASSWORD) then
+		if GetMethod() == "POST" then
+			local code = GetParam("code")
+			if code then
+				code = code:gsub("\r", "")
+				safeBarf(path, code)
+			end
+		end
+		Write("<h2>funcWebWiki: tactical witch mode, editing: " .. EscapeHtml(path) .. "</h2>")
+		Write("<form method=\"post\">")
+		Write("<textarea id=\"editor\" name=\"code\" cols=80 rows=25>")
+		Write(EscapeHtml(safeSlurp(path)))
+		Write("</textarea><br/>")
+		Write("<style>textarea { tab-size: 4; }</style>")
+		Write([[<script>
+		var editor = document.getElementById("editor");
+		if (editor) {
+			editor.onkeydown = function (ev) {
+				if (ev.key == "Tab") {
+					editor.setRangeText("\t", editor.selectionStart, editor.selectionEnd, "end");
+					// console.log("debug", ev);
+					ev.preventDefault();
+				}
+			}
+		}
+		</script>]])
+		Write("<input type=\"submit\">")
+		Write("</form>")
+		return
 	end
 	makeEnv().dofile("system/lib/kernel.lua")
 end

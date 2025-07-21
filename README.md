@@ -54,3 +54,15 @@ It is also possible to embed the `wiki` directory directly into a Redbean server
 Doing this sets up the wiki in a read-only mode which should not have any persistence; but the code on the wiki is still running.
 
 Beware that _in this mode, caching is disabled,_ so if you didn't pre-build the link cache (navigating to `special/missingPages` while mutable should be enough), this can be pretty nasty on CPU!
+
+## 'Tactical Witch Mode' -- 'oops, I broke it'
+
+The environment variable `WIKI_TWM_PASSWORD` can be set. This enables a special editing mode with `_twm`; `/example?_twm=somePassword` will cause the 'tactical witch mode' editor to be displayed.
+
+If the wiki is deployed in an awkward location and you break something, this can be a way to fix it.
+
+While I wouldn't recommend it, it can also serve as the sole editor.
+
+This functionality is somewhat inspired by LambdaMOO's Emergency Wizard Mode in its similar 'I broke the database; now what?' nature.
+
+Conceivably, you could use this to bootstrap a new wiki on the same kernel; but I wouldn't recommend it.

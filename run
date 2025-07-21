@@ -1,2 +1,3 @@
 #!/bin/sh
+export WIKI_TWM_PASSWORD=test
 redbean -l 127.0.0.1 -D kernel
