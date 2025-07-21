@@ -6,13 +6,13 @@ I've tried to keep the amount of 'initial content' pages relatively lean in orde
 
 ## How Things Work
 
-The first rule of funcWebWiki is that, outside of 'kernel' changes, _each funcWebWiki request essentially reboots the system._
+The first rule of funcWebWiki is that, outside of the 'kernel', _each funcWebWiki request essentially reloads everything._
 
 See <system/lib/kernel> if you're curious as to what, exactly, this means; it has details, but also has the entrypoint where requests are handled. APIs are pretty much 'Redbean modulo security concerns'.
 
 funcWebWiki uses a 'noun/verb' system, in a sense.
 
-Every single file in your `wiki/` directory is available as a wiki page (the 'nouns'), with `_` converted to `/`. Some of those files, aka `system/` (stylized as `~/`) files, are considered part of the wiki software itself. Some of those files, aka `special/` (stylized as `! `) files, are meant to provide 'bookmarks'; where you might otherwise prefix a filename with `AAA` to keep it separated. Other files are content.
+Files in your `wiki/` directory are available as a wiki page (the 'nouns'), with `_` converted to `/`. Some of those files, aka `system/` (stylized as `~/`) files, are considered part of the wiki software itself. Some of those files, aka `special/` (stylized as `! `) files, are meant to provide 'bookmarks'; where you might otherwise prefix a filename with `AAA` to keep it separated. Other files are content.
 
 On each of these pages, there are different actions (the 'verbs'). By default, the action is `view`.
 
@@ -46,6 +46,16 @@ Still, with what is there, it's possible to run arbitrary Lua code inside a page
 
 ```t.lua
 return h("p", {}, "For example, this paragraph calculates ", 6 * 7, " from 6 * 7.")
+```
+
+## Using the Redbean REPL
+
+The Redbean REPL is usable to poke at the funcWebWiki system.
+
+To access the funcWebWiki environment, prefix your table access/etc. with `makeEnv()`.
+
+```t.lua
+return h("p", {}, "For instance, ", h("code", {}, "makeEnv().wikiDefaultExt"), " will return ", h("code", {}, tostring(wikiDefaultExt)), "; if you then edit ", WikiLink("system/lib/wikiDefaultExt"), ", the change will be reflected when you run it again.")
 ```
 
 ## Things To Explore

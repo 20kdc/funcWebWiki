@@ -6,12 +6,18 @@ Thus wikiLoadTemplate loads a page for rendering.
 
 The resulting functions are passed the options table.
 
+Notably, if wikiLoadTemplate is passed something other than a string, it is returned directly. The idea behind this is to allow passing anonymous templates.
+
 --]]
 
 local templateCache = {}
 local templateHighlightCache = {}
 
 local function wikiLoadTemplate(template, codeFlag)
+	if type(template) ~= "string" then
+		return template
+	end
+
 	local cache = templateCache
 	if codeFlag then
 		cache = templateHighlightCache
