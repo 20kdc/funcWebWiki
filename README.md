@@ -14,7 +14,7 @@ funcWebWiki is not the most robust system, and the markup engine could use some 
 
 Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
 
-There are probably a _lot_ of scary bottlenecks in the code.
+There are probably a _lot_ of scary bottlenecks in the code, particularly due to how backlinks are recalculated whenever you ask for them (re-templating the entire wiki).
 
 ## Licensing
 

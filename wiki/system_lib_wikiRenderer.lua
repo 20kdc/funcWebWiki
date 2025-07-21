@@ -15,32 +15,7 @@ These options are defined:
 
 --]]
 
-local rendererCache = {
-	-- Renderer for raw Lua templates
-	["t.lua"] = function (path, code, opts)
-		local fn, err = load(code, path)
-		if not fn then
-			return h("pre", {},
-				"Lua template ",
-				tostring(path),
-				" load error: ",
-				tostring(err)
-			)
-		end
-		local ok, res = xpcall(fn, function (obj)
-			return debug.traceback(coroutine.running(), EncodeLua(obj))
-		end, opts)
-		if not ok then
-			return h("pre", {},
-				"Lua template ",
-				tostring(path),
-				"\n",
-				tostring(res)
-			)
-		end
-		return res
-	end
-}
+local rendererCache = {}
 
 local function wikiRenderer(templateExt, promiseThisIsText)
 	local function lastResortRenderer(path, code, opts)

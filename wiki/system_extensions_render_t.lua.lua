@@ -1,3 +1,4 @@
+-- Renderer for raw Lua templates.
 local path, code, opts = ...
 local fn, err = load(code, path)
 if not fn then
