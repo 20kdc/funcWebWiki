@@ -2,7 +2,7 @@
 
 The kernel you seek is, in fact, not actually here.
 
-The kernel provides the environment for actions, which consists of:
+Upon each request, the kernel provides a new environment, which consists of:
 
 * A large quantity of Redbean and Lua functions.
 * `Slurp`, `Barf`, `wikiDelete` (wrapped to work with the wiki's FS only)
