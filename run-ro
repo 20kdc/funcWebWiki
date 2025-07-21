@@ -4,4 +4,4 @@ zip -r ro-bean.com wiki
 cd kernel
 zip -r ../ro-bean.com .
 cd ..
-./ro-bean.com -l 127.0.0.1
+./ro-bean.com -l 127.0.0.1 -- --prefer-asset-wiki

@@ -5,13 +5,85 @@ for k, v in pairs(_G) do
 	initialGlobals[k] = v
 end
 
+-- autodetect / parse args --
+
+WIKI_BASE = "wiki/"
+wikiAbsoluteBase = "/"
+wikiReadOnly = false
+local assetWikiLooksPresent = not not LoadAsset("/wiki/system_lib_kernel.lua")
+local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_lib_kernel.lua")
+local preferAssetWiki = false
+
 local KEDIT_PASSWORD = os.getenv("WIKI_TWM_PASSWORD")
 if KEDIT_PASSWORD == "" then
 	KEDIT_PASSWORD = nil
 end
 
-WIKI_BASE = "wiki/"
-wikiAbsoluteBase = "/"
+local help = [[
+
+funcWebWiki kernel
+
+can serve from either a directory (default `wiki/`) or Redbean zip assets
+ will prefer the directory if it seems valid (`system_lib_kernel.lua` found)
+ overridable with `--prefer-asset-wiki`
+ if neither is valid, file wiki will be attempted (a fun bootstrap challenge)
+
+Redbean options accepted as normal; '--' divides between Redbean options and
+ funcWebWiki options, which are:
+
+	--help : this text
+	--url-base /mywiki/ : sets the URL base to `/mywiki/`
+		the URL base is useful for reverse-proxy-subdirectory layouts
+	--wiki-base wiki/ : sets the wiki base to the default, `wiki/`
+		the wiki base is the directory wiki files are stored in
+	--read-only : the wiki cannot write or delete files
+	--prefer-asset-wiki : even if a file wiki is present,
+		prefer the read-only 'asset wiki', if found
+
+environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
+ for live editing of even broken wikis / remote bootstrapping
+]]
+if assetWikiLooksPresent then
+	help = help .. "\na valid asset wiki appears present; extract with unzip for editing!\n"
+end
+
+local function parseArgs()
+	local argi = 1
+	local function getNextArg()
+		local arg = argv[argi]
+		argi = argi + 1
+		return arg
+	end
+	while true do
+		local arg = getNextArg()
+		if arg == nil then
+			break
+		end
+		if arg == "--help" then
+			print(help)
+			os.exit(0)
+		elseif arg == "--url-base" then
+			wikiAbsoluteBase = assert(getNextArg(), "no parameter given to --url-base")
+		elseif arg == "--wiki-base" then
+			WIKI_BASE = assert(getNextArg(), "no parameter given to --wiki-base")
+		elseif arg == "--read-only" then
+			wikiReadOnly = true
+		elseif arg == "--prefer-asset-wiki" then
+			preferAssetWiki = true
+		else
+			error("Unrecognized arg " .. arg .. "\n" .. help)
+		end
+	end
+end
+parseArgs()
+
+if not preferAssetWiki then
+	if assetWikiLooksPresent and fileWikiLooksPresent then
+		assetWikiLooksPresent = false
+	end
+end
+
+-- utilties --
 
 function table.assign(t, ...)
 	for _, v in ipairs({...}) do
@@ -86,9 +158,9 @@ function wikiPathToDisk(path)
 	return path
 end
 
-if LoadAsset("/wiki/system_lib_kernel.lua") then
+if assetWikiLooksPresent then
 	WIKI_BASE = "/wiki/"
-	Log(kLogInfo, "wiki in read-only Redbean asset mode")
+	Log(kLogInfo, "wiki in read-only Redbean asset mode (unzip to edit)")
 	wikiReadOnly = true
 
 	function safeSlurp(path)
@@ -101,13 +173,6 @@ if LoadAsset("/wiki/system_lib_kernel.lua") then
 			return nil, "does not exist"
 		end
 		return a, nil
-	end
-
-	function safeBarf(path, data)
-		return nil, "wiki read-only"
-	end
-	function wikiDelete(path)
-		return nil, "wiki read-only"
 	end
 
 	function wikiPathTable(prefix)
@@ -125,8 +190,7 @@ if LoadAsset("/wiki/system_lib_kernel.lua") then
 		return total
 	end
 else
-	Log(kLogInfo, "wiki in read-only Redbean asset mode")
-	wikiReadOnly = false
+	Log(kLogInfo, "wiki in directory mode")
 
 	function safeSlurp(path)
 		local path2, err = wikiPathToDisk(path)
@@ -167,6 +231,15 @@ else
 			end
 		end
 		return total
+	end
+end
+
+if wikiReadOnly then
+	function safeBarf(path, data)
+		return nil, "wiki read-only"
+	end
+	function wikiDelete(path)
+		return nil, "wiki read-only"
 	end
 end
 
