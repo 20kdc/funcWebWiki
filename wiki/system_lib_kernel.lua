@@ -18,6 +18,7 @@ Upon each request, the kernel provides a new environment, which consists of:
 The kernel looks for the following wiki files:
 
 * `system/lib/*.lua` (whenever a global is missing)
+* `system/trigger/*.lua` (the `--trigger` option)
 * This file (it seemed the appropriate place for the entrypoint)
 
 --]]

@@ -60,7 +60,7 @@ Doing this sets up the wiki in a read-only mode which should not have any persis
 
 _Beware: The wiki being read-only in this mode may change at some point. Use `--read-only` if you need to be sure._ (It depends on how cooperative Redbean `StoreAsset` is and if I get around to it.)
 
-Also beware that _in read-only mode, certain caches won't work,_ so if you didn't pre-build the link cache (navigating to `special/missingPages` while mutable should be enough), this can be pretty nasty on CPU.
+Also beware that _in read-only mode, certain caches won't work,_ so if you didn't pre-build caches (`--trigger buildCaches`) beforehand, this can be pretty nasty on CPU.
 
 Finally, there are a number of command-line options; a command such as `redbean -D kernel -- --help` can be used to view them.
 

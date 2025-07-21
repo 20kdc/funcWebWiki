@@ -1,4 +1,5 @@
 #!/bin/sh
+redbean -D kernel -- --trigger flushCaches --trigger buildCaches
 cp redbean-3.0.0.com funcWebWiki.com
 zip -r funcWebWiki.com wiki
 cd kernel

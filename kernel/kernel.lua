@@ -10,10 +10,16 @@ end
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 wikiReadOnly = false
-local assetWikiLooksPresent = not not LoadAsset("/wiki/system_lib_kernel.lua")
+local assetWikiLooksPresent = (GetAssetSize("/wiki/system_lib_kernel.lua") or 0) > 0
 local preferAssetWiki = false
 local publicUnsafe = false
 local doUnpack = false
+local scheduledTriggers = {}
+-- doContinue overrules doExit
+local doContinue = false
+local doExit = false
+local directAssets = true
+local favicon = true
 
 local KEDIT_PASSWORD = os.getenv("WIKI_TWM_PASSWORD")
 if KEDIT_PASSWORD == "" then
@@ -42,7 +48,11 @@ Redbean options accepted as normal; '--' divides between Redbean options and
     prefer the read-only 'asset wiki', if found
   --public-unsafe : by default, -l 127.0.0.1 is applied.
     beware that funcWebWiki is not safe for public access by default.
-  --unpack : attempts to unpack the assets into the wiki base.
+  --trigger TRIGGER : runs system/triggers/TRIGGER.lua ; exits after all complete
+  --unpack : attempts to unpack the assets into the wiki base, then exits
+  --continue : continues even if --trigger or --unpack would exit
+  --no-direct-assets : disables `/_assets/` from the Redbean ZIP
+  --no-favicon : disables `/favicon.ico` from the Redbean ZIP
 
 environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
  for live editing of even broken wikis / remote bootstrapping
@@ -83,6 +93,17 @@ local function parseArgs()
 			-- force disk backend
 			assetWikiLooksPresent = false
 			doUnpack = true
+			doExit = true
+		elseif arg == "--continue" then
+			doContinue = true
+		elseif arg == "--trigger" then
+			local val = assert(getNextArg(), "no parameter given to --trigger")
+			table.insert(scheduledTriggers, val)
+			doExit = true
+		elseif arg == "--no-direct-assets" then
+			directAssets = false
+		elseif arg == "--no-favicon" then
+			favicon = false
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
@@ -91,10 +112,6 @@ end
 parseArgs()
 
 -- now that things like wiki base are set...
-
-if not publicUnsafe then
-	ProgramAddr("127.0.0.1")
-end
 
 local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_lib_kernel.lua")
 
@@ -181,7 +198,7 @@ end
 
 if assetWikiLooksPresent then
 	WIKI_BASE = "/wiki/"
-	Log(kLogInfo, "wiki in read-only Redbean asset mode (unzip to edit)")
+	Log(kLogInfo, "wiki in read-only Redbean asset mode (check `-- --help` to unpack etc.)")
 	wikiReadOnly = true
 
 	function safeSlurp(path)
@@ -189,6 +206,12 @@ if assetWikiLooksPresent then
 		if not path2 then
 			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
 		end
+		-- Redbean will be loud if we don't check, and we may need a deletion mechanism in future anyway.
+		-- So empty files will act a little buggy.
+		if (GetAssetSize(path2) or 0) <= 0 then
+			return nil, "does not exist"
+		end
+		-- Continue.
 		local a = LoadAsset(path2)
 		if not a then
 			return nil, "does not exist"
@@ -267,7 +290,6 @@ if doUnpack then
 		end
 	end
 	print(tostring(count) .. " files unpacked")
-	os.exit(0)
 end
 
 if wikiReadOnly then
@@ -636,7 +658,10 @@ end
 
 function OnHttpRequest()
 	local path = GetPath()
-	if path:sub(1, 9) == "/_assets/" then
+	if favicon and path == "/favicon.ico" then
+		return ServeAsset(path)
+	end
+	if directAssets and path:sub(1, 9) == "/_assets/" then
 		return ServeAsset(path:sub(9))
 	end
 	local ewm = GetParam("_twm")
@@ -677,4 +702,21 @@ function OnHttpRequest()
 		return
 	end
 	makeEnv().dofile("system/lib/kernel.lua")
+end
+
+-- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
+
+for _, v in ipairs(scheduledTriggers) do
+	Log(kLogInfo, "running trigger: " .. v)
+	makeEnv().dofile("system/trigger/" .. v .. ".lua")
+end
+
+if (not doContinue) and doExit then
+	os.exit(0)
+end
+
+-- Anything that touches Redbean (we have confirmed we will serve files) happens here.
+
+if not publicUnsafe then
+	ProgramAddr("127.0.0.1")
 end
