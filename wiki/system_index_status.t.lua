@@ -1,0 +1,1 @@
+return h("code", {}, tostring(os.date()))

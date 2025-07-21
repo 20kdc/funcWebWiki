@@ -214,6 +214,7 @@ function makeSandbox()
 		package = { loaded = packageLoaded },
 		require = safeRequire,
 		debug = { traceback = debug.traceback },
+		os = { clock = os.clock, date = os.date, difftime = os.difftime, time = os.time },
 		-- Redbean --
 		Write = Write,
 		SetStatus = SetStatus,
@@ -444,7 +445,6 @@ function checkSandbox()
 		io = true,
 		lsqlite3 = true,
 		maxmind = true,
-		os = true,
 		path = true,
 		re = true,
 		unix = true,

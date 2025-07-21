@@ -16,14 +16,23 @@ body {
 	height: 100%;
 }
 
-.frame-left {
+.frame-nav {
 	vertical-align: top;
 	background: #f0f0f0;
 }
 
-.frame-right {
+.frame-logo {
+	background: black;
+	color: white;
+	vertical-align: middle;
+}
+
+.frame-body {
 	width: 100%;
 	vertical-align: top;
+	min-height: 100%;
+	/* firefox */
+	height: 100%;
 }
 
 .frame-right-body {
@@ -34,16 +43,13 @@ body {
 }
 
 .logo-panel {
-	background: black;
-	color: white;
 	padding-left: 8pt;
-	padding-top: 1px;
-	padding-bottom: 1px;
 }
 
 .logo {
 	min-width: 8em;
 	text-align: center;
+	margin: 0;
 }
 
 .nav-panel {
@@ -51,8 +57,8 @@ body {
 }
 
 .action-bar {
-	padding-top: 1px;
-	padding-bottom: 1px;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -62,11 +68,16 @@ body {
 
 .action-bar li {
 	display: block;
-	padding-right: 0.5em;
+	padding-right: 1em;
+}
+
+.action-bar li:first-child {
+	flex-grow: 1;
 }
 
 .action-bar li h1 {
 	padding-right: 1em;
+	margin: 0;
 }
 
 .editor2pane {

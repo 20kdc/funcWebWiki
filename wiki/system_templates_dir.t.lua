@@ -5,7 +5,10 @@ local t = {}
 local prefix = tostring(opts.parentPath or "")
 prefix = tostring(prefix:match("^[^.]*")) .. "/"
 for _, v in ipairs(wikiPathList(prefix)) do
-	table.insert(t, h("li", {}, WikiLink(v)))
+	-- cache entries are always ignored!
+	if v:sub(1, 13) ~= "system/cache/" then
+		table.insert(t, h("li", {}, WikiLink(v)))
+	end
 end
 return {
 	h("p", {}, prefix),
