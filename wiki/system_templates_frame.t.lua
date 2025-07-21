@@ -18,13 +18,15 @@ for _, v in ipairs(wikiPathList()) do
 	end
 end
 
+local requestPath = opts.parentPath or opts.path
+
 local frameLeft = {
 	h("div", {class = "logo-panel"},
 		wikiTemplate("system/templates/logo")
 	),
 	h("div", {class = "nav-panel"},
-		WikiLink(wikiRequestPath, {
-			h("input", {name = "to", value = wikiRequestPath}),
+		WikiLink(wikiDefaultPage, {
+			h("input", {name = "to", value = requestPath}),
 			h("input", {type = "submit", value = "Go"})
 		}, "z/navigate", "formPost"),
 		wikiTemplate("system/templates/sortedPageList", {
@@ -39,7 +41,7 @@ local frameRight = {
 			local action = v:sub(15):match("[^.]+")
 			if action:sub(1, 2) ~= "z/" then
 				res(h("li", {},
-					WikiLink(wikiRequestPath, action, action)
+					WikiLink(requestPath, action, action)
 				))
 				res("\n")
 			end

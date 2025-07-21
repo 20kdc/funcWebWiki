@@ -1,18 +1,22 @@
 -- Confirm deleting the file; if the confirm parameter is given, do it.
 
+local requestPath, requestExt = ...
+
 if GetMethod() == "POST" and (GetParam("confirm") or "") ~= "" then
 	-- yes, we're sure
-	wikiDelete(wikiRequestPath)
-	ServeRedirect(303, wikiAbsoluteBase .. wikiRequestPath)
+	wikiDelete(requestPath)
+	wikiFlushCacheForPageEdit(requestPath)
+	ServeRedirect(303, wikiAbsoluteBase .. requestPath)
 	return
 end
 
 SetHeader("Content-Type", "text/html")
 
 wikiAST.render(Write, wikiTemplate("system/templates/frame", {
-	title = {"Delete ", wikiTitleStylize(wikiRequestPath), "?"},
+	title = {"Delete ", wikiTitleStylize(requestPath), "?"},
+	parentPath = requestPath,
 	path = "system/templates/deletePrompt",
 	opts = {
-		path = wikiRequestPath
+		path = requestPath
 	}
 }))

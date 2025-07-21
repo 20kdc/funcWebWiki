@@ -1,0 +1,3 @@
+#!/bin/sh
+rm wiki/chaff_*
+rm wiki/system_cache_*

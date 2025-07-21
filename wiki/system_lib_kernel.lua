@@ -17,13 +17,18 @@ The kernel looks for the following wiki files:
 
 --]]
 
+-- The action parameter of the request.
+local requestAction = GetParam("action") or wikiDefaultAction
+
+local requestPath, requestExt = wikiResolvePage(GetPath())
+
 -- as a half-hearted effort towards security; case-fold the action for the auth check.
 -- this risks non-obvious behaviour but means case-folding OSes won't instantly brick even the most basic of read-only locks.
-if wikiAuthCheckThenRenderFail(wikiRequestAction:lower(), wikiRequestPath) then
+if wikiAuthCheckThenRenderFail(requestAction:lower(), requestPath) then
 	return
 end
 
-local where = "system/action/" .. wikiRequestAction .. ".lua"
+local where = "system/action/" .. requestAction .. ".lua"
 local code, err = Slurp(where)
 if not code then
 	if action ~= wikiDefaultAction then
@@ -36,4 +41,4 @@ if not code then
 end
 local actionFn, actionFnErr = load(code, where, "t")
 assert(actionFn, actionFnErr)
-actionFn()
+actionFn(requestPath, requestExt)

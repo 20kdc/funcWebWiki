@@ -1,16 +1,13 @@
---[[
+-- Similar to <system/action/view> but sets the 'code' flag.
+-- This flag causes <system/lib/wikiLoadTemplate> to use a level of indirection; see <system/extensions/code>.
 
-Similar to <system/action/view> but sets the 'code' flag.
-
-This flag causes <system/lib/wikiLoadTemplate> to use a level of indirection; see <system/extensions/code>.
-
---]]
+local requestPath, requestExt = ...
 
 SetHeader("Content-Type", "text/html")
 
 wikiAST.render(Write, wikiTemplate("system/templates/frame", {
-	title = wikiTitleStylize(wikiRequestPath),
-	path = wikiRequestPath,
+	title = wikiTitleStylize(requestPath),
+	path = requestPath,
 	opts = wikiDefaultOpts,
 	code = true
 }))

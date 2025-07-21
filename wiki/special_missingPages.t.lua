@@ -17,16 +17,12 @@ local res = {}
 
 for _, v in ipairs(lst) do
 	if wikiEnumPageFilter(v) then
-		local rendered = wikiTemplate(v, wikiDefaultOpts)
-		wikiAST.visit(function (node)
-			if getmetatable(node) == WikiLink then
-				local resolved = wikiResolvePage(node.page)
-				if (not missing[resolved]) and not exists[resolved] then
-					missing[resolved] = true
-					table.insert(res, resolved)
-				end
+		for k, _ in pairs(wikiPageLinks(v)) do
+			if (not missing[k]) and not exists[k] then
+				missing[k] = true
+				table.insert(res, resolved)
 			end
-		end, rendered)
+		end
 	end
 end
 

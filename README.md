@@ -2,7 +2,13 @@
 
 Personal attempt at trying to make 'the ultimate in-system-customizable wiki'.
 
-[Redbean](https://redbean.dev) 3.0.0 expected, no guarantees.
+No guarantees whatsoever that this is any good. Reports over bugs are very discretionary.
+
+Link tracking performance is sort of inherently a mess, stuck link caches are to be expected if updates are made in templates; that kind of thing.
+
+Pull requests and feature requests are probably a little endangered; if a pull request massively refactors everything in a way that cleans up the system and makes everything great, it may be considered; pull requests to the Markdown parser to make it closer to Markdown are the most likely to survive.
+
+[Redbean](https://redbean.dev) 3.0.0 expected.
 
 funcWebWiki is an experiment in trying to provide the ease of installation and deep integrated customization of TiddlyWiki with the ease-of-management and ability to use Git for change-tracking of flat-file wikis.
 

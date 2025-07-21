@@ -7,7 +7,8 @@ These options are defined:
 * `title`: The title of the page.
 * `path`: The path of an 'interior' page. Where reasonable, templates should support passing a function here; see <system/lib/wikiLoadTemplate>'s response to non-string paths.
 * `opts`: The options of an 'interior' page.
-* `parentPath`: Used by the md-renderer (and presumably will be by anything doing anything similar) to pass the parent page down to a template such as <system/templates/dir>.
+* `parentPath`: Received by <system/templates/frame> to replace a global variable that was causing linking issues.
+  Also used by the md-renderer (and presumably will be by anything doing anything similar) to pass the parent page down to a template such as <system/templates/dir>.
 * `opts.pageList`: Used by <system/templates/sortedPageList> only.
 * `code`: <system/templates/editor> uses this for the current editing state.
 * `alt`: Alt-text contents of an image.
