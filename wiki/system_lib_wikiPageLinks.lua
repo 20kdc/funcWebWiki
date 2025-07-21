@@ -14,7 +14,7 @@ return function (path)
 	if not Slurp(path) then
 		return {}
 	end
-	local rendered = wikiTemplate(path, wikiDefaultOpts)
+	local rendered = WikiTemplate(path, wikiDefaultOpts)
 	local links = {}
 	wikiAST.visit(function (node)
 		if getmetatable(node) == WikiLink then

@@ -83,7 +83,7 @@ paraParser = wikiParser(
 	end,
 	-- image or include
 	"!%[([^%]]*)%]%(([^%)]+)%)\n", function (remainder, m, stuff, href)
-		table.insert(contents, wikiTemplate(href, {alt = stuff, parentPath = path}))
+		table.insert(contents, WikiTemplate(href, {alt = stuff, parentPath = path}))
 		return remainder
 	end,
 	-- mixed-mode

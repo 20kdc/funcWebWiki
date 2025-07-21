@@ -26,6 +26,6 @@ for _, v in ipairs(lst) do
 	end
 end
 
-return wikiTemplate("system/templates/sortedPageList", {
+return WikiTemplate("system/templates/sortedPageList", {
 	pageList = res
 })

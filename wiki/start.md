@@ -34,7 +34,7 @@ for i = 1, #code do
 	local ir = #code - (i - 1)
 	result = result .. code:sub(ir, ir)
 end
-return wikiTemplate("exampleBackwardsDisplayTemplate", {
+return WikiTemplate("exampleBackwardsDisplayTemplate", {
 	-- Normally, 'wikiAST.Tag' is written as 'h' (<system/lib/h>), for convenience.
 	contents = wikiAST.Tag("p", {}, result)
 })

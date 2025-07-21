@@ -2,7 +2,7 @@ local opts = ...
 
 local code = tostring(opts.code or Slurp(tostring(opts.path)) or "")
 
-local leftColumn = wikiTemplate("system/templates/editor", opts)
+local leftColumn = WikiTemplate("system/templates/editor", opts)
 
 local rightColumn = nil
 

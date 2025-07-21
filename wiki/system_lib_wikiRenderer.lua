@@ -5,7 +5,7 @@ A renderer receives (path, code, opts) and returns a <system/lib/wikiAST> node.
 These options are defined:
 
 * `title`: The title of the page.
-* `path`: The path of an 'interior' page. Where reasonable, templates should support passing a function here; see <system/lib/wikiLoadTemplate>'s response to non-string paths.
+* `path`: The path of an 'interior' page. Where reasonable, templates should support passing a function here; see <system/lib/WikiTemplate>'s response to non-string paths.
 * `opts`: The options of an 'interior' page.
 * `parentPath`: Received by <system/index/frame> to replace a global variable that was causing linking issues.
   Also used by the md-renderer (and presumably will be by anything doing anything similar) to pass the parent page down to a template such as <system/templates/dir>.

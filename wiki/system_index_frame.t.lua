@@ -22,14 +22,14 @@ local requestPath = opts.parentPath or opts.path
 
 local frameLeft = {
 	h("div", {class = "logo-panel"},
-		wikiTemplate("system/templates/logo")
+		WikiTemplate("system/templates/logo")
 	),
 	h("div", {class = "nav-panel"},
 		WikiLink(wikiDefaultPage, {
 			h("input", {name = "to", value = requestPath}),
 			h("input", {type = "submit", value = "Go"})
 		}, "z/navigate", "formPost"),
-		wikiTemplate("system/templates/sortedPageList", {
+		WikiTemplate("system/templates/sortedPageList", {
 			pageList = nonSystemPages
 		})
 	)
@@ -49,7 +49,7 @@ local frameRight = {
 	end),
 	"\n",
 	h("div", {class = "frame-right-body"},
-		wikiTemplate(opts.path, opts.opts, opts.code)
+		WikiTemplate(opts.path, opts.opts, opts.code)
 	)
 }
 
