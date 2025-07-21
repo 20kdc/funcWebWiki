@@ -10,6 +10,17 @@ ProgramMaxPayloadSize(0x1000000)
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 
+function table.assign(t, ...)
+	for _, v in ipairs({...}) do
+		if v then
+			for k, kv in pairs(v) do
+				t[k] = kv
+			end
+		end
+	end
+	return t
+end
+
 function table.deepcopy(t)
 	if type(t) == "table" then
 		local copy = {}

@@ -23,7 +23,7 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)
 		else
-			return WikiLink(path, { opts.alt }, "raw", "image")
+			return WikiLink(path, { opts.alt or wikiTitleStylize(path) }, "raw", "image")
 		end
 	end
 

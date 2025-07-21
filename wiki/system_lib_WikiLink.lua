@@ -24,8 +24,7 @@ local WikiLink = {
 		elseif self.type == "stylesheet" then
 			writer("<link rel=\"stylesheet\" type=\"text/css\" href=\"" .. EscapeHtml(href) .. "\">\n")
 		elseif self.type == "image" then
-			local renderOptionsPlain = table.deepcopy(renderOptions)
-			renderOptionsPlain.renderType = "renderPlain"
+			local renderOptionsPlain = table.assign({}, renderOptions, {renderType = "renderPlain"})
 			writer("<img src=\"" .. EscapeHtml(href) .. "\"")
 			local altText = wikiAST.renderToString(self.children, renderOptionsPlain)
 			if altText ~= "" then
