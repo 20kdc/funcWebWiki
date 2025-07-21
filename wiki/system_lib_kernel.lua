@@ -1,6 +1,10 @@
 --[[
 
-The kernel you seek is, in fact, not actually here.
+The kernel you seek is, in fact, not actually here; but here is how it works.
+
+Firstly, if the request path starts with `/_assets/`, the asset is served from Redbean's asset system.
+
+This means that, i.e. `/_assets/help.txt` gives the Redbean developer help.
 
 Upon each request, the kernel provides a new environment, which consists of:
 
@@ -9,6 +13,7 @@ Upon each request, the kernel provides a new environment, which consists of:
 * `Slurp`, `Barf`, `wikiDelete` (wrapped to work with the wiki's FS only)
 * `wikiPathParse`, `wikiPathUnparse`, `wikiPathTable`, `wikiPathList`
 * `wikiAbsoluteBase`
+* `wikiReadOnly` (assets are being read via the Redbean asset system, wiki is fully immutable)
 
 The kernel looks for the following wiki files:
 

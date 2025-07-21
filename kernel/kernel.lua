@@ -83,55 +83,88 @@ function wikiPathToDisk(path)
 	return path
 end
 
-function safeSlurp(path)
-	local path2, err = wikiPathToDisk(path)
-	if not path2 then
-		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
-	end
-	local a, b = Slurp(path2)
-	return a, b and tostring(b)
-end
+if LoadAsset("/wiki/system_lib_kernel.lua") then
+	WIKI_BASE = "/wiki/"
+	Log(kLogInfo, "wiki in read-only Redbean asset mode")
+	wikiReadOnly = true
 
-function safeBarf(path, data)
-	local path2, err = wikiPathToDisk(path)
-	if not path2 then
-		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+	function safeSlurp(path)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+		end
+		local a = LoadAsset(path2)
+		if not a then
+			return nil, "does not exist"
+		end
+		return a, nil
 	end
-	local a, b = Barf(path2, data)
-	return a, b and tostring(b)
-end
 
-function wikiDelete(path)
-	local path2, err = wikiPathToDisk(path)
-	if not path2 then
-		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+	function safeBarf(path, data)
+		return nil, "wiki read-only"
 	end
-	local a, b = unix.unlink(path2)
-	return a, b and tostring(b)
-end
+	function wikiDelete(path)
+		return nil, "wiki read-only"
+	end
 
-function wikiPathTable(prefix)
-	-- print("called WPT: ", prefix)
-	local total = {}
-	if prefix then
-		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
+	function wikiPathTable(prefix)
+		local total = {}
+		for _, namePre in ipairs(GetZipPaths(WIKI_BASE)) do
+			local name = namePre:sub(#WIKI_BASE + 1)
 			local parsed, err = wikiPathParse(name)
 			if parsed then
 				local unparse = wikiPathUnparse(parsed)
-				if unparse:sub(1, #prefix) == prefix then
+				if (not prefix) or (unparse:sub(1, #prefix) == prefix) then
 					total[unparse] = true
 				end
 			end
 		end
-	else
+		return total
+	end
+else
+	Log(kLogInfo, "wiki in read-only Redbean asset mode")
+	wikiReadOnly = false
+
+	function safeSlurp(path)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+		end
+		local a, b = Slurp(path2)
+		return a, b and tostring(b)
+	end
+
+	function safeBarf(path, data)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+		end
+		local a, b = Barf(path2, data)
+		return a, b and tostring(b)
+	end
+
+	function wikiDelete(path)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+		end
+		local a, b = unix.unlink(path2)
+		return a, b and tostring(b)
+	end
+
+	function wikiPathTable(prefix)
+		local total = {}
 		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
 			local parsed, err = wikiPathParse(name)
 			if parsed then
-				total[wikiPathUnparse(parsed)] = true
+				local unparse = wikiPathUnparse(parsed)
+				if (not prefix) or (unparse:sub(1, #prefix) == prefix) then
+					total[unparse] = true
+				end
 			end
 		end
+		return total
 	end
-	return total
 end
 
 function wikiPathList(prefix)
@@ -357,7 +390,8 @@ function makeSandbox()
 		wikiPathTable = wikiPathTable,
 		wikiPathList = wikiPathList,
 		wikiDelete = wikiDelete,
-		wikiAbsoluteBase = wikiAbsoluteBase
+		wikiAbsoluteBase = wikiAbsoluteBase,
+		wikiReadOnly = wikiReadOnly
 	}
 	sandboxEnv._G = sandboxEnv
 	return sandboxEnv
@@ -440,13 +474,14 @@ function checkSandbox()
 		StoreAsset = true,
 		Uncompress = true,
 		__signal_handlers = true,
+		arg = true,
+		argv = true,
 		dofile = true,
 		finger = true,
 		io = true,
 		lsqlite3 = true,
 		maxmind = true,
 		path = true,
-		re = true,
 		unix = true,
 	}
 	local res = {}
@@ -459,6 +494,7 @@ function checkSandbox()
 	end
 	table.sort(res)
 	for _, v in ipairs(res) do
+		-- If you're seeing this, it means your Redbean has functions which haven't been explicitly denied but were implicitly denied.
 		print(v .. " = true,")
 	end
 end
@@ -487,5 +523,9 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
+	local path = GetPath()
+	if path:sub(1, 9) == "/_assets/" then
+		return ServeAsset(path:sub(9))
+	end
 	makeEnv().dofile("system/lib/kernel.lua")
 end

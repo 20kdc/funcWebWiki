@@ -26,9 +26,10 @@ local function wikiLoadTemplate(template, codeFlag)
 		if template == "system/templates/missingTemplate" then
 			-- system/templates/missingTemplate has a fallback to prevent recursion
 			res = function (opts)
+				-- <system/action/w/edit>
 				return {
 					"(",
-					WikiLink(tostring(opts.path), nil, "edit"),
+					WikiLink(tostring(opts.path), nil, "w/edit"),
 					" missing)"
 				}
 			end

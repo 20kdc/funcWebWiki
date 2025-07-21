@@ -28,12 +28,20 @@ funcWebWiki's License is the Unlicense, good luck and have fun, no warranty etc.
 
 ## How To Run It
 
-A funcWebWiki consists of the `wiki/` directory, the `kernel.lua` file, and the Redbean server. (funcWebWiki was tested with standard Redbean 3.0.0 on Linux; there might be some reason this is important if Redbean doesn't expose some functions in some compile configurations or something. Shouldn't do, but you never know...)
+A funcWebWiki consists of the `wiki/` directory, the `kernel/` directory (really just two files, one of which is a proxy `.init.lua` because that's a hidden file; this part can be embedded into a Redbean), and the Redbean server.
 
-I would recommend making a checksum of all `system` files in the wiki when you make your personal on-disk fork so you can figure out what you've changed and probably don't want to overwrite if this ever somehow gets a second version that people actually specifically want to upgrade to.
+funcWebWiki was tested with standard Redbean 3.0.0 on Linux; there might be some reason this is important if Redbean doesn't expose some functions in some compile configurations or something. (Shouldn't do, but you never know.)
+
+I would recommend making a checksum of all `system` files in the wiki when you make your personal on-disk fork so you can figure out what you've changed and probably don't want to overwrite if you ever need to do some kind of update.
 
 The wiki is started with the following command:
 
 ```
-redbean -l 127.0.0.1 -F kernel.lua
+redbean -l 127.0.0.1 -D kernel
 ```
+
+It is also possible to embed the `wiki` directory directly into a Redbean server along with the contents of `kernel`
+
+Doing this sets up the wiki in a read-only mode which should not have any persistence; but the code on the wiki is still running.
+
+Beware that _in this mode, caching is disabled,_ so if you didn't pre-build the link cache (navigating to `special/missingPages` while mutable should be enough), this can be pretty nasty on CPU!

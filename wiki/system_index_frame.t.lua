@@ -37,7 +37,9 @@ return h("html", {},
 						res(h("li", {}, h("h1", {}, title)))
 						for k, v in ipairs(wikiPathList("system/action/")) do
 							local action = v:sub(15):match("[^.]+")
-							if action:sub(1, 2) ~= "z/" then
+							local typeIndicator = action:sub(1, 2)
+							local hidden = (typeIndicator == "z/") or (wikiReadOnly and typeIndicator == "w/") or not wikiAuthCheck(requestPath, action)
+							if not hidden then
 								res(h("li", {},
 									WikiLink(requestPath, action, action)
 								))

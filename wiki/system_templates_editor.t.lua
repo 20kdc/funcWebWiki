@@ -5,6 +5,8 @@ local pathStr = tostring(opts.path)
 local pathDot = pathStr:find(".", 1, true) or (#pathStr + 1)
 local pathExt = pathStr:sub(pathDot)
 
+-- <system/action/w/edit>
+
 if wikiExtText(pathExt) then
 	local code = tostring(opts.code or Slurp(pathStr) or "")
 	return {
@@ -15,7 +17,7 @@ if wikiExtText(pathExt) then
 			opts.path, " ",
 			h("input", {type="submit", name="preview", value="Preview"}),
 			h("input", {type="submit", name="confirm", value="Confirm"})
-		}, "edit", "formPost")
+		}, "w/edit", "formPost")
 	}
 else
 	return {
@@ -25,6 +27,6 @@ else
 			h("input", {type="hidden", id="fileshunt", name="file"}),
 			h("input", {type="submit", id="filestatus", name="confirm", value="Upload"}),
 			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
-		}, "edit", "formPost")
+		}, "w/edit", "formPost")
 	}
 end

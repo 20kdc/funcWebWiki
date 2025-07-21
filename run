@@ -1,2 +1,2 @@
 #!/bin/sh
-redbean -l 127.0.0.1 -F kernel.lua
+redbean -l 127.0.0.1 -D kernel
