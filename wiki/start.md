@@ -1,6 +1,6 @@
 # Welcome!
 
-If you're reading this, you either looked into the `wiki/` directory, or you have a working funcWebWiki. Congratulations!
+If you're reading this, you either looked into the `wiki/` directory, or you have a working **funcWebWiki**. Congratulations!
 
 I've tried to keep the amount of 'initial content' pages relatively lean in order to avoid complicating things; you should be able to start writing right away.
 

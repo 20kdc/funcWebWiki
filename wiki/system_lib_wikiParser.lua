@@ -2,9 +2,11 @@
 
 Simple parsing library. wikiParser is based on the 'visitor' model similar to lex/yacc.
 
-To create a parser, wikiParser is called. This creates a parsing function, passed the 'remainder' (what is left to parse).
+To create a parser, wikiParser is called. This creates a parsing function, passed `(remainder[, single])` (what is left to parse, and a special flag used in recursion).
 
-Each pair of args to wikiParser makes up a pair (pattern, handler). These patterns are evaluated one at a time until one matches; then the loop restarts.
+Each pair of args to wikiParser makes up a pair (pattern, handler).
+
+Normally, these patterns are evaluated one at a time until one matches; then the loop restarts. If `single` is passed, the loop only goes through one iteration.
 
 The pattern is always implicitly prefixed with "^(" and suffixed with ")"; this is to anchor it at the start of the string and ensure the first capture is always the entire pattern.
 
@@ -12,7 +14,9 @@ The handler is a function that is passed the remainder (the match has been skipp
 
 If the new remainder the handler returns is equal to the original (before the match was skipped), it is as if it hadn't matched at all; the loop does not restart.
 
-If there is a 'loose' arg at the end, this represents a fallback handler, passed the remainder to parse. A wikiParser is itself a valid fallback handler.
+If there is a 'loose' arg at the end, this represents a fallback handler, passed the remainder to parse, along with true (single-iteration).
+
+A wikiParser is itself a valid fallback handler; the `single` flag ensures that only the outer-most loop is used in this case.
 
 The parser will return when the remainder is empty or when it appears deadlocked (the input remainder is the same as the output).
 
@@ -23,7 +27,7 @@ If a parser is only interested in occasional 'markup' characters and passes thro
 local function wikiParser(...)
 	local p = {...}
 	local pl = #p
-	return function (remainder)
+	return function (remainder, single)
 		while remainder ~= "" do
 			local inputRemainder = remainder
 			local i = 1
@@ -41,9 +45,9 @@ local function wikiParser(...)
 			end
 			if i == pl then
 				-- a fallback exists and was reached
-				remainder = p[i](remainder)
+				remainder = p[i](remainder, true)
 			end
-			if inputRemainder == remainder then
+			if single or inputRemainder == remainder then
 				break
 			end
 		end

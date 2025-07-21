@@ -22,6 +22,26 @@ local function implLink(href, stuff)
 end
 
 local inlineParser
+
+local function boldParser(opposing, tag)
+	return function (remainder, m)
+		local backup = nil
+		local res = parserWithContents(wikiParser(
+			opposing, function (r2)
+				backup = r2
+				return ""
+			end,
+			inlineParser
+		), remainder)
+		if not backup then
+			-- failed to find opposing tag! cancel.
+			return m .. remainder
+		end
+		table.insert(contents, h(tag, {}, res))
+		return backup
+	end
+end
+
 inlineParser = wikiParser(
 	"<([^>]+)>", function (remainder, m, href)
 		implLink(href)
@@ -32,14 +52,12 @@ inlineParser = wikiParser(
 		implLink(href, stuff)
 		return remainder
 	end,
-	"_([^_]+)_", function (remainder, m, stuff)
-		local res = parserWithContents(inlineParser, stuff)
-		table.insert(contents, h("i", {}, res))
-		return remainder
-	end,
+	"__", boldParser("__", "b"),
+	"%*%*", boldParser("%*%*", "b"),
+	"_", boldParser("_", "i"),
+	"%*", boldParser("%*", "i"),
 	"`([^`]+)`", function (remainder, m, stuff)
-		local res = parserWithContents(inlineParser, stuff)
-		table.insert(contents, h("code", {}, res))
+		table.insert(contents, h("code", {}, stuff))
 		return remainder
 	end,
 	-- fastpath
@@ -70,17 +88,12 @@ paraParser = wikiParser(
 	end,
 	-- mixed-mode
 	"```([^\n]*)\n", function (remainder, m, kind)
-		local rs, re = remainder:find("\n```\n", 1, true)
-		if not re then
-			rs = #remainder + 1
-			re = #remainder + 1
-		end
 		if kind == "" then
 			kind = "txt"
 		end
-		local code = remainder:sub(1, rs - 1)
-		table.insert(contents, wikiRenderer(kind, true)(path, code, {}))
-		return remainder:sub(re + 1)
+		return wikiParserMatched(remainder, m, "\n```\n?", false, function (code)
+			table.insert(contents, wikiRenderer(kind, true)(path, code, {}))
+		end)
 	end,
 	-- general-case line
 	"([^\n]*)\n", function (remainder, m, stuff)
