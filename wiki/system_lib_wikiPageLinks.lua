@@ -14,7 +14,7 @@ return function (path)
 	local existing = Slurp(cachePath)
 	if existing then
 		local dat = DecodeJson(existing)
-		if dat._check == contentCheck then
+		if dat and dat._check == contentCheck then
 			-- hide from caller
 			dat._check = nil
 			return dat
