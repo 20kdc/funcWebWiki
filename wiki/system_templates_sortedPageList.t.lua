@@ -1,0 +1,22 @@
+local opts = ...
+
+local leftBar = opts.pageList or {}
+
+local stylizedPlain = {}
+for _, v in ipairs(leftBar) do
+	stylizedPlain[v] = wikiTitleStylize(v)
+end
+table.sort(leftBar, function (a, b) return stylizedPlain[a] < stylizedPlain[b] end)
+
+return {
+	h("ul", {}, {
+		function (res)
+			for _, v in ipairs(leftBar) do
+				res(h("li", {},
+					WikiLink(v)
+				))
+				res("\n")
+			end
+		end
+	})
+}

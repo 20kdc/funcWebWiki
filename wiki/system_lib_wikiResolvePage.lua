@@ -15,6 +15,9 @@ return function (wikiPath)
 	if err == "empty" then
 		wikiPathParsed = wikiPathParse(wikiDefaultPage)
 		assert(wikiPathParsed, "invalid default page")
+	elseif not wikiPathParsed then
+		-- can't parse to begin with - return as-is...
+		return wikiPath, wikiDefaultExt
 	end
 	wikiPath = wikiPathUnparse(wikiPathParsed)
 	-- does the file have an extension?

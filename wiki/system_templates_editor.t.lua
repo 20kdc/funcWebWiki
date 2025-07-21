@@ -10,7 +10,7 @@ if wikiExtText(pathExt) then
 	return {
 		WikiLink(opts.path, {
 			h("textarea", {id="editor", name="code", rows="25", cols="80"}, code),
-			h("script", {src=(wikiAbsoluteBase .. "system/editorUtilities.js?action=raw")}),
+			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
 			h("br"),
 			opts.path, " ",
 			h("input", {type="submit", name="preview", value="Preview"}),
@@ -24,7 +24,7 @@ else
 			h("input", {type="file", id="fileinput"}),
 			h("input", {type="hidden", id="fileshunt", name="file"}),
 			h("input", {type="submit", id="filestatus", name="confirm", value="Upload"}),
-			h("script", {src=(wikiAbsoluteBase .. "system/editorUtilities.js?action=raw")})
+			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
 		}, "edit", "formPost")
 	}
 end

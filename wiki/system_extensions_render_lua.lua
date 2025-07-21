@@ -46,7 +46,15 @@ local remainder = wikiParser(
 		)(remainder)
 		total = total .. remainder:sub(1, 1)
 		remainder = remainder:sub(2)
-		table.insert(contents, h("span", {class="code-string"}, total))
+		local stringSpan = h("span", {class="code-string"}, total)
+		local stringContent = total:sub(2, #total - 1)
+		if stringContent ~= "" and (not stringContent:find("_", 1, true)) then
+			local page = wikiResolvePage(stringContent)
+			if page ~= path and Slurp(page) then
+				stringSpan = WikiLink(page, stringSpan)
+			end
+		end
+		table.insert(contents, stringSpan)
 		return remainder
 	end,
 	-- id

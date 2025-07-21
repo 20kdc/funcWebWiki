@@ -27,7 +27,7 @@ Here's an example of some Lua marked up with global references:
 ```lua
 local path, code, opts = ...
 -- This example renderer outputs the input text _backwards,_ then wraps it in a template.
--- It might be installed as <system/extensions/render/backwards.lua> - it would then render '.backwards' files.
+-- It might be installed as `system/extensions/render/backwards.lua` - it would then render '.backwards' files.
 -- (There are, of course, UTF-8 flaws, and this code is untested. It mainly shows off the hyperlinking.)
 local result = ""
 for i = 1, #code do
@@ -52,6 +52,7 @@ return h("p", {}, "For example, this paragraph calculates ", 6 * 7, " from 6 * 7
 
 * <start?action=z/graphviz> -- DOT file for the whole wiki! (<system/action/z/graphviz> for code.)
 * <system/templates/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
+* <system/templates/logo> is the logo.
 * <system/lib/kernel> doesn't contain a copy of the kernel, but does describe what role it has, versus the much more tightly-coupled rest of the system.
 * <system/extensions/render/md> contains the somewhat cobbled-together semi-Markdown parser.
 * <system/extensions/render/lua> contains the code which displays Lua, including mixed Lua/Markdown content.
@@ -70,4 +71,4 @@ While I expect the Markdown parser to take quite a while to perfect, if I get ar
 
 The authentication hook should be present _enough_ to provide a hint but not obtrusive enough to not be easily removed by someone who thinks it's a pain. It should be easy to remove unessential functions like the graphviz exporter via simply deleting their files, and it just works.
 
-I'm writing this a bit before release, because I want to figure out how to clean up all the implicit references in the graph so that it's clear what _really_ depends on what. I also want a backlinks verb. And a _reasonably_ cheap way to convert to static site. But making the static site thing work is more trouble than its worth, for now.
+Something I would have added if it wouldn't have been too much trouble would be a way to generate a static site from the wiki. I believe it's possible, though.

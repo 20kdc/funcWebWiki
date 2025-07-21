@@ -31,26 +31,24 @@ for k, v in ipairs(lst) do
 		Write("\"n" .. tostring(k) .. "\" [label=\"" .. wikiAST.renderToString(wikiTitleStylize(v), {renderType = "renderPlain"}) .. "\"]\n")
 	end
 end
-for k, v in ipairs(lst) do
-	if checkFilter(v) then
-		local res = wikiTemplate(v, wikiDefaultOpts)
-		local hasLinked = {}
-		wikiAST.visit(function (node)
-			if getmetatable(node) == WikiLink then
-				local pageRes = wikiResolvePage(node.page)
-				if not checkFilter(pageRes) then
-					return
-				end
-				if not hasLinked[pageRes] then
-					hasLinked[pageRes] = true
-					local other = pageRes
-					if map[other] then
-						other = map[other]
-					end
-					Write("\"n" .. tostring(k) .. "\" -> \"" .. tostring(other) .. "\"\n")
-				end
+for k, v in pairs(map) do
+	local res = wikiTemplate(k, wikiDefaultOpts)
+	local hasLinked = {}
+	wikiAST.visit(function (node)
+		if getmetatable(node) == WikiLink then
+			local pageRes = wikiResolvePage(node.page)
+			if not checkFilter(pageRes) then
+				return
 			end
-		end, res)
-	end
+			if not hasLinked[pageRes] then
+				hasLinked[pageRes] = true
+				local other = pageRes
+				if map[other] then
+					other = map[other]
+				end
+				Write("\"" .. v .. "\" -> \"" .. tostring(other) .. "\"\n")
+			end
+		end
+	end, res)
 end
 Write("}\n")

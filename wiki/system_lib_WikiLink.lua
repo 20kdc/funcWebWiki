@@ -25,6 +25,8 @@ local WikiLink = {
 				writer(" alt=\"" .. EscapeHtml(altText) .. "\"")
 			end
 			writer(">")
+		elseif self.type == "script" then
+			writer("<script src=\"" .. EscapeHtml(href) .. "\"></script>")
 		else
 			writer("<a href=\"" .. EscapeHtml(href) .. "\">")
 			wikiAST.render(writer, self.children, renderOptions)
