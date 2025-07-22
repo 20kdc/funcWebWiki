@@ -1,3 +1,13 @@
+The following applies to all files in this repository EXCEPT FOR:
+
+* thirdparty/redbean*.com (where * is a suffix indicating version or variant, such as -3.0.0)
+* thirdparty/redbean*-licenses.txt
+* thirdparty/licenses/* (where * is anything)
+
+Release files of this repository are derived from Redbean and are therefore thus also covered under those licenses.
+
+---
+
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or

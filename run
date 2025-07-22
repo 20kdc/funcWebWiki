@@ -1,3 +1,4 @@
 #!/bin/sh
+. ./setup.sh
 export WIKI_TWM_PASSWORD=test
-redbean -D kernel -- --trigger flushCaches --trigger buildCaches --continue
+$REDBEAN -D kernel -- --trigger flushCaches --trigger buildCaches --continue

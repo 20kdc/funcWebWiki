@@ -1,0 +1,235 @@
+This file contains the license notices found within Redbean, retrieved by get-bean-licenses.lua in the funcWebWiki repository.
+The source code to Redbean and these dependencies appears to be held in the monolithic https://github.com/jart/cosmopolitan repository.
+As a Redbean binary does not contain the license text as required by many of these licenses, the following acknowledgements are made:
+	Cosmopolitan: license shipped in Redbean
+	largon2 (MIT License): no license conditions shipped - mit-license.txt is shipped as a good-faith effort
+	lsqlite3 (MIT License): lsqlite3.txt
+	TRE regex (BSD-2 License): tre.txt
+	libmaxminddb (Apache 2.0): maxmind.txt
+	Lua 5.4.6 (MIT License): lua.txt
+	double-conversion (BSD-3 License): double-conversion.txt
+	Cosmopolitan Linenoise (BSD-2): linenoise.txt
+	getopt (BSD-3): getopt.txt
+	argon2 (CC0 or Apache2): argon2.txt
+	Cosmopolitan Everest (Apache 2.0): everest.txt
+	Mbed TLS (Apache 2.0): mbedtls/LICENSE is the Apache 2 license verbatim; see mbedtls.txt and apache2-license.txt
+	zlib 1.2.13 (zlib License): Cosmopolitan uses a Chromium zlib and possibly more modifications. General licenses are in zlib.txt
+	gdtoa (MIT License): gdtoa.txt
+	OpenBSD Sorting (BSD-3): opensort.txt - refer to https://github.com/jart/cosmopolitan/blob/redbean-3.0.0/libc/mem/mergesort.c
+	puff (zlib License): Cosmopolitan libc seems to have altered the source a little (formatting?). General license is in puff.txt
+	*NSYNC (Apache 2.0): See nsync.txt ; LICENSE.txt is verbatim Apache 2, see apache2-license.txt
+	boringssl blake2b (ISC License): blake2.txt
+	HighwayHash (Apache 2.0): highwayhash.txt
+	Smoothsort (MIT License): smoothsort.txt
+	timingsafe_memcmp (ISC License): timingsafe_memcmp.txt
+	OpenBSD Strings (ISC): openbsdstrings.txt (based on https://github.com/jart/cosmopolitan/blob/f1e83d52403060d674161944e849b51f95707c9a/libc/str/strlcpy.c )
+	Optimized Routines (MIT License): optimized-routines.txt
+	Chromium (BSD-3 License): This was eventually tracked down to third_party/zlib/adler32_simd.c and related. It is therefore covered by Redbean's copyright notice (for year) and by zlib.txt (for text).
+	Cosmopolitan libelftc demangle (BSD-2): libelftc-demangle.txt
+	FreeBSD libm (BSD-2 License): tinymath-openbsd.txt, freebsd-libm-erfc.txt (from cosmopolitan/libc/tinymath/erfc.c ) and freebsd-libm-cbrtl.txt (from cosmopolitan/libc/tinymath/cbrtl.c ); many overlapping copyright notices are here.
+	fdlibm (fdlibm license): fdlibm.txt
+	Musl libc (MIT License): musl.txt
+	AVX2 SHA-1 (BSD-3 License)nCopyright 2014 Intel Corporation: avx2-sha1.txt
+	Intel SHA-NI (BSD-3 License): avx2-sha1.txt ; the updated year is given in this file
+	AVX2 SHA2 (BSD-2 License): avx2-sha256.txt
+	AVX2 SHA512 (BSD-2 License): avx2-sha512.txt
+	compiler_rt (Licensed "University of Illinois/NCSA Open Source License"): compiler-rt.txt
+
+
+
+Cosmopolitan
+Copyright 2024 Justine Alexandra Roberts Tunney
+
+Permission to use, copy, modify, and/or distribute this software for
+any purpose with or without fee is hereby granted, provided that the
+above copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+
+
+largon2 (MIT License)
+Copyright 2016 Thibault Charbonnier
+
+
+lsqlite3 (MIT License)
+Copyright 2002-2016 Tiago Dionizio, Doug Currie
+
+
+TRE regex (BSD-2 License)
+Copyright 2001-2009 Ville Laurikari <vl@iki.fi>
+Copyright 2016 Szabolcs Nagy
+
+
+libmaxminddb (Apache 2.0)
+Copyright 2013-2021 MaxMind Incorporated
+
+
+Lua 5.4.6 (MIT License)
+Copyright 1994–2023 Lua.org, PUC-Rio.
+
+
+double-conversion (BSD-3 License)
+Copyright 2006-2012 the V8 project authors
+
+
+Cosmopolitan Linenoise (BSD-2)
+Copyright 2018-2020 Justine Tunney <jtunney@gmail.com>
+Copyright 2010-2016 Salvatore Sanfilippo <antirez@gmail.com>
+Copyright 2010-2013 Pieter Noordhuis <pcnoordhuis@gmail.com>
+
+
+getopt (BSD-3)
+Copyright 1987, 1993, 1994 The Regents of the University of California
+
+
+argon2 (CC0 or Apache2)
+Copyright 2016 Daniel Dinu, Dmitry Khovratovich
+Copyright 2016 Jean-Philippe Aumasson, Samuel Neves
+
+
+Cosmopolitan Everest (Apache 2.0)
+Copyright 2024 Justine Alexndra Roberts Tunney
+Copyright 2016-2018 INRIA and Microsoft Corporation
+Changes: Made C code look nice and not have pointers
+
+
+Mbed TLS (Apache 2.0)
+Copyright ARM Limited
+Copyright The Mbed TLS Contributors
+
+
+zlib 1.2.13 (zlib License)
+Copyright 1995-2022 Jean-loup Gailly and Mark Adler
+Invented 1990 Phillip Walter Katz
+
+
+gdtoa (MIT License)
+The author of this software is David M. Gay
+Kudos go to Guy L. Steele, Jr. and Jon L. White
+Copyright (C) 1997, 1998, 2000 by Lucent Technologies
+
+
+OpenBSD Sorting (BSD-3)
+Copyright 1993 The Regents of the University of California
+
+
+puff (zlib License)
+Copyright 2002-2013 Mark Adler
+
+
+*NSYNC (Apache 2.0)
+Copyright 2016 Google, Inc.
+https://github.com/google/nsync
+
+
+boringssl blake2b (ISC License)
+Copyright 2021 Google LLC
+
+
+HighwayHash (Apache 2.0)
+Copyright 2017 Google LLC
+
+
+Smoothsort (MIT License)
+Copyright 2011 Valentin Ochs
+Discovered by Edsger Dijkstra
+
+
+timingsafe_memcmp (ISC License)
+Copyright 2014 Google Inc.
+
+
+OpenBSD Strings (ISC)
+Copyright (c) 1998, 2015 Todd C. Miller <millert@openbsd.org>
+
+
+Optimized Routines (MIT License)
+Copyright 2022 ARM Limited
+
+
+Chromium (BSD-3 License)
+Copyright 2017 The Chromium Authors
+
+
+Cosmopolitan libelftc demangle (BSD-2)
+Copyright (c) 2007 Hyogeol Lee <hyogeollee@gmail.com>
+Copyright (c) 2015-2017 Kai Wang <kaiwang27@gmail.com>
+Copyright (c) 2024 Justine Tunney <jtunney@gmail.com>
+
+
+FreeBSD libm (BSD-2 License)
+Copyright (c) 1992-2024 The FreeBSD Project.
+Copyright (c) 2005-2011 Bruce D. Evans, Steven G. Kargl, David Schultz
+Copyright (c) 2009-2013 Steven G. Kargl
+
+
+fdlibm (fdlibm license)
+Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+
+
+Musl libc (MIT License)
+Copyright 2005-2014 Rich Felker, et. al.
+
+
+AVX2 SHA-1 (BSD-3 License)nCopyright 2014 Intel Corporation
+
+
+Intel SHA-NI (BSD-3 License)
+Copyright 2015 Intel Corporation
+Sean Gulley <sean.m.gulley@intel.com>
+Tim Chen <tim.c.chen@linux.intel.com>
+
+
+AVX2 SHA2 (BSD-2 License)
+Copyright 2013 Intel Corporation
+
+
+AVX2 SHA512 (BSD-2 License)
+Copyright 2013 Intel Corporation
+
+
+compiler_rt (Licensed "University of Illinois/NCSA Open Source License")
+
+Copyright (c) 2009-2018 by the contributors listed in:
+github.com/llvm-mirror/compiler-rt/blob/master/CREDITS.TXT
+All rights reserved.
+
+Developed by:
+
+    LLVM Team
+    University of Illinois at Urbana-Champaign
+    http:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal with
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimers.
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimers in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the names of the LLVM Team, University of Illinois at
+      Urbana-Champaign, nor the names of its contributors may be used to
+      endorse or promote products derived from this Software without specific
+      prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
+SOFTWARE.
+
+

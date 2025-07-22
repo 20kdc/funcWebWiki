@@ -1,6 +1,10 @@
 #!/bin/sh
-redbean -D kernel -- --trigger flushCaches --trigger buildCaches
-cp redbean-3.0.0.com funcWebWiki.com
-zip -r funcWebWiki.com wiki
+. ./setup.sh
+$REDBEAN -D kernel -- --trigger flushCaches --trigger buildCaches
+# make kernel build
+cp thirdparty/redbean-3.0.0.com funcWebWiki-kernel.com
 cd kernel
-zip -r ../funcWebWiki.com .
+zip --quiet -r ../funcWebWiki-kernel.com .
+cd ..
+cp funcWebWiki-kernel.com funcWebWiki.com
+zip --quiet -r funcWebWiki.com wiki
