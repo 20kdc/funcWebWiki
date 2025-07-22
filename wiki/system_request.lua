@@ -37,7 +37,9 @@ local actionParsed = wikiActions[requestAction]
 
 if not actionParsed then
 	if requestAction ~= wikiDefaultAction then
-		ServeRedirect(303, GetPath())
+		local redirectPath = wikiAbsoluteBase .. (GetPath():sub(2))
+		-- print(redirectPath)
+		ServeRedirect(303, redirectPath)
 		return
 	end
 end

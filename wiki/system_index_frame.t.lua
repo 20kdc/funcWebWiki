@@ -53,10 +53,11 @@ return h("html", {},
 			h("tr", {},
 				h("td", {class = "frame-nav"},
 					h("div", {class = "nav-panel"},
+						-- <system/action/navigate>
 						WikiLink(wikiDefaultPage, {
 							h("input", {name = "to", value = requestPath}),
 							h("input", {type = "submit", value = "Go"})
-						}, "z/navigate", "formPost"),
+						}, "navigate", "formPost"),
 						WikiTemplate("system/templates/sortedPageList", {
 							pageList = nonSystemPages
 						})
