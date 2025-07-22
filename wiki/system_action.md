@@ -1,4 +1,4 @@
-These are actions, invoked from <system/lib/kernel>.
+These are actions, invoked from <system/request>.
 
 Actions prefixed with `w/` are mutating and should be hidden in read-only mode.
 

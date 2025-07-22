@@ -8,7 +8,7 @@ local pathExt = pathStr:sub(pathDot)
 -- <system/action/w/edit>
 
 if wikiExtText(pathExt) then
-	local code = tostring(opts.code or Slurp(pathStr) or "")
+	local code = tostring(opts.code or wikiRead(pathStr) or "")
 	return {
 		WikiLink(opts.path, {
 			h("textarea", {id="editor", name="code", rows="25", cols="80"}, code),

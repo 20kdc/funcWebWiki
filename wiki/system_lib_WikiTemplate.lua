@@ -20,7 +20,7 @@ local function wikiLoadTemplate(template, codeFlag)
 	if cache[templatePath] then
 		return cache[templatePath]
 	end
-	local code, codeErr = Slurp(templatePath)
+	local code, codeErr = wikiRead(templatePath)
 	if not code then
 		local res
 		if template == "system/templates/missingTemplate" then

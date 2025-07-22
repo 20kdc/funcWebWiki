@@ -1,8 +1,15 @@
 --[[
 
-The kernel you seek is, in fact, not actually here; but here is how it works.
+This is the entrypoint called by the 'kernel' for each request.
 
-Firstly, if the request path starts with `/_assets/`, the asset is served from Redbean's asset system.
+Here is how things happen there:
+
+First, two (disablable from command-line) rules:
+* If the request path starts with `/_assets/`, the asset is served from Redbean's asset system.
+* `/favicon.ico` is also served from Redbean's `favicon.ico`.
+
+If `WIKI_TWM_PASSWORD` is in the environment, the query parameter `_twm` is checked.
+If it is equal to the password, the 'tactical witch mode' editor is served.
 
 This means that, i.e. `/_assets/help.txt` gives the Redbean developer help.
 
@@ -10,7 +17,7 @@ Upon each request, the kernel provides a new environment, which consists of:
 
 * A large quantity of Redbean and Lua functions.
 * `table.assign`, `table.deepcopy`
-* `Slurp`, `Barf`, `wikiDelete` (wrapped to work with the wiki's FS only)
+* `wikiRead`, `wikiWrite`, `wikiDelete` (wrapped to work with the wiki's FS only)
 * `wikiPathParse`, `wikiPathUnparse`, `wikiPathTable`, `wikiPathList`
 * `wikiAbsoluteBase`
 * `wikiReadOnly` (assets are being read via the Redbean asset system, wiki is fully immutable)
@@ -35,13 +42,13 @@ if wikiAuthCheckThenRenderFail(requestAction:lower(), requestPath) then
 end
 
 local where = "system/action/" .. requestAction .. ".lua"
-local code, err = Slurp(where)
+local code, err = wikiRead(where)
 if not code then
 	if action ~= wikiDefaultAction then
 		ServeRedirect(303, GetPath())
 		return
 	else
-		Write(Slurp(wikiPath))
+		Write(wikiRead(wikiPath))
 		return
 	end
 end

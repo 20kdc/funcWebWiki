@@ -20,7 +20,7 @@ end
 
 if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	-- confirmed edit; do it
-	Barf(requestPath, code)
+	wikiWrite(requestPath, code)
 	wikiFlushCacheForPageEdit(requestPath)
 	ServeRedirect(303, wikiAbsoluteBase .. requestPath)
 	return
@@ -29,7 +29,7 @@ end
 SetHeader("Content-Type", "text/html")
 
 local preview = not not code
-code = code or Slurp(requestPath)
+code = code or wikiRead(requestPath)
 if preview then
 	wikiAST.render(Write, WikiTemplate("system/index/frame", {
 		title = {"Editing: ", wikiTitleStylize(requestPath)},

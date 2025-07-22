@@ -7,11 +7,11 @@ return function (path)
 	end
 	local cachePath = "system/cache/link/" .. path .. ".json"
 	-- checksum to detect changes from Git/etc.
-	local content = Slurp(path)
+	local content = wikiRead(path)
 	local contentCheck = content or ""
 	contentCheck = tostring(#contentCheck) .. "|" .. tostring(Crc32(0, contentCheck))
 	-- check cache
-	local existing = Slurp(cachePath)
+	local existing = wikiRead(cachePath)
 	if existing then
 		local dat = DecodeJson(existing)
 		if dat and dat._check == contentCheck then
@@ -36,7 +36,7 @@ return function (path)
 			links[resolved] = true
 		end
 	end, rendered)
-	Barf(cachePath, EncodeJson(links))
+	wikiWrite(cachePath, EncodeJson(links))
 	-- hide from caller
 	links._check = nil
 	return links

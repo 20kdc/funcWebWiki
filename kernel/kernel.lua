@@ -5,12 +5,15 @@ for k, v in pairs(_G) do
 	initialGlobals[k] = v
 end
 
+-- this allows kernel.lua text-search highlighting --
+ProgramContentType("lua", "text/plain")
+
 -- autodetect / parse args --
 
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
 wikiReadOnly = false
-local assetWikiLooksPresent = (GetAssetSize("/wiki/system_lib_kernel.lua") or 0) > 0
+local assetWikiLooksPresent = (GetAssetSize("/wiki/system_request.lua") or 0) > 0
 local preferAssetWiki = false
 local publicUnsafe = false
 local doUnpack = false
@@ -31,7 +34,7 @@ local help = [[
 funcWebWiki kernel
 
 can serve from either a directory (default `wiki/`) or Redbean zip assets
- will prefer the directory if it seems valid (`system_lib_kernel.lua` found)
+ will prefer the directory if it seems valid (`system_request.lua` found)
  overridable with `--prefer-asset-wiki`
  if neither is valid, file wiki will be attempted (a fun bootstrap challenge)
 
@@ -113,7 +116,7 @@ parseArgs()
 
 -- now that things like wiki base are set...
 
-local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_lib_kernel.lua")
+local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_request.lua")
 
 if not preferAssetWiki then
 	if assetWikiLooksPresent and fileWikiLooksPresent then
@@ -201,7 +204,7 @@ if assetWikiLooksPresent then
 	Log(kLogInfo, "wiki in read-only Redbean asset mode (check `-- --help` to unpack etc.)")
 	wikiReadOnly = true
 
-	function safeSlurp(path)
+	function wikiRead(path)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
 			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
@@ -236,7 +239,7 @@ if assetWikiLooksPresent then
 else
 	Log(kLogInfo, "wiki in directory mode")
 
-	function safeSlurp(path)
+	function wikiRead(path)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
 			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
@@ -245,7 +248,7 @@ else
 		return a, b and tostring(b)
 	end
 
-	function safeBarf(path, data)
+	function wikiWrite(path, data)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
 			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
@@ -285,7 +288,7 @@ if doUnpack then
 		local parsed, err = wikiPathParse(namePre:sub(7))
 		if parsed then
 			local unparse = wikiPathUnparse(parsed)
-			safeBarf(unparse, LoadAsset(namePre))
+			wikiWrite(unparse, LoadAsset(namePre))
 			count = count + 1
 		end
 	end
@@ -293,7 +296,7 @@ if doUnpack then
 end
 
 if wikiReadOnly then
-	function safeBarf(path, data)
+	function wikiWrite(path, data)
 		return nil, "wiki read-only"
 	end
 	function wikiDelete(path)
@@ -321,7 +324,7 @@ function makeSandbox()
 	end
 
 	local function safeLoadfile(path, mode, env)
-		local code, err = safeSlurp(path)
+		local code, err = wikiRead(path)
 		if not code then
 			return nil, err
 		end
@@ -465,9 +468,7 @@ function makeSandbox()
 		IsReasonablePath = IsReasonablePath,
 		EncodeUrl = EncodeUrl,
 		ParseIp = ParseIp,
-		-- Program*, IsDaemon, Program* skipped
-		Slurp = safeSlurp,
-		Barf = safeBarf,
+		-- Slurp, Barf, Program*, IsDaemon, Program* skipped
 		Sleep = Sleep,
 		-- Route, RouteHost, RoutePath skipped
 		ServeAsset = ServeAsset,
@@ -523,8 +524,10 @@ function makeSandbox()
 		wikiPathUnparse = wikiPathUnparse,
 		wikiPathTable = wikiPathTable,
 		wikiPathList = wikiPathList,
-		wikiDelete = wikiDelete,
 		wikiAbsoluteBase = wikiAbsoluteBase,
+		wikiRead = wikiRead,
+		wikiWrite = wikiWrite,
+		wikiDelete = wikiDelete,
 		wikiReadOnly = wikiReadOnly
 	}
 	sandboxEnv._G = sandboxEnv
@@ -535,6 +538,7 @@ function checkSandbox()
 	local sandbox = makeSandbox()
 	local exclusionReasons = {
 		AcquireToken = true,
+		Barf = true,
 		Blackhole = true,
 		Compress = true,
 		CountTokens = true,
@@ -605,6 +609,7 @@ function checkSandbox()
 		ServeListing = true,
 		ServeStatusz = true,
 		SetLogLevel = true,
+		Slurp = true,
 		StoreAsset = true,
 		Uncompress = true,
 		__signal_handlers = true,
@@ -670,13 +675,13 @@ function OnHttpRequest()
 			local code = GetParam("code")
 			if code then
 				code = code:gsub("\r", "")
-				safeBarf(path, code)
+				wikiWrite(path, code)
 			end
 		end
 		Write("<h2>funcWebWiki: tactical witch mode, editing: " .. EscapeHtml(path) .. "</h2>\n")
 		Write("<form method=\"post\">\n")
 		Write("<textarea id=\"editor\" name=\"code\" cols=80 rows=25>")
-		Write(EscapeHtml(safeSlurp(path)))
+		Write(EscapeHtml(wikiRead(path)))
 		Write("</textarea><br/>\n")
 		Write("<style>textarea { tab-size: 4; }</style>\n")
 		Write([[<script>
@@ -701,7 +706,7 @@ function OnHttpRequest()
 		Write("</ul>")
 		return
 	end
-	makeEnv().dofile("system/lib/kernel.lua")
+	makeEnv().dofile("system/request.lua")
 end
 
 -- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.

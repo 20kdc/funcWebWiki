@@ -26,7 +26,7 @@ Stuck link caches are to be expected if updates are made in templates; that kind
 
 The exceptions to this are releases and the `thirdparty` directory, both of which include Redbean, which has its own series of third-party licenses [from a large part of the Cosmopolitan libc](https://github.com/jart/cosmopolitan/).
 
-The contents of the `thirdparty` are a best-effort attempt at license compliance.
+The contents of the `thirdparty` directory make a best-effort attempt at license compliance.
 
 ## How To Run It -- out-of-wiki administration
 

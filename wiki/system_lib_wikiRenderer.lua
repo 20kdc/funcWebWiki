@@ -32,7 +32,7 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 	if not renderer then
 		for ext in wikiExtIter(templateExt) do
 			local rendererPath = "system/extensions/render/" .. ext .. ".lua"
-			local rendererCode = Slurp(rendererPath)
+			local rendererCode = wikiRead(rendererPath)
 			if rendererCode then
 				renderer, err = load(rendererCode, rendererPath)
 				renderer = renderer or function (path, code, opts)

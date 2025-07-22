@@ -50,7 +50,7 @@ local remainder = wikiParser(
 		local stringContent = total:sub(2, #total - 1)
 		if stringContent ~= "" and (not stringContent:find("_", 1, true)) then
 			local page = wikiResolvePage(stringContent)
-			if page ~= path and Slurp(page) then
+			if page ~= path and wikiRead(page) then
 				stringSpan = WikiLink(page, stringSpan)
 			end
 		end
@@ -60,9 +60,22 @@ local remainder = wikiParser(
 	-- id
 	"[a-zA-Z_][a-zA-Z_0-9]*", function (remainder, m)
 		local page = "system/lib/" .. m .. ".lua"
-		if page ~= path and Slurp(page) then
-			table.insert(contents, WikiLink(page, m))
-		else
+		local resolved = false
+		if page ~= path then
+			if wikiRead(page) then
+				table.insert(contents, WikiLink(page, m))
+				resolved = true
+			elseif rawget(_G, m) then
+				local sourceAsset = "help.txt"
+				if m:sub(1, 4) == "wiki" then
+					sourceAsset = "kernel.lua"
+				end
+				-- best-effort
+				table.insert(contents, h("a", {href = wikiAbsoluteBase .. "_assets/" .. sourceAsset .. "#:~:text=" .. m}, m))
+				resolved = true
+			end
+		end
+		if not resolved then
 			table.insert(contents, m)
 		end
 		return remainder

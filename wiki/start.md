@@ -33,7 +33,7 @@ end
 
 The first rule of funcWebWiki is that, outside of the 'kernel', _each funcWebWiki request essentially reloads everything._
 
-See <system/lib/kernel> if you're curious as to what, exactly, this means; it has details, but also has the entrypoint where requests are handled. APIs are pretty much 'Redbean modulo security concerns'.
+See <system/request> if you're curious as to what, exactly, this means; it has details, but also has the entrypoint where requests are handled. APIs are pretty much 'Redbean modulo security concerns'.
 
 funcWebWiki uses a 'noun/verb' system, in a sense.
 
@@ -89,7 +89,7 @@ return h("p", {}, "For instance, ", h("code", {}, "makeEnv().wikiDefaultExt"), "
 * <system/index/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
 * <system/templates/logo> is the logo.
   Theoretically, it could be anything renderable, but it's been setup to try and match the page top bar.
-* <system/lib/kernel> doesn't contain a copy of the kernel, but does describe what role it has, versus the much more tightly-coupled rest of the system.
+* <system/request> is the entrypoint for requests; it describes what role the kernel has, versus the much more tightly-coupled rest of the system.
 * <system/extensions/render/md> contains the somewhat cobbled-together semi-Markdown parser.
 * <system/extensions/render/lua> contains the code which displays Lua, including mixed Lua/Markdown content.
 

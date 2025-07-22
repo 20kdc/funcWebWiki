@@ -1,6 +1,6 @@
 local opts = ...
 
-local code = tostring(opts.code or Slurp(tostring(opts.path)) or "")
+local code = tostring(opts.code or wikiRead(tostring(opts.path)) or "")
 
 local leftColumn = WikiTemplate("system/templates/editor", opts)
 
