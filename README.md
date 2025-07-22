@@ -47,20 +47,18 @@ The wiki can be started in various ways, but they all have this in common: some 
 * If you're working with a Git clone of this repository, start with `thirdparty/redbean-3.0.0.com -D kernel`.
 	* You can use your own copy of Redbean if you want, though funcWebWiki has only been tested on this specific Redbean version.)
 * If you're working with a "kernel only" funcWebWiki `.com` file, it can be started directly where the current directory contains a `/wiki` directory.
-* If you're working with a read-only wiki packed into a single `.com` file, then like any packed Redbean application it can be run directly.
+* If you're working with a wiki packed into a single `.com` file, then like any packed Redbean application it can be run directly.
 	* The wiki can be unpacked with `unzip` (also extracts non-content files) or with `somewiki.com -- --unpack` (doesn't do that).
-	* If an unpacked wiki is present, it will be preferred over the built-in wiki.
-	* Packing a wiki can be done by zipping in the contents of the `wiki` directory; the zip should have the paths `/kernel.lua` and `/wiki/system_lib_kernel.lua`.
+	* If an unpacked wiki is present, it will be preferred over the packed wiki.
+	* Packing a wiki can be done by zipping in the contents of the `wiki` directory; the zip should have the paths `/kernel.lua` and `/wiki/system_request.lua`.
+	* Packed wikis are read-only, but this may change at some point. _Use `--read-only` if you need to be sure._ (It depends on how cooperative Redbean `StoreAsset` is and if I get around to it.)
+	* Beware that _in read-only mode, certain caches won't work._ If you didn't pre-build caches (`--trigger buildCaches`) beforehand, features like backlinks can be pretty nasty on CPU.
 
-The wiki performs `-l 127.0.0.1` by itself to prevent remote access by default; this can be skipped with `-- --public-unsafe`.
+The wiki performs `-l 127.0.0.1` by itself to prevent remote access by default.
 
-_Beware that a writable funcWebWiki has no authentication by default and thus is not safe for public access._
+This can be skipped with `-- --public-unsafe`, _but writable funcWebWiki has no authentication by default and thus is not safe for public access._
 
-Doing this sets up the wiki in a read-only mode which should not have any persistence; but the code on the wiki is still running.
-
-_Beware: The wiki being read-only in this mode may change at some point. Use `--read-only` if you need to be sure._ (It depends on how cooperative Redbean `StoreAsset` is and if I get around to it.)
-
-Also beware that _in read-only mode, certain caches won't work,_ so if you didn't pre-build caches (`--trigger buildCaches`) beforehand, this can be pretty nasty on CPU.
+A single global HTTP basic auth `username:password` required for absolutely everything can be set with the environment variable `WIKI_BASIC_AUTH`.
 
 Finally, there are a number of command-line options; a command such as `somewiki.com -- --help` can be used to view them.
 

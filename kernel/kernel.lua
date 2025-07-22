@@ -29,6 +29,13 @@ if KEDIT_PASSWORD == "" then
 	KEDIT_PASSWORD = nil
 end
 
+local BASIC_AUTH = os.getenv("WIKI_BASIC_AUTH")
+if BASIC_AUTH == "" then
+	BASIC_AUTH = nil
+else
+	BASIC_AUTH = "Basic " .. EncodeBase64(BASIC_AUTH)
+end
+
 local help = [[
 
 funcWebWiki kernel
@@ -59,7 +66,9 @@ Redbean options accepted as normal; '--' divides between Redbean options and
 
 environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
  for live editing of even broken wikis / remote bootstrapping
+environment variable WIKI_BASIC_AUTH can be set to a 'username:password'
 ]]
+
 if assetWikiLooksPresent then
 	help = help .. "\na valid asset wiki appears present; extract with unzip for editing!\n"
 end
@@ -662,6 +671,14 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
+	if BASIC_AUTH then
+		if GetHeader("Authorization") ~= BASIC_AUTH then
+			SetStatus(401)
+			SetHeader("WWW-Authenticate", "Basic realm=funcWebWiki")
+			Write("")
+			return
+		end
+	end
 	local path = GetPath()
 	if favicon and path == "/favicon.ico" then
 		return ServeAsset(path)
