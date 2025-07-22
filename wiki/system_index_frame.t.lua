@@ -35,17 +35,11 @@ return h("html", {},
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
 						res(h("li", {}, h("h1", {}, title)))
-						for k, v in ipairs(wikiPathList("system/action/")) do
-							local action = v:sub(15):match("[^.]+")
-							local typeIndicator = action:sub(1, 2)
-							local hidden = (typeIndicator == "z/") or (wikiReadOnly and typeIndicator == "w/") or not wikiAuthCheck(requestPath, action)
-							local actionStrip = action
-							if typeIndicator:sub(2, 2) == "/" then
-								actionStrip = actionStrip:sub(3)
-							end
+						for _, v in ipairs(wikiActions) do
+							local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)
 							if not hidden then
 								res(h("li", {},
-									WikiLink(requestPath, actionStrip, action)
+									WikiLink(requestPath, v.action, v.action)
 								))
 								res("\n")
 							end

@@ -1,7 +1,7 @@
 These are actions, invoked from <system/request>.
 
-Actions prefixed with `w/` are mutating and should be hidden in read-only mode.
+Actions with a `.w` suffix are mutating and are disabled in read-only mode.
 
-Actions prefixed with `z/` are always hidden.
+Actions with a `.z` suffix are always hidden.
 
 ![](system/templates/dir)

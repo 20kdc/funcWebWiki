@@ -26,10 +26,10 @@ local function wikiLoadTemplate(template, codeFlag)
 		if template == "system/templates/missingTemplate" then
 			-- system/templates/missingTemplate has a fallback to prevent recursion
 			res = function (opts)
-				-- <system/action/w/edit>
+				-- <system/action/edit>
 				local nameChunk = tostring(opts.path)
-				if wikiAuthCheck(nameChunk, "w/edit") and not wikiReadOnly then
-					nameChunk = WikiLink(nameChunk, nil, "w/edit")
+				if wikiAuthCheck(nameChunk, "edit") and not wikiReadOnly then
+					nameChunk = WikiLink(nameChunk, nil, "edit")
 				end
 				return {
 					"(",

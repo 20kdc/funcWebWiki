@@ -33,25 +33,41 @@ The kernel looks for the following wiki files:
 -- The action parameter of the request.
 local requestAction = GetParam("action") or wikiDefaultAction
 
-local requestPath, requestExt = wikiResolvePage(GetPath())
+local actionParsed = wikiActions[requestAction]
 
--- as a half-hearted effort towards security; case-fold the action for the auth check.
--- this risks non-obvious behaviour but means case-folding OSes won't instantly brick even the most basic of read-only locks.
-if wikiAuthCheckThenRenderFail(requestAction:lower(), requestPath) then
-	return
-end
-
-local where = "system/action/" .. requestAction .. ".lua"
-local code, err = wikiRead(where)
-if not code then
-	if action ~= wikiDefaultAction then
+if not actionParsed then
+	if requestAction ~= wikiDefaultAction then
 		ServeRedirect(303, GetPath())
-		return
-	else
-		Write(wikiRead(wikiPath))
 		return
 	end
 end
-local actionFn, actionFnErr = load(code, where, "t")
+
+-- resolve page
+
+local requestPath, requestExt = wikiResolvePage(GetPath())
+
+-- auth checks
+
+if actionParsed.mutator and wikiReadOnly then
+	-- @lexisother wins the "first security vuln found" award!
+	-- read-only wikis should not be exposing preview; or even the editor at all, really.
+	wikiAST.render(Write, WikiTemplate("system/index/frame", {
+		title = {"Can't edit: ", wikiTitleStylize(requestPath)},
+		parentPath = requestPath,
+		path = "system/templates/roError",
+		opts = {}
+	}))
+	return
+end
+
+if wikiAuthCheckThenRenderFail(actionParsed.action, requestPath) then
+	return
+end
+
+-- execute
+
+local code, err = wikiRead(actionParsed.path)
+assert(code, err)
+local actionFn, actionFnErr = load(code, actionParsed.path, "t")
 assert(actionFn, actionFnErr)
 actionFn(requestPath, requestExt)

@@ -85,7 +85,7 @@ return h("p", {}, "For instance, ", h("code", {}, "makeEnv().wikiDefaultExt"), "
 
 ## Things To Explore
 
-* <start?action=z/graphviz> -- DOT file for the whole wiki! (<system/action/z/graphviz> for code.)
+* <start?action=graphviz> -- DOT file for the whole wiki! (<system/action/graphviz> for code.)
 * <system/index/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
 * <system/templates/logo> is the logo.
   Theoretically, it could be anything renderable, but it's been setup to try and match the page top bar.
