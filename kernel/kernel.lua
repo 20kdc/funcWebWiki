@@ -32,7 +32,8 @@ end
 local BASIC_AUTH = os.getenv("WIKI_BASIC_AUTH")
 if BASIC_AUTH == "" then
 	BASIC_AUTH = nil
-else
+end
+if BASIC_AUTH then
 	BASIC_AUTH = "Basic " .. EncodeBase64(BASIC_AUTH)
 end
 
