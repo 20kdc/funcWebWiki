@@ -4,6 +4,18 @@
 
 local requestPath, requestExt = ...
 
+if wikiReadOnly then
+	-- @lexisother wins the "first security vuln found" award!
+	-- read-only wikis should not be exposing preview; or even the editor at all, really.
+	wikiAST.render(Write, WikiTemplate("system/index/frame", {
+		title = {"Can't edit: ", wikiTitleStylize(requestPath)},
+		parentPath = requestPath,
+		path = "system/templates/roError",
+		opts = {}
+	}))
+	return
+end
+
 local code = GetParam("code")
 if code then
 	code = code:gsub("\r", "")
