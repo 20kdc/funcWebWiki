@@ -30,7 +30,7 @@ return h("html", {},
 		h("table", {class = "frame-table"},
 			h("tr", {},
 				h("td", {class = "frame-logo"},
-					WikiTemplate("system/templates/logo")
+					WikiTemplate("system/templates/logo", opts)
 				),
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
@@ -45,7 +45,7 @@ return h("html", {},
 							end
 						end
 						res(h("li", {},
-							WikiTemplate("system/index/status")
+							WikiTemplate("system/index/status", opts)
 						))
 					end)
 				)
@@ -58,6 +58,7 @@ return h("html", {},
 							h("input", {name = "to", value = requestPath}),
 							h("input", {type = "submit", value = "Go"})
 						}, "navigate", "formPost"),
+						WikiLinkGenIndexMarker(),
 						WikiTemplate("system/templates/sortedPageList", {
 							pageList = nonSystemPages
 						})

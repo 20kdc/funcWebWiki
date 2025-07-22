@@ -83,7 +83,7 @@ paraParser = wikiParser(
 	end,
 	-- image or include
 	"!%[([^%]]*)%]%(([^%)]+)%)\n", function (remainder, m, stuff, href)
-		table.insert(contents, WikiTemplate(href, {alt = stuff, parentPath = path}))
+		table.insert(contents, WikiTemplate(href, table.assign({}, opts, {alt = stuff, parentPath = path})))
 		return remainder
 	end,
 	-- mixed-mode
@@ -92,7 +92,7 @@ paraParser = wikiParser(
 			kind = "txt"
 		end
 		return wikiParserMatched(remainder, m, "\n```\n?", false, function (code)
-			table.insert(contents, wikiRenderer(kind, true)(path, code, {}))
+			table.insert(contents, wikiRenderer(kind, true)(path, code, opts))
 		end)
 	end,
 	-- general-case line

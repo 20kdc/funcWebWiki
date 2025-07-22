@@ -54,8 +54,17 @@ function wikiAST.canonChild(children, v)
 	end
 end
 
+-- New AST class. Checks for validity.
+function wikiAST.newClass(methods, constructor)
+	assert(methods.renderHtml)
+	assert(methods.renderPlain)
+	methods.__index = methods
+	setmetatable(methods, {__call = constructor})
+	return methods
+end
+
 -- HTML tag node: wikiAST.Tag("a", {href = "..."}, "Link text.")
-wikiAST.Tag = {
+wikiAST.Tag = wikiAST.newClass({
 	renderHtml = function (self, writer, renderOptions)
 		writer("<")
 		local tagNameEsc = EscapeHtml(self.tagName)
@@ -80,20 +89,18 @@ wikiAST.Tag = {
 	renderPlain = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
-}
-wikiAST.Tag.__index = wikiAST.Tag
-setmetatable(wikiAST.Tag, {__call = function (self, type, props, ...)
+}, function (self, type, props, ...)
 	local children = {}
 	for _, v in ipairs({...}) do
 		wikiAST.canonChild(children, v)
 	end
 	return setmetatable({tagName = type, props = (props or {}), children = children}, self)
-end})
+end)
 
 -- Raw HTML node: `wikiAST.Raw("...")`
 -- A word of warning: Do not pass rendered output here.
 -- That will break link tracking, which is no fun!
-wikiAST.Raw = {
+wikiAST.Raw = wikiAST.newClass({
 	renderHtml = function (self, writer, renderOptions)
 		writer(self.html)
 	end,
@@ -101,11 +108,9 @@ wikiAST.Raw = {
 		-- 'best-effort'
 		writer(self.html)
 	end
-}
-wikiAST.Raw.__index = wikiAST.Raw
-setmetatable(wikiAST.Raw, {__call = function (self, html)
+}, function (self, html)
 	return setmetatable({html = html}, self)
-end})
+end)
 
 -- Renders an AST node into HTML or plaintext.
 -- `renderOptions` can contain `renderType`, which can be `renderPlain` to render plain text.

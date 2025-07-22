@@ -4,16 +4,16 @@ This is the entrypoint called by the 'kernel' for each request.
 
 Here is how things happen there:
 
-First, two (disablable from command-line) rules:
+First, three rules (that can be controlled from the command-line):
+* The request path may be optionally stripped of a prefix, which is replaced with "/".
 * If the request path starts with `/_assets/`, the asset is served from Redbean's asset system.
+  This means that, i.e. `/_assets/help.txt` gives the Redbean developer help.
 * `/favicon.ico` is also served from Redbean's `favicon.ico`.
 
 If `WIKI_TWM_PASSWORD` is in the environment, the query parameter `_twm` is checked.
 If it is equal to the password, the 'tactical witch mode' editor is served.
 
-This means that, i.e. `/_assets/help.txt` gives the Redbean developer help.
-
-Upon each request, the kernel provides a new environment, which consists of:
+Upon each request, a new environment is created, which consists of:
 
 * A large quantity of Redbean and Lua functions.
 * `table.assign`, `table.deepcopy`
@@ -22,11 +22,11 @@ Upon each request, the kernel provides a new environment, which consists of:
 * `wikiAbsoluteBase`
 * `wikiReadOnly` (assets are being read via the Redbean asset system, wiki is fully immutable)
 
-The kernel looks for the following wiki files:
+`kernel.lua` looks for the following wiki files:
 
-* `system/lib/*.lua` (whenever a global is missing)
-* `system/trigger/*.lua` (the `--trigger` option)
-* This file (it seemed the appropriate place for the entrypoint)
+* <system/lib>: `system/lib/*.lua` (whenever a global is missing)
+* <system/trigger>: `system/trigger/*.lua` (the `--trigger` option)
+* And of course, this file: `system/request.lua`
 
 --]]
 

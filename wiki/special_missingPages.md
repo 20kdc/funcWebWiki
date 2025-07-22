@@ -1,9 +1,6 @@
---[[
+These pages are referred to, but are ultimately missing.
 
-Pages referred to but that are missing.
-
---]]
-
+```t.lua
 local lst = wikiPathList()
 
 local exists = {}
@@ -26,6 +23,10 @@ for _, v in ipairs(lst) do
 	end
 end
 
-return WikiTemplate("system/templates/sortedPageList", {
-	pageList = res
-})
+return {
+	WikiLinkGenIndexMarker(),
+	WikiTemplate("system/templates/sortedPageList", {
+		pageList = res
+	})
+}
+```

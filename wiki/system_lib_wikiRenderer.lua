@@ -13,6 +13,11 @@ These options are defined:
 * `code`: <system/templates/editor> uses this for the current editing state.
 * `alt`: Alt-text contents of an image.
 * `inline`: The renderer should prefer to render 'inline' (i.e. inside a paragraph) if possible.
+* `linkGen`: Signals that link cache generation is running.
+
+In calls from actions or something like <system/index/frame>, it isn't necessary to inherit options (the former have nothing to inherit, the latter has a dedicated options table to pass).
+
+_However,_ in code such as the md-renderer, options absolutely should be being inherited.
 
 --]]
 

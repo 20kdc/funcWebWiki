@@ -1,0 +1,3 @@
+#!/bin/sh
+. ./setup.sh
+$REDBEAN -D kernel -- --url-base /test/ --strip-prefix /test/

@@ -73,7 +73,8 @@ end
 
 -- Loads and executes a template for less awkward code.
 local function WikiTemplate(template, opts, ...)
-	return wikiLoadTemplate(template, ...)(opts or {})
+	assert(opts, "Please provide a parent opts table or use wikiDefaultOpts. Sorry, - the management")
+	return wikiLoadTemplate(template, ...)(opts)
 end
 
 return WikiTemplate

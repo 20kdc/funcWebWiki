@@ -12,6 +12,7 @@ ProgramContentType("lua", "text/plain")
 
 WIKI_BASE = "wiki/"
 wikiAbsoluteBase = "/"
+local stripPrefix = nil
 wikiReadOnly = false
 local assetWikiLooksPresent = (GetAssetSize("/wiki/system_request.lua") or 0) > 0
 local preferAssetWiki = false
@@ -52,6 +53,8 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --help : this text
   --url-base /mywiki/ : sets the URL base to `/mywiki/`
     the URL base is useful for reverse-proxy-subdirectory layouts
+  --strip-prefix /mywiki/ : requires all requests have prefix `/mywiki/`, and
+    then strips/replaces it with `/` ; always use with `--url-base`
   --wiki-base wiki/ : sets the wiki base to the default, `wiki/`
     the wiki base is the directory wiki files are stored in
   --read-only : the wiki cannot write or delete files
@@ -91,6 +94,8 @@ local function parseArgs()
 			os.exit(0)
 		elseif arg == "--url-base" then
 			wikiAbsoluteBase = assert(getNextArg(), "no parameter given to --url-base")
+		elseif arg == "--strip-prefix" then
+			stripPrefix = assert(getNextArg(), "no parameter given to --strip-prefix")
 		elseif arg == "--wiki-base" then
 			WIKI_BASE = assert(getNextArg(), "no parameter given to --wiki-base")
 			if WIKI_BASE:sub(#WIKI_BASE) ~= "/" then
@@ -676,17 +681,28 @@ function OnHttpRequest()
 		if GetHeader("Authorization") ~= BASIC_AUTH then
 			SetStatus(401)
 			SetHeader("WWW-Authenticate", "Basic realm=funcWebWiki")
-			Write("")
 			return
 		end
 	end
+
 	local path = GetPath()
+
+	if stripPrefix then
+		if path:sub(1, #stripPrefix) ~= stripPrefix then
+			SetStatus(404)
+			return
+		end
+		path = "/" .. path:sub(#stripPrefix + 1)
+	end
+
 	if favicon and path == "/favicon.ico" then
 		return ServeAsset(path)
 	end
+
 	if directAssets and path:sub(1, 9) == "/_assets/" then
 		return ServeAsset(path:sub(9))
 	end
+
 	local ewm = GetParam("_twm")
 	if KEDIT_PASSWORD and (ewm == KEDIT_PASSWORD) then
 		if GetMethod() == "POST" then
@@ -724,7 +740,12 @@ function OnHttpRequest()
 		Write("</ul>")
 		return
 	end
-	makeEnv().dofile("system/request.lua")
+
+	local sandbox = makeEnv()
+	if stripPrefix then
+		sandbox.GetPath = function () return path end
+	end
+	sandbox.dofile("system/request.lua")
 end
 
 -- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.

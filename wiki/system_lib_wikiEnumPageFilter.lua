@@ -1,6 +1,6 @@
 -- Defines a filter for 'enumerating pages' such as <special/missingPages> and <system/action/backlinks>.
 -- This prevents lagspikes as they tend to recurse into each other.
-return function (path)
+return function (path, allowSpecial)
 	if path:sub(1, 13) == "system/cache/" then
 		return false
 	end
@@ -9,7 +9,7 @@ return function (path)
 			return false
 		end
 	end
-	if path:sub(1, 8) == "special/" then
+	if (not allowSpecial) and path:sub(1, 8) == "special/" then
 		return false
 	end
 	return true

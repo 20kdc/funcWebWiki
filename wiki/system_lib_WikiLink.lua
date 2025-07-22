@@ -1,12 +1,7 @@
---[[
+-- In-wiki link.
+-- Almost all in-wiki links should use this class, as it is used to determine linkage between pages for fancy graphs, missing page detection, etc.
 
-In-wiki link.
-
-Almost all in-wiki links should use this class, as it is used to determine linkage between pages for fancy graphs, missing page detection, etc.
-
---]]
-
-local WikiLink = {
+return wikiAST.newClass({
 	renderHtml = function (self, writer, renderOptions)
 		local actionSfx = ""
 		if self.query ~= "" then
@@ -42,9 +37,7 @@ local WikiLink = {
 	renderPlain = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
-}
-WikiLink.__index = WikiLink
-setmetatable(WikiLink, {__call = function (_, page, children, action, type)
+}, function (_, page, children, action, type)
 	-- if page contains a query-string, we. if
 	local queryAt = page:find("?", 1, true)
 	local query = ""
@@ -56,5 +49,4 @@ setmetatable(WikiLink, {__call = function (_, page, children, action, type)
 		query = "action=" .. action
 	end
 	return setmetatable({page = tostring(page), children = children or wikiTitleStylize(page), query = query, type = (type or "link")}, WikiLink)
-end})
-return WikiLink
+end)

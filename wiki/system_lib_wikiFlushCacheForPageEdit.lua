@@ -4,7 +4,10 @@ return function (path)
 	for _, v in ipairs(wikiPathList("special/")) do
 		wikiDelete("system/cache/link/" .. v .. ".json")
 	end
-	for _, v in ipairs(wikiPathList("system/index/")) do
-		wikiDelete("system/cache/link/" .. v .. ".json")
+	for _, v in ipairs(wikiPathList("system/cache/linkIndex/")) do
+		assert(v:sub(1, 23) == "system/cache/linkIndex/")
+		assert(v:sub(#v - 3) == ".txt")
+		wikiDelete("system/cache/link/" .. v:sub(24, #v - 4) .. ".json")
+		wikiDelete(v)
 	end
 end
