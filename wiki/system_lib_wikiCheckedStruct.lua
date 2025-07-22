@@ -1,11 +1,11 @@
 -- Checked structure.
 -- Useful for security to avoid silent failures.
 local checkedStructMT = {
-	__index = function (table, key)
-		error("not allowed to read unknown field " .. tostring(key) .. " on a " .. tostring(rawget(table, "__kind")))
+	__index = function (t, k)
+		error("not allowed to read unknown field " .. tostring(k) .. " on a " .. tostring(rawget(t, "__kind")))
 	end,
-	__newindex = function (table, key)
-		error("not allowed to write unknown field " .. tostring(key) .. " on a " .. tostring(table.__kind))
+	__newindex = function (t, k)
+		error("not allowed to write unknown field " .. tostring(k) .. " on a " .. tostring(rawget(t, "__kind")))
 	end
 }
 
