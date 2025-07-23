@@ -65,13 +65,11 @@ return WikiTemplate("exampleBackwardsDisplayTemplate", {
 })
 ```
 
-The 'kernel' provides some level of sandboxing; the rest of the wiki is dynamic without relying on custom languages (outside of the present limitations of the funcWebWiki Markdown parser).
+The 'kernel' provides some level of sandboxing; the rest of the wiki is dynamic without relying on custom languages (outside of the present limitations of the funcWebWiki 'it'll be Markdown eventually' parser).
 
 Still, with what is there, it's possible to run arbitrary Lua code inside a page while not having to write everything in Lua.
 
-```t.lua
-return h("p", {}, "For example, this paragraph calculates ", 6 * 7, " from 6 * 7.")
-```
+For example, this text calculates <?lua 6 * 7?> from 6 * 7.
 
 ## Using the Redbean REPL
 
@@ -79,9 +77,7 @@ The Redbean REPL is usable to poke at the funcWebWiki system.
 
 To access the funcWebWiki environment, prefix your table access/etc. with `makeEnv()`.
 
-```t.lua
-return h("p", {}, "For instance, ", h("code", {}, "makeEnv().wikiDefaultExt"), " will return ", h("code", {}, tostring(wikiDefaultExt)), "; if you then edit ", WikiLink("system/lib/wikiDefaultExt"), ", the change will be reflected when you run it again.")
-```
+For instance, `makeEnv().wikiDefaultExt` will return <code >"<?lua tostring(wikiDefaultExt)?>"</code >; if you then edit <system/lib/wikiDefaultExt>, the change will be reflected when you run it again.
 
 ## Things To Explore
 
@@ -133,7 +129,7 @@ But without some level of templating, changes to the visual structure had to be 
 Sadly, TiddlyWiki has two key problems:
 
 1. Being designed as a single-file-wiki first makes backup awkward at best, and I find it somewhat alarming that the _existence of multiple tabs_ is dangerous and can lead to reversion on many savers.
-  * From some later testing, TiddlyWiki5's Node.js variant in 'server edition' solves some of these problems. However, needing to press `Get latest changes from the server` on all tabs after an edit or risk losing a previous edit if you edit a Tiddler again on a different tab (as yet untested: how do tags play into this?).
+   * From some later testing, TiddlyWiki5's Node.js variant in 'server edition' solves some of these problems. However, needing to press `Get latest changes from the server` on all tabs after an edit or risk losing a previous edit if you edit a Tiddler again on a different tab (as yet untested: how do tags play into this?).
 2. TiddlyWiki5 involves, simply put, _layers_ of custom language, i.e. filter language, action language, template language.
 
 By opposition:

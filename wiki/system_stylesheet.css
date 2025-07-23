@@ -104,6 +104,10 @@ code {
 	color: black;
 }
 
+pre code {
+	background: none;
+}
+
 textarea {
 	tab-size: 4;
 }
@@ -114,6 +118,11 @@ textarea {
 
 .code-comment {
 	color: green;
+}
+
+.code-block-comment {
+	color: green;
+	font-family: serif;
 }
 
 a, a:visited, a:hover, a:active {

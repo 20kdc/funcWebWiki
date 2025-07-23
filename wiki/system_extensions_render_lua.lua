@@ -6,20 +6,33 @@ local mdRenderer = wikiRenderer("md")
 
 local contents = {}
 
+--[=[ these locals are knowingly unused. ]=]
+local longStringTest = [=[This is a long string.]=]
+
 local remainder = wikiParser(
 	-- comments
 	"%-%-%[(=*)%[", function (remainder, m, eq)
+		-- Needs to generate three segments: --[[, body, ]].
 		local terminator = "]" .. eq .. "]"
-		local _, eot = remainder:find(terminator, 1, true)
-		if not eot then
-			eot = #remainder
+		table.insert(contents, h("span", {class="code-comment"}, m))
+		local sot, eot = remainder:find(terminator, 1, true)
+		-- a trick to make --]] look sane
+		if sot > 2 and remainder:sub(sot - 2, sot - 1) == "--" then
+			sot = sot - 2
 		end
-		local code = m .. remainder:sub(1, eot)
-		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, code, {}, renderOptions)))
-		return remainder:sub(eot + 1)
+		local code = remainder:sub(1, (sot or (#remainder + 1)) - 1)
+		table.insert(contents, h("span", {class="code-block-comment"}, mdRenderer(path, code, {}, renderOptions)))
+		if eot then
+			table.insert(contents, h("span", {class="code-comment"}, remainder:sub(sot, eot)))
+		end
+		return remainder:sub((eot or #remainder) + 1)
 	end,
-	"%-%-[^\n]+\n", function (remainder, m)
-		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, m, {inline = true}, renderOptions)))
+	"%-%-([^\n]+)\n", function (remainder, m, content)
+		table.insert(contents, h("span", {class="code-comment"}, {
+			"--",
+			mdRenderer(path, content, {inline = true}, renderOptions),
+			"\n"
+		}))
 		return remainder
 	end,
 	-- strings
@@ -56,6 +69,16 @@ local remainder = wikiParser(
 		end
 		table.insert(contents, stringSpan)
 		return remainder
+	end,
+	-- long strings. it would be _really funny_ to use these like MediaWiki links, and this may be done in future if false-positives become an issue.
+	-- in that event, however, it will not apply to [=[these]=], so the language still works.
+	"%[(=*)%[", function (remainder, m, eq)
+		local terminator = "]" .. eq .. "]"
+		local sot, eot = remainder:find(terminator, 1, true)
+		eot = eot or #remainder
+		local code = m .. remainder:sub(1, eot)
+		table.insert(contents, h("span", {class="code-string"}, code))
+		return remainder:sub(eot + 1)
 	end,
 	-- id
 	"[a-zA-Z_][a-zA-Z_0-9]*", function (remainder, m)
