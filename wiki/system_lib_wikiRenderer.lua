@@ -2,25 +2,19 @@
 
 A renderer receives (path, code, props, renderOptions) and returns a <system/lib/wikiAST> node.
 
-These prop names are known:
+The following list gives 'global' prop names (tend to appear everywhere).
+Case-specific props are no longer listed as such a list is difficult to maintain.
 
-* `title`: The title of the page.
-* `path`: The path of an 'interior' page. Where reasonable, templates should support passing a function here; see <system/lib/WikiTemplate>'s response to non-string paths.
-* `ext`: The extension of an 'interior' page for editor-related pages.
-* `props`: The props of an 'interior' page.
-* `parentPath`: Received by <system/index/frame> to replace a global variable that was causing linking issues.
-  Also used by the md-renderer (and presumably will be by anything doing anything similar) to pass the parent page down to a template such as <system/templates/dir>.
-* `props.pageList`: Used by <system/templates/sortedPageList> only.
-* `code`: <system/templates/editor> uses this for the current editing state.
-* `alt`: Alt-text contents of an image.
+* `parentPath`: Used by the md-renderer to pass the parent page down to a template such as <system/templates/dir>.
+* `alt`: Alt-text contents of an image. May be ignored if empty string.
 * `inline`: The renderer should prefer to render 'inline' (i.e. inside a paragraph) if possible.
-* `linkGen`: Signals that link cache generation is running.
+* `linkGen`: Signals that link cache generation is running. Some templates, particularly expensive ones, might choose to simply not render if this comes up.
 
 For `renderOptions`, please see <system/lib/wikiAST>.
 
-In calls from actions or something like <system/index/frame>, it isn't necessary to inherit props (the former have nothing to inherit, the latter has a dedicated props table to pass).
+Props should be inherited whenever they are being handled by markup which cannot make its own decisions; so in other words, <system/extensions/render/md> should inherit props.
 
-_However,_ in code such as the md-renderer, props absolutely should be being inherited.
+Other code should use its own judgement on what should be passed through and what shouldn't.
 
 --]]
 
@@ -31,7 +25,11 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)
 		else
-			return WikiLink(path, { props.alt or wikiTitleStylize(path) }, "raw", "image")
+			local alt = props.alt
+			if alt == "" then
+				alt = nil
+			end
+			return WikiLink(path, { alt or wikiTitleStylize(path) }, "raw", "image")
 		end
 	end
 

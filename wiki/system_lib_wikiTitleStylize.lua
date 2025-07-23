@@ -1,7 +1,11 @@
 -- Stylizes titles. This can conceivably return any <system/lib/wikiAST> node.
--- For bug-prevention, this always returns a table.
+-- For bug-prevention, this never returns a flat string.
 
 return function (path)
+	local forced = wikiResolvePage("system/pageTitle/" .. path)
+	if wikiReadStamp(forced) then
+		return WikiTemplate(forced, {inline = true})
+	end
 	local pfx = ""
 	if path:sub(1, 8) == "special/" then
 		-- Special pages are pushed to the front of the list.

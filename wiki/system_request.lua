@@ -63,7 +63,12 @@ if actionParsed.mutator and wikiReadOnly then
 	return
 end
 
-if wikiAuthCheckThenRenderFail(actionParsed.action, requestPath) then
+if not wikiAuthCheck(actionParsed, requestPath) then
+	wikiAST.serveRender(WikiTemplate("system/index/frame", {
+		title = wikiTitleStylize(requestPath),
+		path = "system/templates/authError",
+		props = { actionParsed = actionParsed, path = requestPath }
+	}))
 	return
 end
 

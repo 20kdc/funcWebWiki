@@ -39,7 +39,7 @@ return h("html", {},
 							local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)
 							if not hidden then
 								res(h("li", {},
-									WikiLink(requestPath, v.action, v.action)
+									WikiLink(requestPath, WikiTemplate(v.nameTemplate, {inline = true}), v.action)
 								))
 								res("\n")
 							end

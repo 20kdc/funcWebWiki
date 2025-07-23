@@ -73,10 +73,9 @@ return function (path)
 	wikiAST.render(function (node)
 		local cls = getmetatable(node)
 		if cls == WikiLink then
-			local resolved = wikiResolvePage(node.page)
 			-- don't count self-links
-			if resolved ~= path then
-				links[resolved] = true
+			if node.path ~= path then
+				links[node.path] = true
 			end
 		elseif cls == WikiDepMarker then
 			if node.depPath then

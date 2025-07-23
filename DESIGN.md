@@ -25,14 +25,19 @@
 		* `system/action/graphviz`
 		* All 'directory information' pages
 			* `system/action`
+			* `system/actionName`
 			* `system/cache`
 			* `system/extensions/code`
 			* `system/extensions/mime`
 			* `system/extensions/render`
 			* `system/index`
 			* `system/lib`
+			* `system/pageTitle`
 			* `system/templates`
 			* `system/trigger`
+		* All 'translation assist' pages, within:
+			* `system/actionName`
+			* `system/pageTitle`
 3. `system/extensions` is laid out the way it is to allow for adding files without changing anything.
 4. Making backlinks scale further will require horrible sacrifices.
 	* Perhaps bulldozing the current link cache system in favour of a single 'global link cache' file might be okay.

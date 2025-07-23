@@ -26,8 +26,6 @@ if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	return
 end
 
-SetHeader("Content-Type", "text/html")
-
 local preview = not not code
 code = code or wikiRead(requestPath)
 if preview then

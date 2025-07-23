@@ -63,7 +63,8 @@ Redbean options accepted as normal; '--' divides between Redbean options and
     prefer the read-only 'asset wiki', if found
   --public-unsafe : by default, -l 127.0.0.1 is applied.
     beware that funcWebWiki is not safe for public access by default.
-  --trigger TRIGGER : runs system/triggers/TRIGGER.lua ; exits after all complete
+  --trigger TRIGGER : runs system/triggers/TRIGGER.lua ; exits on all complete
+    TRIGGER is a 'URL'; SetStatus/SetHeader dummies, GetParam & Write work
   --unpack : attempts to unpack the assets into the wiki base, then exits
   --continue : continues even if --trigger or --unpack would exit
   --no-direct-assets : disables `/_assets/` from the Redbean ZIP
@@ -430,7 +431,7 @@ function makeSandbox()
 		next = next,
 		pairs = pairs,
 		pcall = pcall,
-		print = print,
+		-- print -- skipped to prevent stdio contamination ; use Log or Write instead as appropriate
 		rawequal = rawequal,
 		rawget = rawget,
 		rawlen = rawlen,
@@ -684,12 +685,12 @@ function checkSandbox()
 		__signal_handlers = true,
 		arg = true,
 		argv = true,
-		dofile = true,
 		finger = true,
 		io = true,
 		lsqlite3 = true,
 		maxmind = true,
 		path = true,
+		print = true,
 		unix = true,
 	}
 	local res = {}
@@ -703,7 +704,7 @@ function checkSandbox()
 	table.sort(res)
 	for _, v in ipairs(res) do
 		-- If you're seeing this, it means your Redbean has functions which haven't been explicitly denied but were implicitly denied.
-		print(v .. " = true,")
+		Log(kLogWarn, "unclassified global: " .. v .. "\n" .. v .. " = true,")
 	end
 end
 
@@ -804,9 +805,29 @@ end
 
 -- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
 
-for _, v in ipairs(scheduledTriggers) do
+-- exposed to REPL
+function runTrigger(v)
 	Log(kLogInfo, "running trigger: " .. v)
-	makeEnv().dofile("system/trigger/" .. v .. ".lua")
+	local parsedUrl = ParseUrl(v, kUrlPlus)
+	local params = {}
+	for _, v in ipairs(parsedUrl.params) do
+		params[v[1]] = v[2]
+	end
+	local triggerEnv = makeEnv()
+	-- dummy out some Redbean functions so that triggers can receive parameters and report output
+	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
+	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
+	triggerEnv.SetStatus = function () end
+	triggerEnv.SetHeader = function () end
+	triggerEnv.Write = function (data) io.write(tostring(data)) end
+	triggerEnv.GetParam = function (k) return params[k] end
+	triggerEnv.GetParams = function (k) return params end
+	triggerEnv.dofile("system/trigger/" .. (parsedUrl.path or "") .. ".lua")
+	io.flush()
+end
+
+for _, v in ipairs(scheduledTriggers) do
+	runTrigger(v)
 end
 
 if (not doContinue) and doExit then

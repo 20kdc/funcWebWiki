@@ -168,6 +168,11 @@ end
 function wikiAST.serveRender(n, renderOptions)
 	renderOptions = renderOptions or {}
 	renderOptions.getParam = GetParam
+	if renderOptions.renderType == "renderPlain" then
+		SetHeader("Content-Type", "text/plain")
+	else
+		SetHeader("Content-Type", "text/html")
+	end
 	wikiAST.render(Write, n, renderOptions)
 end
 

@@ -10,14 +10,12 @@ if GetMethod() == "POST" and (GetParam("confirm") or "") ~= "" then
 	return
 end
 
-SetHeader("Content-Type", "text/html")
-
 wikiAST.serveRender(WikiTemplate("system/index/frame", {
 	title = {"Delete ", wikiTitleStylize(requestPath), "?"},
 	parentPath = requestPath,
-	path = "system/templates/deletePrompt",
+	path = "system/templates/prompt",
 	props = {
-		path = requestPath,
-		ext = requestExt
+		text = ("Delete " .. requestPath),
+		path = requestPath .. "?action=delete"
 	}
 }))

@@ -52,7 +52,7 @@ local function wikiLoadTemplate(template, codeFlag)
 				return missingTemplate({
 					path = templatePath,
 					props = props
-				})
+				}, renderOptions)
 			end
 		end
 		cache[templatePath] = res
