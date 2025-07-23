@@ -1,4 +1,5 @@
 #!/bin/sh
 . ./setup.sh
+./build
 export WIKI_TWM_PASSWORD=test
-$REDBEAN -D kernel -- --trigger flushCaches --trigger buildCaches --trigger updateSystemHashes --continue
+ape ./funcWebWiki-kernel.com

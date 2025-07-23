@@ -1,6 +1,3 @@
 #!/bin/sh
 ./build
-rm -rf kernel/wiki
-# run it here so it doesn't see the "real" wiki
-cd kernel
-ape ../funcWebWiki.com
+ape ./funcWebWiki.com -- --prefer-asset-wiki
