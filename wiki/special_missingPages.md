@@ -17,7 +17,7 @@ for _, v in ipairs(lst) do
 		for k, _ in pairs(wikiPageLinks(v)) do
 			if (not missing[k]) and not exists[k] then
 				missing[k] = true
-				table.insert(res, resolved)
+				table.insert(res, k)
 			end
 		end
 	end
