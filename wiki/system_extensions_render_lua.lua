@@ -1,4 +1,4 @@
-local path, code, opts = ...
+local path, code, props, renderOptions = ...
 
 code = code:gsub("\r", "")
 
@@ -15,11 +15,11 @@ local remainder = wikiParser(
 			eot = #remainder
 		end
 		local code = m .. remainder:sub(1, eot)
-		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, code, {})))
+		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, code, {}, renderOptions)))
 		return remainder:sub(eot + 1)
 	end,
 	"%-%-[^\n]+\n", function (remainder, m)
-		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, m, {inline = true})))
+		table.insert(contents, h("span", {class="code-comment"}, mdRenderer(path, m, {inline = true}, renderOptions)))
 		return remainder
 	end,
 	-- strings

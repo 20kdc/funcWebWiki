@@ -13,6 +13,7 @@
 	* `lua` for code display
 	* A _lightly_ extended Markdown (images-as-template-invocations, `.t.lua` code blocks)
 2. Optional features should be kept rather limited and removal instructions should be indexed here.
+	* All triggers can be safely deleted, though they do exist for a reason.
 	* The 'system hashes' feature can be removed by:
 		* Deleting `system/trigger/updateSystemHashes` and `system/hashes`
 		* Reverting `special/systemPages` to use `system/templates/dir`
@@ -49,6 +50,8 @@ The assumptions are:
 4. Edits are atomic (`kernel.lua` ensures this through move-replace)
 
 Based on these primitives, `kernel.lua` provides a _semi-reliable_ opaque 'file stamp' primitive, `wikiReadStamp` (returns `size, stamp, error`).
+
+The hope is that as long as reading the stamp _before_ reading the contents will at worst result in an outdated stamp, the cache won't go too out-of-sync.
 
 On wikis being read from Redbean assets, due to ZIP file limitations, this primitive returns an empty string if the file exists, and fails if it doesn't.
 

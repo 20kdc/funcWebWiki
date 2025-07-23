@@ -34,7 +34,7 @@ return wikiAST.newClass({
 			writer("</a>")
 		end
 	end,
-	renderPlain = function (self, writer, renderOptions)
+	visit = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
 }, function (_, page, children, action, type)

@@ -1,34 +1,37 @@
 --[[
 
-A renderer receives (path, code, opts) and returns a <system/lib/wikiAST> node.
+A renderer receives (path, code, props, renderOptions) and returns a <system/lib/wikiAST> node.
 
-These options are defined:
+These prop names are known:
 
 * `title`: The title of the page.
 * `path`: The path of an 'interior' page. Where reasonable, templates should support passing a function here; see <system/lib/WikiTemplate>'s response to non-string paths.
-* `opts`: The options of an 'interior' page.
+* `ext`: The extension of an 'interior' page for editor-related pages.
+* `props`: The props of an 'interior' page.
 * `parentPath`: Received by <system/index/frame> to replace a global variable that was causing linking issues.
   Also used by the md-renderer (and presumably will be by anything doing anything similar) to pass the parent page down to a template such as <system/templates/dir>.
-* `opts.pageList`: Used by <system/templates/sortedPageList> only.
+* `props.pageList`: Used by <system/templates/sortedPageList> only.
 * `code`: <system/templates/editor> uses this for the current editing state.
 * `alt`: Alt-text contents of an image.
 * `inline`: The renderer should prefer to render 'inline' (i.e. inside a paragraph) if possible.
 * `linkGen`: Signals that link cache generation is running.
 
-In calls from actions or something like <system/index/frame>, it isn't necessary to inherit options (the former have nothing to inherit, the latter has a dedicated options table to pass).
+For `renderOptions`, please see <system/lib/wikiAST>.
 
-_However,_ in code such as the md-renderer, options absolutely should be being inherited.
+In calls from actions or something like <system/index/frame>, it isn't necessary to inherit props (the former have nothing to inherit, the latter has a dedicated props table to pass).
+
+_However,_ in code such as the md-renderer, props absolutely should be being inherited.
 
 --]]
 
 local rendererCache = {}
 
 local function wikiRenderer(templateExt, promiseThisIsText)
-	local function lastResortRenderer(path, code, opts)
+	local function lastResortRenderer(path, code, props, renderOptions)
 		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)
 		else
-			return WikiLink(path, { opts.alt or wikiTitleStylize(path) }, "raw", "image")
+			return WikiLink(path, { props.alt or wikiTitleStylize(path) }, "raw", "image")
 		end
 	end
 
@@ -40,17 +43,28 @@ local function wikiRenderer(templateExt, promiseThisIsText)
 			local rendererCode = wikiRead(rendererPath)
 			if rendererCode then
 				renderer, err = load(rendererCode, rendererPath)
-				renderer = renderer or function (path, code, opts)
+				renderer = renderer or function (path, code, props, renderOptions)
 					return {
 						h("p", {}, "Renderer " .. rendererPath .. " could not be loaded."),
 						h("pre", {}, tostring(err)),
-						lastResortRenderer(path, code, opts)
+						lastResortRenderer(path, code, props, renderOptions)
 					}
 				end
 				break
 			end
 		end
 		renderer = renderer or lastResortRenderer
+		local rendererOld = renderer
+		if true then
+			-- debug validation
+			renderer = function (path, code, props, renderOptions)
+				assert(type(path) == "string", "path must be string")
+				assert(type(code) == "string", "code must be string")
+				assert(type(props) == "table", "props must be table")
+				assert(type(renderOptions) == "table", "renderOptions must be table")
+				return rendererOld(path, code, props, renderOptions)
+			end
+		end
 		rendererCache[templateExt] = renderer
 	end
 	return renderer

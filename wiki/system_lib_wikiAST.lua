@@ -9,6 +9,12 @@ Wiki AST elements are either:
 
 As a convenience feature, the `canonChild` function runs embedded functions.
 
+Render options are:
+
+* `renderType`: How the element is being rendered.
+* `disableErrorIsolation`: Disables error isolation in various components.
+* `getParam`: If not nil, then this gets a parameter. Use `renderOptions.getParam and renderOptions.getParam("param")`.
+
 --]]
 
 local wikiHtmlVoidElements = {
@@ -56,8 +62,12 @@ end
 
 -- New AST class. Checks for validity.
 function wikiAST.newClass(methods, constructor)
-	assert(methods.renderHtml)
-	assert(methods.renderPlain)
+	assert(methods.visit, "wikiAST nodes must have at least visit = function (self, writer, renderOptions), which forwards child nodes to wikiAST.render (or does nothing)")
+
+	-- nodes auto-implement renderers as "skip/descend"
+	methods.renderHtml = methods.renderHtml or methods.visit
+	methods.renderPlain = methods.renderPlain or methods.visit
+
 	methods.__index = methods
 	setmetatable(methods, {__call = constructor})
 	return methods
@@ -86,7 +96,7 @@ wikiAST.Tag = wikiAST.newClass({
 			writer(">")
 		end
 	end,
-	renderPlain = function (self, writer, renderOptions)
+	visit = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
 }, function (self, type, props, ...)
@@ -107,23 +117,32 @@ wikiAST.Raw = wikiAST.newClass({
 	renderPlain = function (self, writer, renderOptions)
 		-- 'best-effort'
 		writer(self.html)
+	end,
+	visit = function (self, writer, renderOptions)
 	end
 }, function (self, html)
 	return setmetatable({html = html}, self)
 end)
 
--- Renders an AST node into HTML or plaintext.
--- `renderOptions` can contain `renderType`, which can be `renderPlain` to render plain text.
+--[[
+Renders an AST node into HTML or plaintext.
+`renderOptions` can contain `renderType`, which can be:
+* `renderPlain` to render plain text.
+* `visit` is similar to `renderPlain`, but calls `writer` with each component. (Notably, this cannot be used for plaintext search. Use `renderPlain` for that.)
+--]]
 function wikiAST.render(writer, n, renderOptions)
 	if n == nil then
 		return
 	end
 	renderOptions = renderOptions or {}
+	local renderType = renderOptions.renderType or "renderHtml"
 	local tn = type(n)
 	if tn == "table" then
 		if getmetatable(n) then
-			local name = renderOptions.renderType or "renderHtml"
-			local fn = n[name]
+			if renderType == "visit" then
+				writer(n)
+			end
+			local fn = n[renderType]
 			if not fn then
 				error("bad node: " .. tostring(n))
 			end
@@ -134,12 +153,20 @@ function wikiAST.render(writer, n, renderOptions)
 			end
 		end
 	else
-		if renderOptions.renderType == "renderPlain" then
-			writer(tostring(n))
-		else
+		if renderType == "renderHtml" then
 			writer(EscapeHtml(tostring(n)))
+		elseif renderType == "renderPlain" then
+			writer(tostring(n))
 		end
 	end
+end
+
+-- Renders to the Redbean Write function.
+-- Assumes that renderOptions (if provided) has been immediately generated and modifies it accordingly.
+function wikiAST.serveRender(n, renderOptions)
+	renderOptions = renderOptions or {}
+	renderOptions.getParam = GetParam
+	wikiAST.render(Write, n, renderOptions)
 end
 
 -- Convenience function to create a string.
@@ -149,26 +176,6 @@ function wikiAST.renderToString(...)
 		tmp = tmp .. v
 	end, ...)
 	return tmp
-end
-
--- Visits elements and text segments in an AST. (Anything that would be text is normalized to be string.)
-function wikiAST.visit(visitor, n)
-	if n == nil then
-		return
-	end
-	local tn = type(n)
-	if tn == "table" then
-		if getmetatable(n) then
-			visitor(n)
-			wikiAST.visit(visitor, n.children)
-		else
-			for _, v in ipairs(n) do
-				wikiAST.visit(visitor, v)
-			end
-		end
-	else
-		visitor(tostring(n))
-	end
 end
 
 return wikiAST

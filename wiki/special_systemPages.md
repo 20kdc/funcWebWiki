@@ -23,7 +23,7 @@ for _, v in ipairs(wikiPathList("system/")) do
 	end
 end
 return {
-	WikiLinkGenIndexMarker(),
+	WikiDepMarker(),
 	h("p", {}, "system/"),
 	h("ul", {}, t)
 }

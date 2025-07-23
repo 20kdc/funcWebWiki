@@ -6,9 +6,9 @@ The 'frame' template:
 
 --]]
 
-local opts = ...
+local props = ...
 
-local title = opts.title or "?"
+local title = props.title or "?"
 
 local nonSystemPages = {}
 
@@ -18,7 +18,7 @@ for _, v in ipairs(wikiPathList()) do
 	end
 end
 
-local requestPath = opts.parentPath or opts.path
+local requestPath = props.parentPath or props.path or wikiEditorTestPath
 
 return h("html", {},
 	h("head", {},
@@ -30,7 +30,7 @@ return h("html", {},
 		h("table", {class = "frame-table"},
 			h("tr", {},
 				h("td", {class = "frame-logo"},
-					WikiTemplate("system/templates/logo", opts)
+					WikiTemplate("system/templates/logo", props)
 				),
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
@@ -45,7 +45,7 @@ return h("html", {},
 							end
 						end
 						res(h("li", {},
-							WikiTemplate("system/index/status", opts)
+							WikiTemplate("system/index/status", props)
 						))
 					end)
 				)
@@ -58,7 +58,7 @@ return h("html", {},
 							h("input", {name = "to", value = requestPath}),
 							h("input", {type = "submit", value = "Go"})
 						}, "navigate", "formPost"),
-						WikiLinkGenIndexMarker(),
+						WikiDepMarker(),
 						WikiTemplate("system/templates/sortedPageList", {
 							pageList = nonSystemPages
 						})
@@ -66,7 +66,7 @@ return h("html", {},
 				),
 				h("td", {class = "frame-body"},
 					h("div", {class = "frame-right-body"},
-						WikiTemplate(opts.path, opts.opts, opts.code)
+						WikiTemplate(props.path or wikiEditorTestPath, props.props, props.code)
 					)
 				)
 			)

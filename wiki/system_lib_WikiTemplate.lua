@@ -1,9 +1,10 @@
--- _This is styled like a component because might get converted to be one._
 -- All pages are 'templates'.
--- Thus WikiTemplate loads a page for rendering.
--- The resulting functions are passed the options table.
--- Notably, if WikiTemplate is passed something other than a string, it is returned directly. The idea behind this is to allow passing anonymous templates.
+-- Thus the WikiTemplate component wraps a page in a renderer.
+-- Notably, if the template path is something other than a string, it is returned directly.
+-- The idea behind this is to allow passing anonymous templates.
 
+-- Functions in this table are cached templates, passed (props, renderOptions).
+-- While this doesn't save reparsing (reuse per-request isn't high enough to justify making the renderer code much more complex), it does save reloading.
 local templateCache = {}
 local templateHighlightCache = {}
 
@@ -20,14 +21,18 @@ local function wikiLoadTemplate(template, codeFlag)
 	if cache[templatePath] then
 		return cache[templatePath]
 	end
+	local useMarker = WikiDepMarker(templatePath)
 	local code, codeErr = wikiRead(templatePath)
 	if not code then
 		local res
 		if template == "system/templates/missingTemplate" then
 			-- system/templates/missingTemplate has a fallback to prevent recursion
-			res = function (opts)
+			res = function (props, renderOptions)
 				-- <system/action/edit>
-				local nameChunk = tostring(opts.path)
+				local nameChunk = tostring(props.path)
+				if renderOptions.disableErrorIsolation then
+					error(nameChunk .. " is missing")
+				end
 				if wikiAuthCheck(nameChunk, "edit") and not wikiReadOnly then
 					nameChunk = WikiLink(nameChunk, nil, "edit")
 				end
@@ -43,10 +48,10 @@ local function wikiLoadTemplate(template, codeFlag)
 			-- system/templates/missingTemplate
 			-- (built-in)
 			local missingTemplate = wikiLoadTemplate("system/templates/missingTemplate")
-			res = function (opts)
+			res = function (props, renderOptions)
 				return missingTemplate({
 					path = templatePath,
-					opts = opts
+					props = props
 				})
 			end
 		end
@@ -64,17 +69,46 @@ local function wikiLoadTemplate(template, codeFlag)
 		templateExt = repExt or wikiDefaultCodeExt
 	end
 	local renderer = wikiRenderer(templateExt)
-	local res = function (opts)
-		return renderer(templatePath, code, opts)
+	local res = function (props, renderOptions)
+		-- This wrapper can do various theoretical things.
+		-- In practice it's responsible for
+		return {
+			useMarker,
+			renderer(templatePath, code, props, renderOptions)
+		}
 	end
 	cache[templatePath] = res
 	return res
 end
 
--- Loads and executes a template for less awkward code.
-local function WikiTemplate(template, opts, ...)
-	assert(opts, "Please provide a parent opts table or use wikiDefaultOpts. Sorry, - the management")
-	return wikiLoadTemplate(template, ...)(opts)
+local function conditionalErrorHandler(ok, res, where, renderOptions)
+	if ok then
+		return res
+	end
+	if renderOptions.disableErrorIsolation then
+		error(where .. "\n" .. tostring(res))
+	else
+		return h("pre", tostring(res))
+	end
 end
 
-return WikiTemplate
+-- Loads and executes a template for less awkward code.
+return wikiAST.newClass({
+	visit = function (self, writer, renderOptions)
+		-- render template content to res
+		local ok, res = wikiPCall(self.template, self.props, renderOptions)
+		local templatedContent = conditionalErrorHandler(ok, res, "Template <" .. tostring(self.templatePath) .. "> execute:", renderOptions)
+		ok, res = wikiPCall(wikiAST.render, writer, templatedContent, renderOptions)
+		-- should return nil if all went well
+		res = conditionalErrorHandler(ok, res, "Template <" .. tostring(self.templatePath) .. "> render:", renderOptions)
+		if res then
+			wikiAST.render(writer, res, renderOptions)
+		end
+	end
+}, function (self, template, props, ...)
+	return setmetatable({
+		templatePath = template,
+		template = wikiLoadTemplate(template, ...),
+		props = props or {}
+	}, self)
+end)

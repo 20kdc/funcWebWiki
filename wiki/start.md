@@ -50,7 +50,7 @@ Global variables inside the wiki always map to respective Lua files in `system/l
 Here's an example of some Lua marked up with global references:
 
 ```lua
-local path, code, opts = ...
+local path, code, props = ...
 -- This example renderer outputs the input text _backwards,_ then wraps it in a template.
 -- It might be installed as `system/extensions/render/backwards.lua` - it would then render '.backwards' files.
 -- (There are, of course, UTF-8 flaws, and this code is untested. It mainly shows off the hyperlinking.)

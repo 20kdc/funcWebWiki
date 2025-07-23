@@ -1,5 +1,5 @@
 -- "Cleans up" links to be nicer / not include extensions everywhere. This also means permalinks are resistant to changes in extension.
--- Logical inverse to <system/lib//wikiResolvePage>.
+-- Logical inverse to <system/lib/wikiResolvePage>.
 return function (v)
 	local e = v:find(".", 1, true)
 	if e then

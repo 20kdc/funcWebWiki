@@ -1,6 +1,8 @@
 These pages are referred to, but are ultimately missing.
 
 ```t.lua
+local props, renderOptions = ...
+
 local lst = wikiPathList()
 
 local exists = {}
@@ -13,7 +15,7 @@ local missing = {}
 local res = {}
 
 for _, v in ipairs(lst) do
-	if wikiEnumPageFilter(v) then
+	if wikiEnumPageFilter(v, renderOptions) then
 		for k, _ in pairs(wikiPageLinks(v)) do
 			if (not missing[k]) and not exists[k] then
 				missing[k] = true
@@ -24,7 +26,7 @@ for _, v in ipairs(lst) do
 end
 
 return {
-	WikiLinkGenIndexMarker(),
+	WikiDepMarker(),
 	WikiTemplate("system/templates/sortedPageList", {
 		pageList = res
 	})

@@ -3,18 +3,20 @@ Outside of special pages, these pages have no references, not even on indices li
 (While cache data technically counts as pages, it is not included.)
 
 ```t.lua
+local props, renderOptions = ...
+
 local lst = wikiPathList()
 
 local unreferenced = {}
 for _, v in ipairs(lst) do
 	-- special pages may still be unreferenced
-	if wikiEnumPageFilter(v, true) then
+	if wikiEnumPageFilter(v, renderOptions, true) then
 		unreferenced[v] = true
 	end
 end
 
 for _, v in ipairs(lst) do
-	if wikiEnumPageFilter(v) then
+	if wikiEnumPageFilter(v, renderOptions) then
 		for k, _ in pairs(wikiPageLinks(v)) do
 			unreferenced[k] = nil
 		end
@@ -28,7 +30,7 @@ for k, _ in pairs(unreferenced) do
 end
 
 return {
-	WikiLinkGenIndexMarker(),
+	WikiDepMarker(),
 	WikiTemplate("system/templates/sortedPageList", {
 		pageList = res
 	})

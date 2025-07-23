@@ -1,28 +1,26 @@
-local opts = ...
+local props = ...
 
-local pathStr = tostring(opts.path)
-
-local pathDot = pathStr:find(".", 1, true) or (#pathStr + 1)
-local pathExt = pathStr:sub(pathDot)
+-- see also <system/templates/editorAndPreview>
+local pathStr, pathExt = tostring(props.path or wikiEditorTestPath), tostring(props.ext or wikiDefaultExt)
 
 -- <system/action/edit>
 
 if wikiExtText(pathExt) then
-	local code = tostring(opts.code or wikiRead(pathStr) or "")
+	local code = tostring(props.code or wikiRead(pathStr) or "")
 	return {
-		WikiLink(opts.path, {
+		WikiLink(pathStr, {
 			h("textarea", {id="editor", name="code", rows="25", cols="80"}, code),
 			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
 			h("br"),
-			opts.path, " ",
+			pathStr, " ",
 			h("input", {type="submit", name="preview", value="Preview"}),
 			h("input", {type="submit", name="confirm", value="Confirm"})
 		}, "edit", "formPost")
 	}
 else
 	return {
-		WikiLink(opts.path, {
-			opts.path, " ",
+		WikiLink(pathStr, {
+			pathStr, " ",
 			h("input", {type="file", id="fileinput"}),
 			h("input", {type="hidden", id="fileshunt", name="file"}),
 			h("input", {type="submit", id="filestatus", name="confirm", value="Upload"}),

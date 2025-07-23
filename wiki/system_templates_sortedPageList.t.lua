@@ -1,6 +1,6 @@
-local opts = ...
+local props = ...
 
-local leftBar = opts.pageList or {}
+local leftBar = props.pageList or {}
 
 local stylizedPlain = {}
 for _, v in ipairs(leftBar) do

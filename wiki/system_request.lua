@@ -54,11 +54,11 @@ local requestPath, requestExt = wikiResolvePage(GetPath())
 if actionParsed.mutator and wikiReadOnly then
 	-- @lexisother wins the "first security vuln found" award!
 	-- read-only wikis should not be exposing preview; or even the editor at all, really.
-	wikiAST.render(Write, WikiTemplate("system/index/frame", {
+	wikiAST.serveRender(WikiTemplate("system/index/frame", {
 		title = {"Can't edit: ", wikiTitleStylize(requestPath)},
 		parentPath = requestPath,
 		path = "system/templates/roError",
-		opts = {}
+		props = {}
 	}))
 	return
 end

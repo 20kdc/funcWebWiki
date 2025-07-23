@@ -1,15 +1,17 @@
-local opts = ...
+local props, renderOptions = ...
 
-local code = tostring(opts.code or wikiRead(tostring(opts.path)) or "")
+-- see also <system/templates/editor>
+local pathStr, pathExt = tostring(props.path or wikiEditorTestPath), tostring(props.ext or wikiDefaultExt)
 
-local leftColumn = WikiTemplate("system/templates/editor", opts)
+local code = tostring(props.code or wikiRead(pathStr) or "")
+
+local leftColumn = WikiTemplate("system/templates/editor", props)
 
 local rightColumn = nil
 
-local templatePath, templateExt = wikiResolvePage(opts.path)
-local renderer = wikiRenderer(templateExt)
+local renderer = wikiRenderer(pathExt)
 
-rightColumn = renderer(templatePath, code, wikiDefaultOpts)
+rightColumn = renderer(pathStr, code, {}, renderOptions)
 
 return h("div", {class = "editor2pane"},
 	h("div", {class = "editor2pane-left"}, leftColumn),

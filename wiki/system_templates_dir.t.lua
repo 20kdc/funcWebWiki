@@ -1,9 +1,9 @@
 -- Used by 'directory heading' pages.
-local opts = ...
+local props = ...
 
 local t = {}
 -- if parentPath is nil, no entries will be returned (this is intentional)
-local prefix = tostring(opts.parentPath or "")
+local prefix = tostring(props.parentPath or "")
 prefix = tostring(prefix:match("^[^.]*")) .. "/"
 for _, v in ipairs(wikiPathList(prefix)) do
 	-- cache entries are always ignored!
@@ -12,7 +12,7 @@ for _, v in ipairs(wikiPathList(prefix)) do
 	end
 end
 return {
-	WikiLinkGenIndexMarker(),
+	WikiDepMarker(),
 	h("p", {}, prefix),
 	h("ul", {}, t)
 }

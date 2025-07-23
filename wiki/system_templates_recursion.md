@@ -1,1 +1,1 @@
-_This page exists for the default `path` value passed in options for templates that may expect an interior page._
+_This page exists to be the value of <system/lib/wikiEditorTestPath>._

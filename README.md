@@ -16,9 +16,7 @@ funcWebWiki is not the most robust system, and the markup engine could use some 
 
 Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
 
-There are probably a _lot_ of scary bottlenecks in the code, particularly around backlinks; the caching system helps but that's made things even scarier.
-
-Stuck link caches are to be expected if updates are made in templates; that kind of thing.
+There are probably a _lot_ of scary bottlenecks in the code, particularly around backlinks. The caching system should be reasonably stable now, though.
 
 ## Licensing
 

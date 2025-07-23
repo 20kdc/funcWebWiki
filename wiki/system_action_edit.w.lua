@@ -31,22 +31,24 @@ SetHeader("Content-Type", "text/html")
 local preview = not not code
 code = code or wikiRead(requestPath)
 if preview then
-	wikiAST.render(Write, WikiTemplate("system/index/frame", {
+	wikiAST.serveRender(WikiTemplate("system/index/frame", {
 		title = {"Editing: ", wikiTitleStylize(requestPath)},
 		parentPath = requestPath,
 		path = "system/templates/editorAndPreview",
-		opts = {
+		props = {
 			path = requestPath,
+			ext = requestExt,
 			code = code
 		}
 	}))
 else
-	wikiAST.render(Write, WikiTemplate("system/index/frame", {
+	wikiAST.serveRender(WikiTemplate("system/index/frame", {
 		title = {"Editing: ", wikiTitleStylize(requestPath)},
 		parentPath = requestPath,
 		path = "system/templates/editor",
-		opts = {
+		props = {
 			path = requestPath,
+			ext = requestExt,
 			code = code
 		}
 	}))

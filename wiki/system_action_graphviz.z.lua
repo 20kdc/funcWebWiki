@@ -12,7 +12,7 @@ Write("digraph wiki {\n")
 local map = {}
 local lst = wikiPathList()
 for k, v in ipairs(lst) do
-	if wikiEnumPageFilter(v) then
+	if wikiEnumPageFilter(v, { getParam = GetParam }) then
 		map[v] = "n" .. tostring(k)
 		Write("\"n" .. tostring(k) .. "\" [label=\"" .. wikiAST.renderToString(wikiTitleStylize(v), {renderType = "renderPlain"}) .. "\"]\n")
 	end

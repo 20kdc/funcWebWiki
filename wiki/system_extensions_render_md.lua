@@ -1,4 +1,4 @@
-local path, code, opts = ...
+local path, code, props, renderOptions = ...
 
 code = code:gsub("\r", "")
 
@@ -83,7 +83,7 @@ paraParser = wikiParser(
 	end,
 	-- image or include
 	"!%[([^%]]*)%]%(([^%)]+)%)\n", function (remainder, m, stuff, href)
-		table.insert(contents, WikiTemplate(href, table.assign({}, opts, {alt = stuff, parentPath = path})))
+		table.insert(contents, WikiTemplate(href, table.assign({}, props, {alt = stuff, parentPath = path})))
 		return remainder
 	end,
 	-- mixed-mode
@@ -92,7 +92,7 @@ paraParser = wikiParser(
 			kind = "txt"
 		end
 		return wikiParserMatched(remainder, m, "\n```\n?", false, function (code)
-			table.insert(contents, wikiRenderer(kind, true)(path, code, opts))
+			table.insert(contents, wikiRenderer(kind, true)(path, code, props, renderOptions))
 		end)
 	end,
 	-- general-case line
@@ -111,7 +111,7 @@ paraParser = wikiParser(
 	end
 )
 
-if opts.inline then
+if props.inline then
 	local remainder = inlineParser(code)
 	assert(remainder == "", remainder)
 	return contents

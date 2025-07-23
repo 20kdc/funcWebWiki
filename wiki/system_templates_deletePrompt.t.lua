@@ -1,10 +1,12 @@
-local opts = ...
+local props = ...
+
+local pathStr = tostring(props.path or wikiEditorTestPath)
 
 -- beware!
 
 return {
-	WikiLink(opts.path, {
-		h("input", {type="submit", name="confirm", value="Delete " .. opts.path})
+	WikiLink(pathStr, {
+		h("input", {type="submit", name="confirm", value="Delete " .. pathStr})
 	}, "delete", "formPost")
 	-- <system/action/delete>
 }

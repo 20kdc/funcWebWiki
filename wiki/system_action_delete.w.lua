@@ -12,11 +12,12 @@ end
 
 SetHeader("Content-Type", "text/html")
 
-wikiAST.render(Write, WikiTemplate("system/index/frame", {
+wikiAST.serveRender(WikiTemplate("system/index/frame", {
 	title = {"Delete ", wikiTitleStylize(requestPath), "?"},
 	parentPath = requestPath,
 	path = "system/templates/deletePrompt",
-	opts = {
-		path = requestPath
+	props = {
+		path = requestPath,
+		ext = requestExt
 	}
 }))
