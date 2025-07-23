@@ -1,6 +1,6 @@
 #!/bin/sh
 . ./setup.sh
-$REDBEAN -D kernel -- --trigger updateSystemHashes --trigger flushCaches --trigger buildCaches --trigger errorSweep
+$REDBEAN -D kernel -- --trigger updateSystemHashes --trigger flushCaches --trigger errorSweep --trigger buildCaches
 # make kernel build
 cp thirdparty/redbean-3.0.0.com funcWebWiki-kernel.com
 cd kernel
