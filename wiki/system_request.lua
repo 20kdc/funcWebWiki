@@ -16,9 +16,10 @@ If it is equal to the password, the 'tactical witch mode' editor is served.
 Upon each request, a new environment is created, which consists of:
 
 * A large quantity of Redbean and Lua functions.
-* `table.assign`, `table.deepcopy`
-* `wikiRead`, `wikiWrite`, `wikiDelete` (wrapped to work with the wiki's FS only)
-* `wikiPathParse`, `wikiPathUnparse`, `wikiPathTable`, `wikiPathList`
+* `table.assign(target, sources...) -> target`, `table.deepcopy(source) -> copy`
+* `wikiRead(path) -> data | nil, err`, `wikiReadStamp(path) -> length, stamp | nil, nil, err`
+* `wikiWrite(path, data) -> true | nil, err`, `wikiDelete(path) -> true | nil, err`
+* `wikiPathParse(path) -> parsed | nil, err`, `wikiPathUnparse(parsed) -> path`, `wikiPathTable([prefix]) -> paths`, `wikiPathList([prefix]) -> paths`
 * `wikiAbsoluteBase`
 * `wikiReadOnly` (assets are being read via the Redbean asset system, wiki is fully immutable)
 

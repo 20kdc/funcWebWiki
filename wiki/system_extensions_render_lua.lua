@@ -50,7 +50,7 @@ local remainder = wikiParser(
 		local stringContent = total:sub(2, #total - 1)
 		if stringContent ~= "" and (not stringContent:find("_", 1, true)) then
 			local page = wikiResolvePage(stringContent)
-			if page ~= path and wikiRead(page) then
+			if page ~= path and wikiReadStamp(page) then
 				stringSpan = WikiLink(page, stringSpan)
 			end
 		end

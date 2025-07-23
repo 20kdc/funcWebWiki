@@ -8,28 +8,30 @@ return function (path)
 	end
 	local cachePath = "system/cache/link/" .. path .. ".json"
 	local indexDummyPath = "system/cache/linkIndex/" .. path .. ".txt"
-	if memCache[cachePath] then
-		return table.assign({}, memCache[cachePath])
+	local memCacheVal = memCache[cachePath]
+	if memCacheVal then
+		return table.assign({}, memCacheVal)
 	end
-	-- checksum to detect changes from Git/etc.
-	local content = wikiRead(path)
-	local contentCheck = content or ""
-	contentCheck = tostring(#contentCheck) .. "|" .. tostring(Crc32(0, contentCheck))
+	-- check to detect changes from Git/etc.
+	local contentLength, contentCheck = wikiReadStamp(path)
+	-- fast-path: missing pages never have links; don't even try
+	if not contentCheck then
+		wikiDelete(cachePath)
+		return {}
+	end
 	-- check cache
 	local existing = wikiRead(cachePath)
 	if existing then
 		local dat = DecodeJson(existing)
-		if dat and dat._check == contentCheck then
+		-- If the stamp is the empty string, wikiReadStamp is indicating we probably should just trust the cache.
+		if dat and ((contentCheck == "") or (dat._check == contentCheck)) then
 			-- hide from caller
 			dat._check = nil
-			return dat
+			memCache[cachePath] = dat
+			return table.assign({}, dat)
 		end
 		-- something went wrong; purge relevant cache to try and fix it
 		wikiFlushCacheForPageEdit(path)
-	end
-	-- fast-path for missing pages
-	if not content then
-		return {}
 	end
 
 	-- This is a bit hacky, but it prevents <system/lib/wikiEnumPageFilter> callers (special pages) from doing anything stupid.
@@ -47,17 +49,20 @@ return function (path)
 		local cls = getmetatable(node)
 		if cls == WikiLink then
 			local resolved = wikiResolvePage(node.page)
-			links[resolved] = true
+			-- don't count self-links
+			if resolved ~= path then
+				links[resolved] = true
+			end
 		elseif cls == WikiLinkGenIndexMarker then
 			isIndex = true
 		end
 	end, rendered)
-	memCache[cachePath] = links
 	wikiWrite(cachePath, EncodeJson(links))
 	if isIndex then
 		wikiWrite(indexDummyPath, "1")
 	end
 	-- hide from caller
 	links._check = nil
-	return links
+	memCache[cachePath] = links
+	return table.assign({}, links)
 end

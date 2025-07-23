@@ -24,6 +24,7 @@ local doContinue = false
 local doExit = false
 local directAssets = true
 local favicon = true
+local payloadSizeOverride = nil
 
 local KEDIT_PASSWORD = os.getenv("WIKI_TWM_PASSWORD")
 if KEDIT_PASSWORD == "" then
@@ -67,6 +68,8 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --continue : continues even if --trigger or --unpack would exit
   --no-direct-assets : disables `/_assets/` from the Redbean ZIP
   --no-favicon : disables `/favicon.ico` from the Redbean ZIP
+  --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
+    in read-only mode, Redbean's default is used. this overrides both
 
 environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
  for live editing of even broken wikis / remote bootstrapping
@@ -122,14 +125,23 @@ local function parseArgs()
 			directAssets = false
 		elseif arg == "--no-favicon" then
 			favicon = false
+		elseif arg == "--payload-size" then
+			payloadSizeOverride = assert(tonumber(getNextArg()), "bad parameter given to --payload-size")
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
 	end
 end
+
 parseArgs()
 
 -- now that things like wiki base are set...
+
+if payloadSizeOverride then
+	ProgramMaxPayloadSize(payloadSizeOverride)
+elseif not wikiReadOnly then
+	ProgramMaxPayloadSize(0x1000000)
+end
 
 local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_request.lua")
 
@@ -202,7 +214,7 @@ end
 function wikiPathToDisk(path)
 	local parsed, err = wikiPathParse(path)
 	if not parsed then
-		return nil, err
+		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
 	end
 	local path = WIKI_BASE
 	for k, v in ipairs(parsed) do
@@ -222,7 +234,7 @@ if assetWikiLooksPresent then
 	function wikiRead(path)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
-			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+			return nil, err
 		end
 		-- Redbean will be loud if we don't check, and we may need a deletion mechanism in future anyway.
 		-- So empty files will act a little buggy.
@@ -235,6 +247,20 @@ if assetWikiLooksPresent then
 			return nil, "does not exist"
 		end
 		return a, nil
+	end
+
+	function wikiReadStamp(path)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, err
+		end
+		local res = GetAssetSize(path2) or 0
+		-- See wikiRead for rationale.
+		if res <= 0 then
+			return nil, nil, "does not exist"
+		end
+		-- stamp is empty as hint to wikiPageLinks that, frankly, we don't have a clue
+		return res, ""
 	end
 
 	function wikiPathTable(prefix)
@@ -257,25 +283,52 @@ else
 	function wikiRead(path)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
-			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+			return nil, err
 		end
 		local a, b = Slurp(path2)
 		return a, b and tostring(b)
 	end
 
+	-- Returns size, stamp, error
+	function wikiReadStamp(path)
+		local path2, err = wikiPathToDisk(path)
+		if not path2 then
+			return nil, nil, err
+		end
+		local stat, err = unix.stat(path2)
+		if not stat then
+			return nil, nil, tostring(err)
+		end
+		local size = stat:size()
+		return size, tostring(stat:mtim()) .. "|" .. tostring(stat:ino()) .. "|" .. tostring(size), nil
+	end
+
+	-- Important note:
+	-- This function needs to be as atomic as possible.
+	-- Other processes should perceive a swap, ideally a different inode.
 	function wikiWrite(path, data)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
-			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+			return nil, err
 		end
-		local a, b = Barf(path2, data)
+		local temp = WIKI_BASE .. "_wikiWrite_" .. UuidV7()
+		local a, b = Barf(temp, data)
+		if not b then
+			-- success ; overwrite
+			-- This is only 'guessable' without checking code, but:
+			-- cosmopolitan libc guarantees move-replace semantics on Windows also.
+			-- See https://github.com/jart/cosmopolitan/blob/master/libc/calls/renameat-nt.c#L92
+			a, b = unix.rename(temp, path2)
+		end
+		-- no matter what, the temp file must be gone
+		unix.unlink(temp)
 		return a, b and tostring(b)
 	end
 
 	function wikiDelete(path)
 		local path2, err = wikiPathToDisk(path)
 		if not path2 then
-			return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
+			return nil, err
 		end
 		local a, b = unix.unlink(path2)
 		return a, b and tostring(b)
@@ -541,6 +594,7 @@ function makeSandbox()
 		wikiPathList = wikiPathList,
 		wikiAbsoluteBase = wikiAbsoluteBase,
 		wikiRead = wikiRead,
+		wikiReadStamp = wikiReadStamp,
 		wikiWrite = wikiWrite,
 		wikiDelete = wikiDelete,
 		wikiReadOnly = wikiReadOnly
