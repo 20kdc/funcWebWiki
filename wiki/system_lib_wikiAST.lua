@@ -99,12 +99,14 @@ wikiAST.Tag = wikiAST.newClass({
 	visit = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
-}, function (self, type, props, ...)
+}, function (self, tagName, props, ...)
+	props = props or {}
+	assert(type(props) == "table", "props must be k/v table")
 	local children = {}
 	for _, v in ipairs({...}) do
 		wikiAST.canonChild(children, v)
 	end
-	return setmetatable({tagName = type, props = (props or {}), children = children}, self)
+	return setmetatable({tagName = tagName, props = props, children = children}, self)
 end)
 
 -- Raw HTML node: `wikiAST.Raw("...")`

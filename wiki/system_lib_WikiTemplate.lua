@@ -71,7 +71,8 @@ local function wikiLoadTemplate(template, codeFlag)
 	local renderer = wikiRenderer(templateExt)
 	local res = function (props, renderOptions)
 		-- This wrapper can do various theoretical things.
-		-- In practice it's responsible for
+		-- In practice it's responsible for making sure that invoked templates are dependencies.
+		-- Renderers are not considered so, because that line of thinking leads to pretty much all of system/ being a dependency.
 		return {
 			useMarker,
 			renderer(templatePath, code, props, renderOptions)
@@ -88,7 +89,7 @@ local function conditionalErrorHandler(ok, res, where, renderOptions)
 	if renderOptions.disableErrorIsolation then
 		error(where .. "\n" .. tostring(res))
 	else
-		return h("pre", tostring(res))
+		return h("pre", {}, tostring(res))
 	end
 end
 
