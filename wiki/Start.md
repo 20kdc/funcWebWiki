@@ -1,5 +1,7 @@
 # Welcome!
 
+***
+
 If you're reading this, you either looked into the `wiki/` directory, or you have a working **funcWebWiki**. Congratulations!
 
 ```t.lua
@@ -27,6 +29,19 @@ else
 		h("p", {}, "I've tried to keep the amount of 'initial content' pages relatively lean in order to avoid complicating things; you should be able to start writing right away.")
 	}
 end
+```
+
+## Quickstart
+
+Assuming you have a working knowledge of Lua, everything custom about funcWebWiki you absolutely need to know to start writing is contained in the following 'postcard':
+
+```t.lua
+return h("div", {class="editor2pane"}, {
+	WikiTemplate("special/mdSyntaxCard", {}, true),
+	h("div", {}, {
+		WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, false)
+	})
+})
 ```
 
 ## How Things Work
@@ -65,7 +80,7 @@ return WikiTemplate("exampleBackwardsDisplayTemplate", {
 })
 ```
 
-The 'kernel' provides some level of sandboxing; the rest of the wiki is dynamic without relying on custom languages (outside of the present limitations of the funcWebWiki 'it'll be Markdown eventually' parser).
+The 'kernel' provides some level of sandboxing; the rest of the wiki is dynamic without relying on custom languages (though the [funcWebWiki Markdown parser](system/extensions/render/md) has its oddities).
 
 Still, with what is there, it's possible to run arbitrary Lua code inside a page while not having to write everything in Lua.
 
