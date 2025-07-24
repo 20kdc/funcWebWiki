@@ -8,17 +8,37 @@ return wikiAST.newClass({
 			actionSfx = "?" .. self.query
 		end
 		local pathStem = self.path
+		if renderOptions.staticSite then
+			-- See <system/trigger/genSiteTar>
+			pathStem = pathStem:gsub("/", "_")
+		end
 		-- these link types are 'safe' to strip extensions from
 		-- we don't want to, say, delete the wrong page
 		if self.type == "link" then
-			pathStem = wikiExtStripIfClear(pathStem)
+			if renderOptions.staticSite then
+				if self.query ~= "" then
+					-- Query strings don't work, so downgrade the link.
+					wikiAST.render(writer, self.children, renderOptions)
+					return
+				end
+				-- Static site must append ".html" to function.
+				pathStem = pathStem .. ".html"
+			else
+				pathStem = wikiExtStripIfClear(pathStem)
+			end
 		end
 		local href = (renderOptions.absoluteBase or wikiAbsoluteBase) .. pathStem .. actionSfx
 		if self.type == "formPost" then
+			if renderOptions.staticSite then
+				return
+			end
 			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"post\">\n")
 			wikiAST.render(writer, self.children, renderOptions)
 			writer("</form>\n")
 		elseif self.type == "formGet" then
+			if renderOptions.staticSite then
+				return
+			end
 			writer("<form action=\"" .. EscapeHtml(href) .. "\" method=\"get\">\n")
 			wikiAST.render(writer, self.children, renderOptions)
 			writer("</form>\n")

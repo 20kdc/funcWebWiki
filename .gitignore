@@ -3,3 +3,6 @@ graph.svg
 *.com
 unpack-dir/*
 wiki.sum
+tmp.tar
+tmp2.tar
+static-dir/*

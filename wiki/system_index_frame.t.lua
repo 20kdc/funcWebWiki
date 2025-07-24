@@ -6,7 +6,7 @@ The 'frame' template:
 
 --]]
 
-local props = ...
+local props, renderOptions = ...
 
 local title = props.title or "?"
 
@@ -35,13 +35,15 @@ return h("html", {},
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
 						res(h("li", {class = "action-bar-title"}, h("h1", {}, title)))
-						for _, v in ipairs(wikiActions) do
-							local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)
-							if not hidden then
-								res(h("li", {class = "action-bar-action"},
-									WikiLink(requestPath, WikiTemplate(v.nameTemplate, {inline = true}), v.action)
-								))
-								res("\n")
+						if not renderOptions.staticSite then
+							for _, v in ipairs(wikiActions) do
+								local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)
+								if not hidden then
+									res(h("li", {class = "action-bar-action"},
+										WikiLink(requestPath, WikiTemplate(v.nameTemplate, {inline = true}), v.action)
+									))
+									res("\n")
+								end
 							end
 						end
 						res(h("li", {},

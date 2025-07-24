@@ -14,6 +14,7 @@ Render options are:
 * `renderType`: How the element is being rendered.
 * `disableErrorIsolation`: Disables error isolation in various components.
 * `getParam`: If not nil, then this gets a parameter. Use `renderOptions.getParam and renderOptions.getParam("param")`.
+* `staticSite`: Static site generation is running. This changes, for example, linking strategy.
 
 --]]
 
