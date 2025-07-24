@@ -1,5 +1,4 @@
 #!/bin/sh
-. ./setup.sh
 ./build
 
 # echo abc123 > test

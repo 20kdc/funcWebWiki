@@ -1,3 +1,5 @@
+-- Internal detail of funcWebWiki-kernel. The APIs directly exposed by this file can break at any time. --
+
 -- Implements the path parsing rules of funcWebWiki.
 
 -- allowNoExt is useful for page canonicalization before we know what extension to look for.

@@ -5,11 +5,13 @@ local oldPackagePath = package.path
 package.path = package.path:gsub("/%.lua/", "/")
 Log(kLogInfo, "package path rewrite: " .. oldPackagePath .. " -> " .. package.path)
 
+-- setmetatable(_G, {__newindex = function (t, k, v) rawset(t, k, v) print("GLOBAL: " .. k) end})
+
 -- setup utilities and safety measures
-beanbox = require("beanbox")
+local beanbox = require("beanbox")
 
 -- filesystem module
-wikifs = require("wikifs")
+local wikifs = require("wikifs")
 
 -- helptext --
 
@@ -37,6 +39,7 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --asset-wiki : unless --pack/--unpack intervene, forces asset wiki.
   --public-unsafe : by default, -l 127.0.0.1 is applied.
     beware that funcWebWiki is not safe for public access by default.
+  --unsandboxed-unsafe : gives access to all APIs. ***BE CAREFUL!***
   --no-direct-assets : disables `/_assets/` from the Redbean ZIP
   --no-favicon : disables `/favicon.ico` from the Redbean ZIP
   --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
@@ -69,6 +72,7 @@ local doReadOnly = false
 local doForceAssetWiki = false
 local doWasWikiBaseSet = false
 local publicUnsafe = false
+local unsandboxedUnsafe = false
 local doUnpack = false
 local doPack = false
 local scheduledTriggers = {}
@@ -123,6 +127,8 @@ local function parseArgs()
 			doForceAssetWiki = true
 		elseif arg == "--public-unsafe" then
 			publicUnsafe = true
+		elseif arg == "--unsandboxed-unsafe" then
+			unsandboxedUnsafe = true
 		elseif arg == "--unpack" then
 			-- force disk backend
 			doUnpack = true
@@ -241,20 +247,49 @@ function wikiPathList(prefix)
 	return total
 end
 
-function makeEnv()
-	local sandbox = beanbox(wikiRead)
-	-- gloabls from wikifs
-	sandbox.wikiPathParse = wikiPathParse
-	sandbox.wikiPathUnparse = wikiPathUnparse
-	sandbox.wikiPathTable = wikiPathTable
-	sandbox.wikiRead = wikiRead
-	sandbox.wikiReadStamp = wikiReadStamp
-	sandbox.wikiWrite = wikiWrite
-	sandbox.wikiDelete = wikiDelete
-	-- from here
-	sandbox.wikiPathList = wikiPathList
-	sandbox.wikiAbsoluteBase = wikiAbsoluteBase
-	sandbox.wikiReadOnly = wikiReadOnly
+function wikiMakeEnv()
+	local sandbox
+	if unsandboxedUnsafe then
+		-- _I wonder what we've gotten ourselves into..._
+		sandbox = table.assign({}, _G)
+		sandbox._G = sandbox
+		-- we have to swap this out or else code will env-escape by *accident*
+		sandbox.load = beanbox.makeLoad(sandbox)
+	else
+		sandbox = beanbox.makeSandbox()
+		-- globals from wikifs
+		sandbox.wikiPathParse = wikiPathParse
+		sandbox.wikiPathUnparse = wikiPathUnparse
+		sandbox.wikiPathTable = wikiPathTable
+		sandbox.wikiRead = wikiRead
+		sandbox.wikiReadStamp = wikiReadStamp
+		sandbox.wikiWrite = wikiWrite
+		sandbox.wikiDelete = wikiDelete
+		-- from here
+		sandbox.wikiPathList = wikiPathList
+		sandbox.wikiAbsoluteBase = wikiAbsoluteBase
+		sandbox.wikiReadOnly = wikiReadOnly
+	end
+
+	local safeLoad = sandbox.load
+
+	local function safeLoadfile(path, mode, env)
+		local code, err = wikiRead(path)
+		if not code then
+			return nil, err
+		end
+		return safeLoad(code, path, mode, env)
+	end
+
+	sandbox.loadfile = safeLoadfile
+
+	function sandbox.dofile(path, ...)
+		assert(path, "no path to dofile")
+		local code, err = safeLoadfile(path)
+		assert(code, path .. ": " .. tostring(err))
+		return code(...)
+	end
+
 	setmetatable(sandbox, {
 		__index = function (table, key)
 			-- print("__index on sandbox, " .. tostring(key))
@@ -274,14 +309,14 @@ end
 -- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
 
 -- exposed to REPL
-function runTrigger(v)
+function wikiRunTrigger(v)
 	Log(kLogInfo, "running trigger: " .. v)
 	local parsedUrl = ParseUrl(v, kUrlPlus)
 	local params = {}
 	for _, v in ipairs(parsedUrl.params) do
 		params[v[1]] = v[2]
 	end
-	local triggerEnv = makeEnv()
+	local triggerEnv = wikiMakeEnv()
 	-- dummy out some Redbean functions so that triggers can receive parameters and report output
 	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
 	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
@@ -295,7 +330,7 @@ function runTrigger(v)
 end
 
 for _, v in ipairs(scheduledTriggers) do
-	runTrigger(v)
+	wikiRunTrigger(v)
 end
 
 -- Packing is done late to allow triggers (used to setup the cache) to run before packing.
@@ -410,7 +445,7 @@ function OnHttpRequest()
 		return
 	end
 
-	local sandbox = makeEnv()
+	local sandbox = wikiMakeEnv()
 	if stripPrefix then
 		sandbox.GetPath = function () return path end
 	end

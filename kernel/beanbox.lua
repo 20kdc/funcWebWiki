@@ -1,3 +1,5 @@
+-- Internal detail of funcWebWiki-kernel. The APIs directly exposed by this file can break at any time. --
+
 -- 'Lua-Sandboxed Redbean'
 -- This does two things:
 -- 1. Hardens and extends the Lua 5.4 environment
@@ -90,17 +92,25 @@ function table.deepcopy(t)
 		return t
 	end
 end
+
 local treatments = {
 	-- Lua 5.4 global --
 	assert = "include",
 	collectgarbage = "include",
-	dofile = "special",
+	dofile = "-",
 	error = "include",
 	_G = function (env) return env end,
 	getmetatable = "include",
 	ipairs = "include",
-	load = "special",
-	loadfile = "special",
+	load = function (sandboxEnv)
+		return function (contents, filename, mode, env)
+			if rawequal(env, nil) then
+				env = sandboxEnv
+			end
+			return load(contents, filename, "t", env)
+		end
+	end,
+	loadfile = "-",
 	next = "include",
 	pairs = "include",
 	pcall = "include",
@@ -339,48 +349,14 @@ local treatments = {
 	argv = "-"
 }
 
-local function makeSandbox(safeReadfile)
-	safeReadfile = safeReadfile or function ()
-		return nil, "not supported"
-	end
-
-	local sandboxEnv
-
-	local function safeLoad(contents, filename, mode, env)
-		if rawequal(env, nil) then
-			env = sandboxEnv
-		end
-		return load(contents, filename, "t", env)
-	end
-
-	local function safeLoadfile(path, mode, env)
-		local code, err = safeReadfile(path)
-		if not code then
-			return nil, err
-		end
-		return safeLoad(code, path, mode, env)
-	end
-
-	local function safeDofile(path, ...)
-		assert(path, "no path to dofile")
-		local code, err = safeLoadfile(path)
-		assert(code, path .. ": " .. tostring(err))
-		return code(...)
-	end
-
-	sandboxEnv = {
-		load = safeLoad,
-		loadfile = safeLoadfile,
-		dofile = safeDofile
-	}
+local function makeSandbox()
+	local sandboxEnv = {}
 
 	for k, v in pairs(treatments) do
 		if v == "include" then
 			sandboxEnv[k] = _G[k]
 		elseif v == "-" then
 			-- do nothing
-		elseif v == "special" then
-			assert(sandboxEnv[k])
 		elseif v == "deepcopy" then
 			sandboxEnv[k] = table.deepcopy(_G[k])
 		elseif type(v) == "function" then
@@ -415,4 +391,7 @@ end
 
 checkTreatments()
 
-return makeSandbox
+return {
+	makeLoad = treatments.load,
+	makeSandbox = makeSandbox
+}

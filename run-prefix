@@ -1,3 +1,2 @@
 #!/bin/sh
-. ./setup.sh
 ape ./funcWebWiki-kernel.com -- --url-base /test/ --strip-prefix /test/
