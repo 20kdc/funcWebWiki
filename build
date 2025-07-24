@@ -6,5 +6,6 @@ cp thirdparty/redbean-3.0.0.com funcWebWiki-kernel.com
 cd kernel
 zip --quiet -r ../funcWebWiki-kernel.com .
 cd ..
+zip --quiet -r ../funcWebWiki-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt
 cp funcWebWiki-kernel.com funcWebWiki.com
 zip --quiet -r funcWebWiki.com wiki

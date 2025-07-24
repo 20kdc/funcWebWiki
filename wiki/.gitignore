@@ -1,2 +1,2 @@
-system_cache_*
-system_hashes.json
+system/cache/*
+system/hashes.json

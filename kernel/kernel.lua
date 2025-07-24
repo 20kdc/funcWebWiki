@@ -1,23 +1,76 @@
 -- wiki kernel --
 
-local initialGlobals = {}
-for k, v in pairs(_G) do
-	initialGlobals[k] = v
-end
+-- rewrite package paths; hidden directories are not very fun
+local oldPackagePath = package.path
+package.path = package.path:gsub("/%.lua/", "/")
+Log(kLogInfo, "package path rewrite: " .. oldPackagePath .. " -> " .. package.path)
 
--- this allows kernel.lua text-search highlighting --
-ProgramContentType("lua", "text/plain")
+-- setup utilities and safety measures
+beanbox = require("beanbox")
+
+-- filesystem module
+wikifs = require("wikifs")
+
+-- helptext --
+
+local help = [[
+
+funcWebWiki kernel
+
+can serve from either a directory (default `wiki/`) or Redbean zip assets
+ will prefer the directory if it seems valid (`system/request.lua` found)
+ overridable with `--prefer-asset-wiki`
+ if neither is valid, file wiki will be attempted (a fun bootstrap challenge)
+
+Redbean options accepted as normal; '--' divides between Redbean options and
+ funcWebWiki options, which are:
+
+  --help : prints this text to stdout. also exits *immediately*
+  --url-base /mywiki/ : sets the URL base to `/mywiki/`
+    the URL base is useful for reverse-proxy-subdirectory layouts
+  --strip-prefix /mywiki/ : requires all requests have prefix `/mywiki/`, and
+    then strips/replaces it with `/` ; always use with `--url-base`
+  --wiki-base wiki/ : sets the wiki base to the default, `wiki/`
+    the wiki base is the directory wiki files are stored in
+    setting this forces file wiki unless other options intervene
+  --read-only : the wiki cannot write or delete files
+  --asset-wiki : unless --pack/--unpack intervene, forces asset wiki.
+  --public-unsafe : by default, -l 127.0.0.1 is applied.
+    beware that funcWebWiki is not safe for public access by default.
+  --no-direct-assets : disables `/_assets/` from the Redbean ZIP
+  --no-favicon : disables `/favicon.ico` from the Redbean ZIP
+  --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
+    in read-only mode, Redbean's default is used. this overrides both
+
+'operators' (if any specified, exits after all complete. '--continue' cancels)
+  --trigger TRIGGER : runs system/triggers/TRIGGER.lua
+    TRIGGER is a 'URL'; SetStatus/SetHeader dummies, GetParam & Write work
+  --unpack : extract from asset-wiki, force file-wiki, triggers follow
+    beware: does not clean the directory!
+  --pack : force file-wiki, triggers happen, pack to asset-wiki,
+    force asset-wiki, beware: does not clean the ZIP!
+
+environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
+ for live editing of even broken wikis / remote bootstrapping
+environment variable WIKI_BASIC_AUTH can be set to a 'username:password'
+]]
+
+-- very ad-hoc early test
+if (GetAssetSize("/wiki/system/request.lua") or 0) > 0 then
+	help = help .. "\na valid asset wiki appears present; extract with --unpack for editing!\n"
+end
 
 -- autodetect / parse args --
 
-WIKI_BASE = "wiki/"
+local wikiBase = "wiki/"
 wikiAbsoluteBase = "/"
 local stripPrefix = nil
-wikiReadOnly = false
-local assetWikiLooksPresent = (GetAssetSize("/wiki/system_request.lua") or 0) > 0
-local preferAssetWiki = false
+local doReadOnly = false
+local doForceAssetWiki = false
+local doWasWikiBaseSet = false
 local publicUnsafe = false
 local doUnpack = false
+local doPack = false
 local scheduledTriggers = {}
 -- doContinue overrules doExit
 local doContinue = false
@@ -37,48 +90,6 @@ if BASIC_AUTH == "" then
 end
 if BASIC_AUTH then
 	BASIC_AUTH = "Basic " .. EncodeBase64(BASIC_AUTH)
-end
-
-local help = [[
-
-funcWebWiki kernel
-
-can serve from either a directory (default `wiki/`) or Redbean zip assets
- will prefer the directory if it seems valid (`system_request.lua` found)
- overridable with `--prefer-asset-wiki`
- if neither is valid, file wiki will be attempted (a fun bootstrap challenge)
-
-Redbean options accepted as normal; '--' divides between Redbean options and
- funcWebWiki options, which are:
-
-  --help : this text
-  --url-base /mywiki/ : sets the URL base to `/mywiki/`
-    the URL base is useful for reverse-proxy-subdirectory layouts
-  --strip-prefix /mywiki/ : requires all requests have prefix `/mywiki/`, and
-    then strips/replaces it with `/` ; always use with `--url-base`
-  --wiki-base wiki/ : sets the wiki base to the default, `wiki/`
-    the wiki base is the directory wiki files are stored in
-  --read-only : the wiki cannot write or delete files
-  --prefer-asset-wiki : even if a file wiki is present,
-    prefer the read-only 'asset wiki', if found
-  --public-unsafe : by default, -l 127.0.0.1 is applied.
-    beware that funcWebWiki is not safe for public access by default.
-  --trigger TRIGGER : runs system/triggers/TRIGGER.lua ; exits on all complete
-    TRIGGER is a 'URL'; SetStatus/SetHeader dummies, GetParam & Write work
-  --unpack : attempts to unpack the assets into the wiki base, then exits
-  --continue : continues even if --trigger or --unpack would exit
-  --no-direct-assets : disables `/_assets/` from the Redbean ZIP
-  --no-favicon : disables `/favicon.ico` from the Redbean ZIP
-  --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
-    in read-only mode, Redbean's default is used. this overrides both
-
-environment variable WIKI_TWM_PASSWORD sets 'tactical witch mode' password
- for live editing of even broken wikis / remote bootstrapping
-environment variable WIKI_BASIC_AUTH can be set to a 'username:password'
-]]
-
-if assetWikiLooksPresent then
-	help = help .. "\na valid asset wiki appears present; extract with unzip for editing!\n"
 end
 
 local function parseArgs()
@@ -101,20 +112,23 @@ local function parseArgs()
 		elseif arg == "--strip-prefix" then
 			stripPrefix = assert(getNextArg(), "no parameter given to --strip-prefix")
 		elseif arg == "--wiki-base" then
-			WIKI_BASE = assert(getNextArg(), "no parameter given to --wiki-base")
-			if WIKI_BASE:sub(#WIKI_BASE) ~= "/" then
-				WIKI_BASE = WIKI_BASE .. "/"
+			wikiBase = assert(getNextArg(), "no parameter given to --wiki-base")
+			if wikiBase:sub(#wikiBase) ~= "/" then
+				wikiBase = wikiBase .. "/"
 			end
+			doWasWikiBaseSet = true
 		elseif arg == "--read-only" then
-			wikiReadOnly = true
-		elseif arg == "--prefer-asset-wiki" then
-			preferAssetWiki = true
+			doReadOnly = true
+		elseif arg == "--asset-wiki" then
+			doForceAssetWiki = true
 		elseif arg == "--public-unsafe" then
 			publicUnsafe = true
 		elseif arg == "--unpack" then
 			-- force disk backend
-			assetWikiLooksPresent = false
 			doUnpack = true
+			doExit = true
+		elseif arg == "--pack" then
+			doPack = true
 			doExit = true
 		elseif arg == "--continue" then
 			doContinue = true
@@ -136,242 +150,88 @@ end
 
 parseArgs()
 
--- now that things like wiki base are set...
+-- setup FS and detect self-modification capability
 
-if payloadSizeOverride then
-	ProgramMaxPayloadSize(payloadSizeOverride)
-elseif not wikiReadOnly then
-	ProgramMaxPayloadSize(0x1000000)
-end
+local diskFs = wikifs.newDiskFS(wikiBase)
 
-local fileWikiLooksPresent = not not Slurp(WIKI_BASE .. "system_request.lua")
+local assetFs = wikifs.newAssetFS("/wiki/")
 
-if not preferAssetWiki then
-	if assetWikiLooksPresent and fileWikiLooksPresent then
-		assetWikiLooksPresent = false
-	end
-end
-
--- utilties --
-
-function table.assign(t, ...)
-	for _, v in ipairs({...}) do
-		if v then
-			for k, kv in pairs(v) do
-				t[k] = kv
-			end
-		end
-	end
-	return t
-end
-
-function table.deepcopy(t)
-	if type(t) == "table" then
-		local copy = {}
-		for k, v in pairs(t) do
-			copy[table.deepcopy(k)] = table.deepcopy(v)
-		end
-		return copy
+if not pcall(function ()
+	-- Redbean doesn't appear to report if it's allowed to self-modify.
+	-- But we can make a very sketchy guess based on Redbean 2.2's behaviour.
+	if not unix.fcntl(3, unix.F_SETLKW, unix.F_WRLCK) then
+		-- failed
+		wikifs.makeFSReadOnly(assetFs)
 	else
-		return t
+		-- ok, unlock
+		unix.fcntl(3, unix.F_SETLKW, unix.F_UNLCK)
 	end
+end) then
+	-- if things go really wrong, make *sure* we mark the FS read-only
+	wikifs.makeFSReadOnly(assetFs)
 end
 
--- The '~' character is used for filesystem storage, while the '/' character is canonical.
-function wikiPathParse(path)
-	if path:sub(1, 1) == "." then
-		return nil, "hidden"
+-- do pack/unpack from assets if asked.
+-- sequence of events
+
+local function fsTransfer(from, to, verbed)
+	local count = 0
+	for name, _ in pairs(from.pathTable("")) do
+		to.write(name, from.read(name))
+		count = count + 1
 	end
-	local res = {}
-	for v in string.gmatch(path, "[^/_]+") do
-		if v == "." or v == ".." then
-			return nil, "traversal components"
-		end
-		if v:find("\\") then
-			return nil, "traversal"
-		end
-		table.insert(res, v)
-	end
-	if #res == 0 then
-		-- this is relied upon to resolve all empty paths
-		return nil, "empty"
-	end
-	return res
+	print(tostring(count) .. " files " .. verbed)
 end
 
-function wikiPathUnparse(wp)
-	local path = ""
-	for k, v in ipairs(wp) do
-		if k ~= 1 then
-			path = path .. "/"
-		end
-		path = path .. v
-	end
-	return path
-end
-
--- In order to avoid having to deal with directory nonsense, we play a game here.
--- Namely, '/' is used 'internally' while '_' is used 'externally'.
-function wikiPathToDisk(path)
-	local parsed, err = wikiPathParse(path)
-	if not parsed then
-		return nil, ("invalid path (" .. tostring(err) .. "): " .. path)
-	end
-	local path = WIKI_BASE
-	for k, v in ipairs(parsed) do
-		if k ~= 1 then
-			path = path .. "_"
-		end
-		path = path .. v
-	end
-	return path
-end
-
-if assetWikiLooksPresent then
-	WIKI_BASE = "/wiki/"
-	Log(kLogInfo, "wiki in read-only Redbean asset mode (check `-- --help` to unpack etc.)")
-	wikiReadOnly = true
-
-	function wikiRead(path)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, err
-		end
-		-- Redbean will be loud if we don't check, and we may need a deletion mechanism in future anyway.
-		-- So empty files will act a little buggy.
-		if (GetAssetSize(path2) or 0) <= 0 then
-			return nil, "does not exist"
-		end
-		-- Continue.
-		local a = LoadAsset(path2)
-		if not a then
-			return nil, "does not exist"
-		end
-		return a, nil
-	end
-
-	function wikiReadStamp(path)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, err
-		end
-		local res = GetAssetSize(path2) or 0
-		-- See wikiRead for rationale.
-		if res <= 0 then
-			return nil, nil, "does not exist"
-		end
-		-- stamp is empty as hint to wikiPageLinks that, frankly, we don't have a clue
-		return res, ""
-	end
-
-	function wikiPathTable(prefix)
-		local total = {}
-		for _, namePre in ipairs(GetZipPaths(WIKI_BASE)) do
-			local name = namePre:sub(#WIKI_BASE + 1)
-			local parsed, err = wikiPathParse(name)
-			if parsed then
-				local unparse = wikiPathUnparse(parsed)
-				if (not prefix) or (unparse:sub(1, #prefix) == prefix) then
-					total[unparse] = true
-				end
-			end
-		end
-		return total
-	end
-else
-	Log(kLogInfo, "wiki in directory mode")
-
-	function wikiRead(path)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, err
-		end
-		local a, b = Slurp(path2)
-		return a, b and tostring(b)
-	end
-
-	-- Returns size, stamp, error
-	function wikiReadStamp(path)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, nil, err
-		end
-		local stat, err = unix.stat(path2)
-		if not stat then
-			return nil, nil, tostring(err)
-		end
-		local size = stat:size()
-		return size, tostring(stat:mtim()) .. "|" .. tostring(stat:ino()) .. "|" .. tostring(size), nil
-	end
-
-	-- Important note:
-	-- This function needs to be as atomic as possible.
-	-- Other processes should perceive a swap, ideally a different inode.
-	function wikiWrite(path, data)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, err
-		end
-		local temp = WIKI_BASE .. "_wikiWrite_" .. UuidV7()
-		local a, b = Barf(temp, data)
-		if not b then
-			-- success ; overwrite
-			-- This is only 'guessable' without checking code, but:
-			-- cosmopolitan libc guarantees move-replace semantics on Windows also.
-			-- See https://github.com/jart/cosmopolitan/blob/master/libc/calls/renameat-nt.c#L92
-			a, b = unix.rename(temp, path2)
-		end
-		-- no matter what, the temp file must be gone
-		unix.unlink(temp)
-		return a, b and tostring(b)
-	end
-
-	function wikiDelete(path)
-		local path2, err = wikiPathToDisk(path)
-		if not path2 then
-			return nil, err
-		end
-		local a, b = unix.unlink(path2)
-		return a, b and tostring(b)
-	end
-
-	function wikiPathTable(prefix)
-		local total = {}
-		for name, kind, ino, off in assert(unix.opendir(WIKI_BASE)) do
-			local parsed, err = wikiPathParse(name)
-			if parsed then
-				local unparse = wikiPathUnparse(parsed)
-				if (not prefix) or (unparse:sub(1, #prefix) == prefix) then
-					total[unparse] = true
-				end
-			end
-		end
-		return total
-	end
-end
+local primaryFs
 
 if doUnpack then
-	unix.makedirs(WIKI_BASE)
-	local count = 0
-	for _, namePre in ipairs(GetZipPaths("/wiki/")) do
-		local parsed, err = wikiPathParse(namePre:sub(7))
-		if parsed then
-			local unparse = wikiPathUnparse(parsed)
-			wikiWrite(unparse, LoadAsset(namePre))
-			count = count + 1
-		end
-	end
-	print(tostring(count) .. " files unpacked")
+	unix.makedirs(wikiBase)
+	fsTransfer(assetFs, diskFs, "unpacked")
+	primaryFs = diskFs
 end
 
-if wikiReadOnly then
-	function wikiWrite(path, data)
-		return nil, "wiki read-only"
-	end
-	function wikiDelete(path)
-		return nil, "wiki read-only"
+if doUnpack or doPack then
+	primaryFs = diskFs
+end
+
+-- if pack/unpack didn't force it, pick which FS to use going forward
+
+if not primaryFs then
+	if doForceAssetWiki then
+		primaryFs = assetFs
+	elseif doWasWikiBaseSet then
+		primaryFs = diskFs
+	else
+		-- now it's time to guess
+		local fileWikiLooksPresent = not not diskFs.readStamp("system/request.lua")
+		local assetWikiLooksPresent = not not assetFs.readStamp("system/request.lua")
+		if fileWikiLooksPresent then
+			primaryFs = diskFs
+		elseif assetWikiLooksPresent then
+			primaryFs = assetFs
+		else
+			primaryFs = diskFs
+		end
 	end
 end
+
+-- pull globals from wikifs
+
+wikiPathParse = wikifs.pathParse
+wikiPathUnparse = wikifs.pathUnparse
+wikiRead = primaryFs.read
+wikiReadStamp = primaryFs.readStamp
+wikiPathTable = primaryFs.pathTable
+wikiWrite = primaryFs.write
+wikiDelete = primaryFs.delete
+
+local function updateReadOnlyFlag()
+	wikiReadOnly = doReadOnly or primaryFs.readOnly
+end
+updateReadOnlyFlag()
+
+-- final touches on the environment
 
 function wikiPathList(prefix)
 	local total = {}
@@ -382,340 +242,24 @@ function wikiPathList(prefix)
 	return total
 end
 
-function makeSandbox()
-	local sandboxEnv
-
-	local function safeLoad(contents, filename, mode, env)
-		if rawequal(env, nil) then
-			env = sandboxEnv
-		end
-		return load(contents, filename, "t", env)
-	end
-
-	local function safeLoadfile(path, mode, env)
-		local code, err = wikiRead(path)
-		if not code then
-			return nil, err
-		end
-		return safeLoad(code, path, mode, env)
-	end
-
-	local function safeDofile(path, ...)
-		assert(path, "no path to dofile")
-		local code, err = safeLoadfile(path)
-		assert(code, "package '" .. path .. "': " .. tostring(err))
-		return code(...)
-	end
-
-	local packageLoaded = {}
-	local function safeRequire(path)
-		if packageLoaded[path] then
-			return packageLoaded[path]
-		end
-		local res = safeDofile(path) or true
-		packageLoaded[path] = res
-		return res
-	end
-
-	sandboxEnv = {
-		-- Lua 5.4 global --
-		assert = assert,
-		collectgarbage = collectgarbage,
-		dofile = safeDofile,
-		error = error,
-		-- _G is added
-		getmetatable = getmetatable,
-		ipairs = ipairs,
-		load = safeLoad,
-		loadfile = safeLoadfile,
-		next = next,
-		pairs = pairs,
-		pcall = pcall,
-		-- print -- skipped to prevent stdio contamination ; use Log or Write instead as appropriate
-		rawequal = rawequal,
-		rawget = rawget,
-		rawlen = rawlen,
-		rawset = rawset,
-		select = select,
-		setmetatable = setmetatable,
-		tonumber = tonumber,
-		tostring = tostring,
-		type = type,
-		_VERSION = _VERSION,
-		warn = warn,
-		xpcall = xpcall,
-		-- Lua 5.4 libraries --
-		coroutine = table.deepcopy(coroutine),
-		string = table.deepcopy(string),
-		utf8 = table.deepcopy(utf8),
-		table = table.deepcopy(table),
-		math = table.deepcopy(math),
-		package = { loaded = packageLoaded },
-		require = safeRequire,
-		debug = { traceback = debug.traceback },
-		os = { clock = os.clock, date = os.date, difftime = os.difftime, time = os.time },
-		-- Redbean --
-		Write = Write,
-		SetStatus = SetStatus,
-		SetHeader = SetHeader,
-		SetCookie = SetCookie,
-		GetParam = GetParam,
-		EscapeHtml = EscapeHtml,
-		EscapeIp = EscapeIp, -- undocumented?
-		-- LaunchBrowser skipped...,
-		CategorizeIp = CategorizeIp,
-		DecodeLatin1 = DecodeLatin1,
-		EncodeHex = EncodeHex,
-		DecodeHex = DecodeHex,
-		DecodeBase32 = DecodeBase32,
-		EncodeBase32 = EncodeBase32,
-		DecodeBase64 = DecodeBase64,
-		EncodeBase64 = EncodeBase64,
-		DecodeJson = DecodeJson,
-		EncodeJson = EncodeJson,
-		EncodeLua = EncodeLua,
-		EncodeLatin1 = EncodeLatin1,
-		EscapeFragment = EscapeFragment,
-		EscapeHost = EscapeHost,
-		EscapeLiteral = EscapeLiteral,
-		EscapeParam = EscapeParam,
-		EscapePass = EscapePass,
-		EscapePath = EscapePath,
-		EscapeSegment = EscapeSegment,
-		EscapeUser = EscapeUser,
-		-- EvadeDragnetSurveillance skipped...
-		UuidV4 = UuidV4,
-		UuidV7 = UuidV7,
-		-- Fetch skipped...
-		FormatHttpDateTime = FormatHttpDateTime,
-		FormatIp = FormatIp,
-		-- GetAsset* skipped...
-		GetBody = GetBody,
-		GetCookie = GetCookie,
-		GetCryptoHash = GetCryptoHash,
-		Curve25519 = Curve25519,
-		GetRemoteAddr = GetRemoteAddr,
-		GetResponseBody = GetResponseBody,
-		GetClientAddr = GetClientAddr,
-		GetClientFd = GetClientFd,
-		IsClientUsingSsl = IsClientUsingSsl,
-		GetServerAddr = GetServerAddr,
-		GetDate = GetDate,
-		GetHeader = GetHeader,
-		GetHeaders = GetHeaders,
-		GetLogLevel = GetLogLevel,
-		GetHost = GetHost,
-		GetHostOs = GetHostOs,
-		GetHostIsa = GetHostIsa,
-		GetMonospaceWidth = GetMonospaceWidth,
-		GetMethod = GetMethod,
-		GetParams = GetParams,
-		GetPath = GetPath,
-		GetEffectivePath = GetEffectivePath,
-		GetScheme = GetScheme,
-		GetSslIdentity = GetSslIdentity,
-		GetStatus = GetStatus,
-		GetTime = GetTime,
-		GetUrl = GetUrl,
-		GetHttpVersion = GetHttpVersion,
-		GetHttpReason = GetHttpReason,
-		GetRandomBytes = GetRandomBytes,
-		GetRedbeanVersion = GetRedbeanVersion,
-		GetZipPaths = GetZipPaths,
-		HasParam = HasParam,
-		-- HidePath / IsHiddenPath skipped
-		IsPublicIp = IsPublicIp,
-		IsPrivateIp = IsPrivateIp,
-		IsLoopbackIp = IsLoopbackIp,
-		-- IsAssetCompressed skipped
-		IndentLines = IndentLines,
-		-- LoadAsset / StoreAsset skipped
-		Log = Log,
-		ParseHttpDateTime = ParseHttpDateTime,
-		ParseUrl = ParseUrl,
-		IsAcceptablePath = IsAcceptablePath,
-		IsReasonablePath = IsReasonablePath,
-		EncodeUrl = EncodeUrl,
-		ParseIp = ParseIp,
-		-- Slurp, Barf, Program*, IsDaemon, Program* skipped
-		Sleep = Sleep,
-		-- Route, RouteHost, RoutePath skipped
-		ServeAsset = ServeAsset,
-		ServeError = ServeError,
-		ServeRedirect = ServeRedirect,
-		-- SetLogLevel skipped
-		VisualizeControlCodes = VisualizeControlCodes,
-		Underlong = Underlong,
-		Crc32 = Crc32,
-		Crc32c = Crc32c,
-		Md5 = Md5,
-		Sha1 = Sha1,
-		Sha224 = Sha224,
-		Sha256 = Sha256,
-		Sha384 = Sha384,
-		Sha512 = Sha512,
-		Bsf = Bsf,
-		Bsr = Bsr,
-		Popcnt = Popcnt,
-		Rdtsc = Rdtsc,
-		Lemur64 = Lemur64,
-		Rand64 = Rand64,
-		Rdrand = Rdrand,
-		Rdseed = Rdseed,
-		GetCpuCount = GetCpuCount,
-		GetCpuCore = GetCpuCore,
-		GetCpuNode = GetCpuNode,
-		Decimate = Decimate,
-		MeasureEntropy = MeasureEntropy,
-		Deflate = Deflate,
-		Inflate = Inflate,
-		Benchmark = Benchmark,
-		oct = oct,
-		hex = hex,
-		bin = bin,
-		-- ResolveIp skipped...
-		IsTrustedIp = IsTrustedIp,
-		-- Program*, AcquireToken, CountTokens, Blackhole skipped...
-		-- Redbean modules --
-		argon2 = table.deepcopy(argon2),
-		re = table.deepcopy(re),
-		-- Redbean constants --
-		kLogDebug = kLogDebug,
-		kLogError = kLogError,
-		kLogFatal = kLogFatal,
-		kLogInfo = kLogInfo,
-		kLogVerbose = kLogVerbose,
-		kLogWarn = kLogWarn,
-		kUrlLatin1 = kUrlLatin1,
-		kUrlPlus = kUrlPlus,
-		-- wiki --
-		wikiPathParse = wikiPathParse,
-		wikiPathUnparse = wikiPathUnparse,
-		wikiPathTable = wikiPathTable,
-		wikiPathList = wikiPathList,
-		wikiAbsoluteBase = wikiAbsoluteBase,
-		wikiRead = wikiRead,
-		wikiReadStamp = wikiReadStamp,
-		wikiWrite = wikiWrite,
-		wikiDelete = wikiDelete,
-		wikiReadOnly = wikiReadOnly
-	}
-	sandboxEnv._G = sandboxEnv
-	return sandboxEnv
-end
-
-function checkSandbox()
-	local sandbox = makeSandbox()
-	local exclusionReasons = {
-		AcquireToken = true,
-		Barf = true,
-		Blackhole = true,
-		Compress = true,
-		CountTokens = true,
-		EvadeDragnetSurveillance = true,
-		Fetch = true,
-		GetAssetComment = true,
-		GetAssetLastModifiedTime = true,
-		GetAssetMode = true,
-		GetAssetSize = true,
-		GetComment = true,
-		GetFragment = true,
-		GetLastModifiedTime = true,
-		GetPass = true,
-		GetPayload = true,
-		GetPort = true,
-		GetUser = true,
-		GetVersion = true,
-		HasControlCodes = true,
-		HidePath = true,
-		HighwayHash64 = true,
-		IsAcceptableHost = true,
-		IsAcceptablePort = true,
-		IsAssetCompressed = true,
-		IsCompressed = true,
-		IsDaemon = true,
-		IsHeaderRepeatable = true,
-		IsHiddenPath = true,
-		IsValidHttpToken = true,
-		LaunchBrowser = true,
-		LoadAsset = true,
-		ParseHost = true,
-		ParseParams = true,
-		ProgramAddr = true,
-		ProgramBrand = true,
-		ProgramCache = true,
-		ProgramCertificate = true,
-		ProgramContentType = true,
-		ProgramDirectory = true,
-		ProgramGid = true,
-		ProgramHeader = true,
-		ProgramHeartbeatInterval = true,
-		ProgramLogBodies = true,
-		ProgramLogMessages = true,
-		ProgramLogPath = true,
-		ProgramMaxPayloadSize = true,
-		ProgramMaxWorkers = true,
-		ProgramPidPath = true,
-		ProgramPort = true,
-		ProgramPrivateKey = true,
-		ProgramRedirect = true,
-		ProgramSslCiphersuite = true,
-		ProgramSslClientVerify = true,
-		ProgramSslFetchVerify = true,
-		ProgramSslInit = true,
-		ProgramSslPresharedKey = true,
-		ProgramSslRequired = true,
-		ProgramSslTicketLifetime = true,
-		ProgramTimeout = true,
-		ProgramTokenBucket = true,
-		ProgramTrustedIp = true,
-		ProgramUid = true,
-		ProgramUniprocess = true,
-		ResolveIp = true,
-		Route = true,
-		RouteHost = true,
-		RoutePath = true,
-		ServeIndex = true,
-		ServeListing = true,
-		ServeStatusz = true,
-		SetLogLevel = true,
-		Slurp = true,
-		StoreAsset = true,
-		Uncompress = true,
-		__signal_handlers = true,
-		arg = true,
-		argv = true,
-		finger = true,
-		io = true,
-		lsqlite3 = true,
-		maxmind = true,
-		path = true,
-		print = true,
-		unix = true,
-	}
-	local res = {}
-	for k, v in pairs(initialGlobals) do
-		if not sandbox[k] then
-			if not exclusionReasons[k] then
-				table.insert(res, k)
-			end
-		end
-	end
-	table.sort(res)
-	for _, v in ipairs(res) do
-		-- If you're seeing this, it means your Redbean has functions which haven't been explicitly denied but were implicitly denied.
-		Log(kLogWarn, "unclassified global: " .. v .. "\n" .. v .. " = true,")
-	end
-end
-
-checkSandbox()
-
 function makeEnv()
-	local sandbox = makeSandbox()
+	local sandbox = beanbox(wikiRead)
+	-- gloabls from wikifs
+	sandbox.wikiPathParse = wikiPathParse
+	sandbox.wikiPathUnparse = wikiPathUnparse
+	sandbox.wikiPathTable = wikiPathTable
+	sandbox.wikiRead = wikiRead
+	sandbox.wikiReadStamp = wikiReadStamp
+	sandbox.wikiWrite = wikiWrite
+	sandbox.wikiDelete = wikiDelete
+	-- from here
+	sandbox.wikiPathList = wikiPathList
+	sandbox.wikiAbsoluteBase = wikiAbsoluteBase
+	sandbox.wikiReadOnly = wikiReadOnly
 	setmetatable(sandbox, {
 		__index = function (table, key)
 			-- print("__index on sandbox, " .. tostring(key))
-			local value = table.require("system/lib/" .. key .. ".lua")
+			local value = table.dofile("system/lib/" .. key .. ".lua")
 			assert(value ~= nil, "nil global '" .. key .. "' is erroneous")
 			rawset(table, key, value)
 			return value
@@ -727,6 +271,77 @@ function makeEnv()
 	})
 	return sandbox
 end
+
+-- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
+
+-- exposed to REPL
+function runTrigger(v)
+	Log(kLogInfo, "running trigger: " .. v)
+	local parsedUrl = ParseUrl(v, kUrlPlus)
+	local params = {}
+	for _, v in ipairs(parsedUrl.params) do
+		params[v[1]] = v[2]
+	end
+	local triggerEnv = makeEnv()
+	-- dummy out some Redbean functions so that triggers can receive parameters and report output
+	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
+	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
+	triggerEnv.SetStatus = function () end
+	triggerEnv.SetHeader = function () end
+	triggerEnv.Write = function (data) io.write(tostring(data)) end
+	triggerEnv.GetParam = function (k) return params[k] end
+	triggerEnv.GetParams = function (k) return params end
+	triggerEnv.dofile("system/trigger/" .. (parsedUrl.path or "") .. ".lua")
+	io.flush()
+end
+
+for _, v in ipairs(scheduledTriggers) do
+	runTrigger(v)
+end
+
+-- Packing is done late to allow triggers (used to setup the cache) to run before packing.
+if doPack then
+	assert(not assetFs.readOnly, "self-modification (-*) not enabled")
+	fsTransfer(diskFs, assetFs, "packed")
+	-- Someone, theoretically, may have a script which packs the wiki and then serves it...
+	primaryFs = assetFs
+	updateReadOnlyFlag()
+end
+
+if (not doContinue) and doExit then
+	os.exit(0)
+end
+
+-- report mode
+
+if primaryFs == assetFs then
+	if assetFs.readOnly then
+		Log(kLogInfo, "wiki in read-only Redbean asset mode (check `-- --help` to unpack etc.)")
+	else
+		Log(kLogInfo, "wiki in self-modifying Redbean asset mode (scary)")
+	end
+elseif primaryFs.readOnly then
+	Log(kLogInfo, "wiki in read-only directory mode")
+else
+	Log(kLogInfo, "wiki in directory mode")
+end
+
+-- Anything that touches Redbean (we have confirmed we will serve files) happens here.
+
+if not publicUnsafe then
+	ProgramAddr("127.0.0.1")
+end
+
+-- this allows kernel.lua text-search highlighting --
+ProgramContentType("lua", "text/plain")
+
+if payloadSizeOverride then
+	ProgramMaxPayloadSize(payloadSizeOverride)
+elseif not wikiReadOnly then
+	ProgramMaxPayloadSize(0x1000000)
+end
+
+-- Redbean callbacks
 
 function OnWorkerStart()
 end
@@ -801,41 +416,4 @@ function OnHttpRequest()
 		sandbox.GetPath = function () return path end
 	end
 	sandbox.dofile("system/request.lua")
-end
-
--- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
-
--- exposed to REPL
-function runTrigger(v)
-	Log(kLogInfo, "running trigger: " .. v)
-	local parsedUrl = ParseUrl(v, kUrlPlus)
-	local params = {}
-	for _, v in ipairs(parsedUrl.params) do
-		params[v[1]] = v[2]
-	end
-	local triggerEnv = makeEnv()
-	-- dummy out some Redbean functions so that triggers can receive parameters and report output
-	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
-	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
-	triggerEnv.SetStatus = function () end
-	triggerEnv.SetHeader = function () end
-	triggerEnv.Write = function (data) io.write(tostring(data)) end
-	triggerEnv.GetParam = function (k) return params[k] end
-	triggerEnv.GetParams = function (k) return params end
-	triggerEnv.dofile("system/trigger/" .. (parsedUrl.path or "") .. ".lua")
-	io.flush()
-end
-
-for _, v in ipairs(scheduledTriggers) do
-	runTrigger(v)
-end
-
-if (not doContinue) and doExit then
-	os.exit(0)
-end
-
--- Anything that touches Redbean (we have confirmed we will serve files) happens here.
-
-if not publicUnsafe then
-	ProgramAddr("127.0.0.1")
 end
