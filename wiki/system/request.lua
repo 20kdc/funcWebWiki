@@ -4,10 +4,8 @@ This is the entrypoint called by the 'kernel' for each request.
 
 Here is how things happen there:
 
-First, three rules (that can be controlled from the command-line):
+First, two rules (that can be controlled from the command-line):
 * The request path may be optionally stripped of a prefix, which is replaced with "/".
-* If the request path starts with `/_assets/`, the asset is served from Redbean's asset system.
-  This means that, i.e. `/_assets/help.txt` gives the Redbean developer help.
 * `/favicon.ico` is also served from Redbean's `favicon.ico`.
 
 If `WIKI_TWM_PASSWORD` is in the environment, the query parameter `_twm` is checked.
@@ -31,6 +29,13 @@ Upon each request, a new environment is created, which consists of:
 
 --]]
 
+local requestPath = GetPath()
+
+if requestPath:sub(1, 9) == "/_assets/" then
+	return ServeAsset(requestPath:sub(9))
+end
+
+
 -- The action parameter of the request.
 local requestAction = GetParam("action") or wikiDefaultAction
 
@@ -38,7 +43,7 @@ local actionParsed = wikiActions[requestAction]
 
 if not actionParsed then
 	if requestAction ~= wikiDefaultAction then
-		local redirectPath = wikiAbsoluteBase .. (GetPath():sub(2))
+		local redirectPath = wikiAbsoluteBase .. (requestPath:sub(2))
 		-- print(redirectPath)
 		ServeRedirect(303, redirectPath)
 		return
@@ -47,7 +52,7 @@ end
 
 -- resolve page
 
-local requestPath, requestExt = wikiResolvePage(GetPath())
+local requestPath, requestExt = wikiResolvePage(requestPath)
 
 -- auth checks
 

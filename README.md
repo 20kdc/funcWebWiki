@@ -33,23 +33,23 @@ The contents of the `thirdparty` directory make a best-effort attempt at license
 A funcWebWiki consists of:
 
 * The `wiki/` directory, containing all the mutable contents of the wiki.
-* The `kernel/` directory, essentially a 'standard' embeddable Redbean application; really just three files, one of which is a proxy `.init.lua` because that's a hidden file.
+* The `kernel/` directory, essentially a 'standard' embeddable Redbean application.
 * The Redbean server itself.
 
 The kernel and Redbean server can also be bundled together into a single file via the usual Redbean 'embed files with zip' mechanism.
 
-I would recommend making a checksum of all `system` files in the wiki when you make your personal on-disk fork so you can figure out what you've changed (and what you probably don't want to overwrite if you ever need to do some kind of update).
+If you aren't managing the `system` directory via Git, be sure to keep in mind the `updateSystemHashes` trigger and the `system/hashes.json` file, as these let you track what parts of the system you've changed.
 
 The wiki can be started in various ways, but they all have this in common: some configurations may need an explicit `ape` loader to launch. See [Cosmopolitan libc documentation](https://justine.lol/cosmopolitan/).
 
 * If you're working with a Git clone of this repository, start with `thirdparty/redbean-3.0.0.com -D kernel`.
-	* You can use your own copy of Redbean if you want, though funcWebWiki has only been tested on this specific Redbean version.)
+	* You can use your own copy of Redbean if you want; Redbean 2.2 is actually required to use mutable packed wikis right now.
 * If you're working with a "kernel only" funcWebWiki `.com` file, it can be started directly where the current directory contains a `/wiki` directory.
 * If you're working with a wiki packed into a single `.com` file, then like any packed Redbean application it can be run directly.
 	* The wiki can be unpacked with `unzip` (also extracts non-content files) or with `somewiki.com -- --unpack` (doesn't do that).
 	* If an unpacked wiki is present, it will be preferred over the packed wiki.
-	* Packing a wiki can be done by zipping in the contents of the `wiki` directory; the zip should have the paths `/kernel.lua` and `/wiki/system_request.lua`.
-	* Packed wikis are read-only, but this may change at some point. _Use `--read-only` if you need to be sure._ (It depends on how cooperative Redbean `StoreAsset` is and if I get around to it.)
+	* Packing a wiki can be done by zipping in the contents of the `wiki` directory; the zip should have the paths `/kernel.lua` and `/wiki/system/request.lua` (along with the rest of the kernel & wiki)
+	* Packed wikis are writable if the Redbean supports it and is set to allow it.
 	* Beware that _in read-only mode, certain caches won't work._ If you didn't pre-build caches (`--trigger buildCaches`) beforehand, features like backlinks can be pretty nasty on CPU.
 
 The wiki performs `-l 127.0.0.1` by itself to prevent remote access by default.

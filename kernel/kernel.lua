@@ -40,8 +40,7 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --public-unsafe : by default, -l 127.0.0.1 is applied.
     beware that funcWebWiki is not safe for public access by default.
   --unsandboxed-unsafe : gives access to all APIs. ***BE CAREFUL!***
-  --no-direct-assets : disables `/_assets/` from the Redbean ZIP
-  --no-favicon : disables `/favicon.ico` from the Redbean ZIP
+  --no-favicon : disables hard-coded routes for `/favicon.ico` & `robots.txt`.
   --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
     in read-only mode, Redbean's default is used. this overrides both
 
@@ -79,7 +78,6 @@ local scheduledTriggers = {}
 -- doContinue overrules doExit
 local doContinue = false
 local doExit = false
-local directAssets = true
 local favicon = true
 local payloadSizeOverride = nil
 
@@ -142,8 +140,6 @@ local function parseArgs()
 			local val = assert(getNextArg(), "no parameter given to --trigger")
 			table.insert(scheduledTriggers, val)
 			doExit = true
-		elseif arg == "--no-direct-assets" then
-			directAssets = false
 		elseif arg == "--no-favicon" then
 			favicon = false
 		elseif arg == "--payload-size" then
@@ -391,20 +387,28 @@ function OnHttpRequest()
 
 	local path = GetPath()
 
+	-- note that this takes precedence over prefix stripping
+	if favicon and (path == "/favicon.ico" or path == "/robots.txt") then
+		local data = primaryFs.read(path:sub(2))
+		if not data then
+			if (GetAssetSize(path) or 0) <= 0 then
+				SetStatus(404)
+				return
+			else
+				return RoutePath(path)
+			end
+		else
+			Write(data)
+			return
+		end
+	end
+
 	if stripPrefix then
 		if path:sub(1, #stripPrefix) ~= stripPrefix then
 			SetStatus(404)
 			return
 		end
 		path = "/" .. path:sub(#stripPrefix + 1)
-	end
-
-	if favicon and path == "/favicon.ico" then
-		return ServeAsset(path)
-	end
-
-	if directAssets and path:sub(1, 9) == "/_assets/" then
-		return ServeAsset(path:sub(9))
 	end
 
 	local ewm = GetParam("_twm")
