@@ -13,7 +13,7 @@ local title = props.title or "?"
 local nonSystemPages = {}
 
 for _, v in ipairs(wikiPathList()) do
-	if v:sub(1, 7) ~= "system/" then
+	if (not v:find(".z.", 1, true)) and v:sub(1, 7) ~= "system/" then
 		table.insert(nonSystemPages, v)
 	end
 end

@@ -17,8 +17,10 @@ for _, v in ipairs(wikiPathList("system/action/")) do
 			path = v,
 			action = action,
 			nameTemplate = nameTemplate,
-			hidden = not not typeIndicator:match("z.", 1, true),
-			mutator = not not typeIndicator:match("w.", 1, true)
+			-- ".z." is consistently used to indicate 'hidden' now.
+			-- It might be an idea to unify the flag-parsing code, but that means adding even more pages.
+			hidden = not not typeIndicator:match(".z.", 1, true),
+			mutator = not not typeIndicator:match(".w.", 1, true)
 		})
 		actionTable[action] = struct
 		table.insert(actionTable, struct)

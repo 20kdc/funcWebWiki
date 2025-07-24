@@ -17,9 +17,13 @@ for k, v in ipairs(lst) do
 		Write("\"n" .. tostring(k) .. "\" [label=\"" .. wikiAST.renderToString(wikiTitleStylize(v), {renderType = "renderPlain"}) .. "\"]\n")
 	end
 end
+local linkType = GetParam("linkType") or "link"
+if linkType == "" then
+	linkType = "link"
+end
 for k, v in pairs(map) do
-	for pageRes, _ in pairs(wikiPageLinks(k)) do
-		if map[pageRes] then
+	for pageRes, linkKinds in pairs(wikiPageLinks(k)) do
+		if linkKinds[linkType] and map[pageRes] then
 			Write("\"" .. v .. "\" -> \"" .. map[pageRes] .. "\"\n")
 		end
 	end

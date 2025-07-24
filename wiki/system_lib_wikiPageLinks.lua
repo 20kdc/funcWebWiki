@@ -70,12 +70,22 @@ return function (path)
 
 	-- RENDER {
 	local rendered = WikiTemplate(path, { linkGen = true })
+	local function markLink(toPath, t)
+		-- don't count self-links
+		if toPath ~= path then
+			local a = links[toPath] or {}
+			links[toPath] = a
+			a[t] = true
+		end
+	end
 	wikiAST.render(function (node)
 		local cls = getmetatable(node)
 		if cls == WikiLink then
-			-- don't count self-links
-			if node.path ~= path then
-				links[node.path] = true
+			markLink(node.path, node.type)
+		elseif cls == WikiTemplate then
+			if type(node.templatePath) == "string" then
+				local resolved = wikiResolvePage(node.templatePath)
+				markLink(resolved, "template")
 			end
 		elseif cls == WikiDepMarker then
 			if node.depPath then

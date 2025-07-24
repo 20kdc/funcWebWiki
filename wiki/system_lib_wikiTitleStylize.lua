@@ -2,23 +2,23 @@
 -- For bug-prevention, this never returns a flat string.
 
 return function (path)
-	local forced = wikiResolvePage("system/pageTitle/" .. path)
+	local idx = path:find(".", 1, true)
+	local pathNoExt = path
+	if idx then
+		pathNoExt = path:sub(1, idx - 1)
+	end
+	local forced = wikiResolvePage("system/pageTitle/" .. pathNoExt)
 	if wikiReadStamp(forced) then
 		return WikiTemplate(forced, {inline = true})
 	end
-	local pfx = ""
 	if path:sub(1, 8) == "special/" then
 		-- Special pages are pushed to the front of the list.
-		pfx = "! "
-		path = path:sub(9)
+		return {"! ", pathNoExt:sub(9)}
+
 	end
 	if path:sub(1, 7) == "system/" then
 		-- System pages are rendered with their extensions.
 		return {"~/", path:sub(8)}
 	end
-	local idx = path:find(".", 1, true)
-	if idx then
-		return {pfx, path:sub(1, idx - 1)}
-	end
-	return {pfx, path}
+	return {pathNoExt}
 end

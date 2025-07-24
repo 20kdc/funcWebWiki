@@ -36,12 +36,7 @@ end
 Assuming you have a working knowledge of Lua, everything custom about funcWebWiki you absolutely need to know to start writing is contained in the following 'postcard':
 
 ```t.lua
-return h("div", {class="editor2pane"}, {
-	WikiTemplate("special/mdSyntaxCard", {}, true),
-	h("div", {}, {
-		WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, false)
-	})
-})
+return WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, false)
 ```
 
 ## How Things Work
