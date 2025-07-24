@@ -71,11 +71,11 @@ body {
 	padding-right: 1em;
 }
 
-.action-bar li:first-child {
+.action-bar-title {
 	flex-grow: 1;
 }
 
-.action-bar li h1 {
+.action-bar-title h1 {
 	padding-right: 1em;
 	margin: 0;
 }
@@ -95,6 +95,7 @@ pre {
 	background: #f0f0f0;
 	color: black;
 	margin: 0;
+	text-wrap-mode: wrap;
 }
 
 code {
@@ -127,4 +128,21 @@ textarea {
 
 a, a:visited, a:hover, a:active {
 	color: blue;
+}
+
+@media print {
+	.frame-logo {
+		display: none;
+	}
+	.action-bar .action-bar-action {
+		display: none;
+	}
+	.frame-nav {
+		display: none;
+	}
+	.frame-right-body {
+		padding-bottom: 0em;
+		padding-left: 0em;
+		padding-right: 0em;
+	}
 }

@@ -64,3 +64,29 @@ The hope is that as long as reading the stamp _before_ reading the contents will
 On wikis being read from Redbean assets, due to ZIP file limitations, this primitive returns an empty string if the file exists, and fails if it doesn't.
 
 In this case wiki code must either regenerate on each access or trust that the current cache contents are accurate.
+
+## Copied out of `Start.md` for being off-topic
+
+I wrote a functioning version of funcWebWiki in a weekend after bouncing off of TiddlyWiki5 for being too complex and burning out trying to graft what I wanted into TiddlyWiki Classic with a bunch of things going on at once. It has ultimately become a week project due to polishing and Markdown issues, but I think I can justify a release.
+
+The authentication hook should be present _enough_ to provide a hint but not obtrusive enough to not be easily removed by someone who thinks it's a pain. It should be easy to remove unessential functions like the graphviz exporter via simply deleting their files, and it just works.
+
+Something I would have added if it wouldn't have been too much trouble would be a way to generate a static site from the wiki. I believe it's possible, though.
+
+## The Context
+
+The particular problem that got me started on this mess basically amounts to a relatively large address book.
+
+But without some level of templating, changes to the visual structure had to be propagated, somehow; and easily available portable wiki software just isn't up to that kind of templating, except for TiddlyWiki.
+
+Sadly, TiddlyWiki has two key problems:
+
+1. Being designed as a single-file-wiki first makes backup awkward at best, and I find it somewhat alarming that the _existence of multiple tabs_ is dangerous and can lead to reversion on many savers.
+   * From some later testing, TiddlyWiki5's Node.js variant in 'server edition' solves some of these problems. However, needing to press `Get latest changes from the server` on all tabs after an edit or risk losing a previous edit if you edit a Tiddler again on a different tab (as yet untested: how do tags play into this?).
+2. TiddlyWiki5 involves, simply put, _layers_ of custom language, i.e. filter language, action language, template language.
+
+By opposition:
+
+* funcWebWiki sacrifices serverless in-browser operation for a directory-of-files-first model. Redbean's portability gets it pretty far on modern hardware; lack of 32-bit platform support is the largest hole in the support story, and my testing seems to indicate the `qemu` performance isn't noticably bad except during error sweeps. (A port to another web server is also possible.)
+* Editing session conflict between two different tabs exists as with any 'naive' client/server wiki, but for a single user that actually requires they be editing the same page at two places at the same time, not simply having two places at the same time existing and then executing an edit on one, then the other.
+* It has some file naming conventions and some custom Markdown semantics, but wherever possible the answer is Lua.

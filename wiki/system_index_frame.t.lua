@@ -34,11 +34,11 @@ return h("html", {},
 				),
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
-						res(h("li", {}, h("h1", {}, title)))
+						res(h("li", {class = "action-bar-title"}, h("h1", {}, title)))
 						for _, v in ipairs(wikiActions) do
 							local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)
 							if not hidden then
-								res(h("li", {},
+								res(h("li", {class = "action-bar-action"},
 									WikiLink(requestPath, WikiTemplate(v.nameTemplate, {inline = true}), v.action)
 								))
 								res("\n")
