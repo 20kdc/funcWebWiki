@@ -44,7 +44,7 @@ return WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, fa
 1. Outside of the 'kernel', _each funcWebWiki request essentially reloads everything._ (See <system/request> if you're curious as to what, exactly, this means.)
 2. funcWebWiki uses a 'noun/verb' system, where nouns are pages and verbs are called [actions](system/action). The default verb is <?lua h("code", {}, wikiDefaultAction) ?>.
 3. Global scripts intended for maintenance are known as [triggers](system/trigger).
-4. [Renderers](system/extensions/render) are responsible for translating markup into the internal [wikiAST](system/lib/wikiAST), which can be examined for link mapping and so forth. \
+4. [Renderers](system/extensions/render) are responsible for translating markup into the internal [wikiAST](system/lib/wikiAST), which can be examined for link mapping and so forth.
    See file extensions below for how they are matched.
 5. The code to create various Lua global functions and variables is stored in <system/lib>.
 6. Actions, renderers, and Lua globals (where not from `kernel.lua`) are all pages, and can thus be added and modified by page editing.
@@ -105,7 +105,7 @@ Some particular notes:
 
 * System pages are usually 'technically interconnected' and thus shouldn't be internally renamed.
   <system/pageTitle> exists for translation purposes, and it's used for special pages.
-* <system/actionName> can be used to translate the visual action names without changing their technical IDs (and breaking everything). \
+* <system/actionName> can be used to translate the visual action names without changing their technical IDs (and breaking everything).
   These and the special page titles make up essentially all of the 'core' UI visible at a glance.
   ('raw' is renamed 'download' to test this mechanism without bloating everything.)
 * It's variable as to if a message is hard-coded or not, but there are only so many places to look.

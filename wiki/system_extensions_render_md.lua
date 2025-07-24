@@ -28,6 +28,8 @@ end
 -- Escapes (and fastpaths).
 -- The only way to go deeper is to simply skip to the end character.
 local inlineEscapeParser = wikiParser(
+	-- 6.8: Soft line breaks. compliance: Commenting this line is the 'option'.
+	"\n", function (remainder, m) table.insert(contents, {h("br"), "\n"}) return remainder end,
 	-- 2.4, 6.7: escapes and hard line breaks: \*this\*
 	-- compliance: IF A TREE FALLS IN A FOREST: no invisible syntax (would've utterly broken the fastpath)
 	"\\(.)", function (remainder, m, v)
@@ -40,7 +42,7 @@ local inlineEscapeParser = wikiParser(
 	end,
 	-- 6.9: **fastpath - any character that won't trigger another rule should be consumed here**
 	-- **by extension: inline characters which do trigger rules must be added here**
-	"[^<*_`%[\\!]+", function (remainder, m)
+	"[^<*_`%[\\!\n]+", function (remainder, m)
 		table.insert(contents, m)
 		return remainder
 	end,
@@ -153,6 +155,11 @@ inlineParser = wikiParser(
 )
 
 if props.inline then
+	-- Strip terminating line breaks to prevent general misbehaviour.
+	-- Theoretically speaking, the 'right' idea here is to tell paragraph blocks not to generate `<p>` if they are at root level.
+	while code:sub(-1) == "\n" do
+		code = code:sub(1, -2)
+	end
 	local remainder = inlineParser(code)
 	assert(remainder == "", remainder)
 	return contents
@@ -170,15 +177,17 @@ else
 			code = code:sub(nextLineEnd + 1)
 		end
 	end
-	-- step 2: block stack
-	-- blockStack entries have:
-	-- * node (wikiAST node array to be appended to parent contents)
-	-- * contents (optional; wikiAST node array)
-	--   if not contents then this is a leaf block, so we need to close it before we can insert a new block
-	-- * (optional) handle (function (self, line) -> remainder, preserve)
-	-- * (optional) topUnhandled (function (self, line) -> wasHandled) (paragraphs use this to capture lines after they may be intercepted by other parsers)
-	-- * blankLineAbort (boolean)
-	-- * close (function (self))
+	--[[
+	step 2: block stack
+	blockStack entries have:
+	* node (wikiAST node array to be appended to parent contents)
+	* contents (optional; wikiAST node array)
+	  if not contents then this is a leaf block, so we need to close it before we can insert a new block
+	* (optional) handle (function (self, line) -> remainder, preserve)
+	* (optional) topUnhandled (function (self, line) -> wasHandled) (paragraphs use this to capture lines after they may be intercepted by other parsers)
+	* blankLineAbort (boolean)
+	* close (function (self))
+	--]]
 	local blockStack = {}
 	local function closeTopBlock()
 		local topBlock = table.remove(blockStack)

@@ -16,11 +16,11 @@
    Retroactively assigning paragraph text to a heading,
     for a harder-to-type result, feels unnecessary.
 
-3. ### The Parable Of The Appended Star
+3. ### The Parable Of Lines-And-Star
 
    Paragraphs should be broken by empty lines.
-   * But block syntax is more important. \
-     Such is life.
+   * But block syntax is more important.
+     Line breaks are always hard, such is life.
    *Indentation matters.*
 
 4. ### The Parable Of Lists

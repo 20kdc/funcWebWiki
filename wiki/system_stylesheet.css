@@ -124,6 +124,7 @@ textarea {
 .code-block-comment {
 	color: green;
 	font-family: serif;
+	white-space: normal;
 }
 
 a, a:visited, a:hover, a:active {
