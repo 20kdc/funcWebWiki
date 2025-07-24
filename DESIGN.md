@@ -17,12 +17,15 @@
 	* The 'system hashes' feature can be removed by:
 		* Deleting `system/trigger/updateSystemHashes` and `system/hashes`
 		* Reverting `special/systemPages` to use `system/templates/dir`
-	* The following pages are leaf pages that can be harmlessly deleted from the system:
+	* The following pages are leaf pages that can be (more-or-less) harmlessly deleted:
+		* `special/mdSyntaxCard`
 		* `special/systemPages`
 		* `special/missingPages`
 		* `special/unreferencedPages`
+		* `Start`
 		* `system/action/backlinks`
 		* `system/action/graphviz`
+		* `system/templates/recursion`
 		* All 'directory information' pages
 			* `system/action`
 			* `system/actionName`
