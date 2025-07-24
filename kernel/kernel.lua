@@ -188,7 +188,6 @@ local primaryFs
 if doUnpack then
 	unix.makedirs(wikiBase)
 	fsTransfer(assetFs, diskFs, "unpacked")
-	primaryFs = diskFs
 end
 
 if doUnpack or doPack then
@@ -220,16 +219,16 @@ end
 
 wikiPathParse = wikifs.pathParse
 wikiPathUnparse = wikifs.pathUnparse
-wikiRead = primaryFs.read
-wikiReadStamp = primaryFs.readStamp
-wikiPathTable = primaryFs.pathTable
-wikiWrite = primaryFs.write
-wikiDelete = primaryFs.delete
 
-local function updateReadOnlyFlag()
+local function rebuildFSGlobals()
 	wikiReadOnly = doReadOnly or primaryFs.readOnly
+	wikiRead = primaryFs.read
+	wikiReadStamp = primaryFs.readStamp
+	wikiPathTable = primaryFs.pathTable
+	wikiWrite = primaryFs.write
+	wikiDelete = primaryFs.delete
 end
-updateReadOnlyFlag()
+rebuildFSGlobals()
 
 -- final touches on the environment
 
@@ -305,7 +304,7 @@ if doPack then
 	fsTransfer(diskFs, assetFs, "packed")
 	-- Someone, theoretically, may have a script which packs the wiki and then serves it...
 	primaryFs = assetFs
-	updateReadOnlyFlag()
+	rebuildFSGlobals()
 end
 
 if (not doContinue) and doExit then
