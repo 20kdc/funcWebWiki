@@ -53,7 +53,10 @@ else
 			dumpTarFile(vAdjName, wikiRead(v))
 		end
 		if wikiEnumPageFilter(v, {getParam = GetParam}, true) then
-			local template = WikiTemplate("system/index/frame", { path = v })
+			local template = WikiTemplate("system/index/frame", {
+				title = wikiTitleStylize(v),
+				path = v
+			})
 			local html = wikiAST.renderToString(template, { renderType = "renderHtml", disableErrorIsolation = true, staticSite = true, absoluteBase = "" })
 			dumpTarFile(vAdjName .. ".html", html)
 			if v == preferredIndex then
