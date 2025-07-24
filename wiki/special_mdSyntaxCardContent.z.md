@@ -18,15 +18,15 @@
 
 3. ### The Parable Of The Appended Star
 
-   Paragraphs must be broken by empty lines,
-    or else they are appended to by all things,
-    * even these! (This may be our error.)
+   Paragraphs should be broken by empty lines.
+   * But block syntax is more important. \
+     Such is life.
+   *Indentation matters.*
 
 4. ### The Parable Of Lists
 
      * While we're not CommonMark compliant, so it appears to say,
    * These are different lists,
-
      * For the indentation of the second's point is less than that of the first.
 
 5. ### The Parable Of Image-Template-Equivalence

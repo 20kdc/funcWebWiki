@@ -174,7 +174,9 @@ else
 	-- blockStack entries have:
 	-- * node (wikiAST node array to be appended to parent contents)
 	-- * contents (optional; wikiAST node array)
-	-- * handle (function (self, line) -> remainder, preserve)
+	--   if not contents then this is a leaf block, so we need to close it before we can insert a new block
+	-- * (optional) handle (function (self, line) -> remainder, preserve)
+	-- * (optional) topUnhandled (function (self, line) -> wasHandled) (paragraphs use this to capture lines after they may be intercepted by other parsers)
 	-- * blankLineAbort (boolean)
 	-- * close (function (self))
 	local blockStack = {}
@@ -184,14 +186,22 @@ else
 		topBlock:close()
 	end
 	local function prepareForInsert()
-		local topIndex = #blockStack
-		if blockStack[topIndex] then
-			return blockStack[topIndex].contents
-		else
-			return contents
+		while true do
+			local topBlock = blockStack[#blockStack]
+			if topBlock then
+				if not topBlock.contents then
+					-- our current block is a leaf block
+					closeTopBlock()
+				else
+					return topBlock.contents
+				end
+			else
+				return contents
+			end
 		end
 	end
 	local function openBlock(block)
+		block.topUnhandled = block.topUnhandled or function (self, line) return false end
 		table.insert(prepareForInsert(), block.node)
 		table.insert(blockStack, block)
 	end
@@ -233,10 +243,13 @@ else
 
 			-- Log(kLogInfo, "'" .. line .. "'")
 			local function listParser(remainder, m, preIndent, num)
-				local itemPattern = "^([0-9]+%.[ \t]*)"
-				if num == "*" then
+				-- See CommonMark 5.2.
+				-- Be aware that these item patterns are used to derive the indentation.
+				-- Be sure to keep in sync with the 'init' parsers below.
+				local itemPattern = "^([0-9]+[%.%)][ \t]+)"
+				if num == "-" or num == "+" or num == "*" then
 					num = nil
-					itemPattern = "^(%*[ \t]*)";
+					itemPattern = "^([%-%+%*][ \t]+)";
 				else
 					num = tostring(tonumber(num) or 1)
 				end
@@ -341,30 +354,36 @@ else
 					})
 					return ""
 				end,
-				-- numbered list
-				"([ \t]*)([0-9]+)%.[ \t]*", listParser,
-				-- bulleted list
-				"([ \t]*)(%*)[ \t]*", listParser,
-				-- blank
+				-- numbered & bulleted lists.
+				-- these both have three sections: early indent (captured), marker (list marker / bullet list marker from spec, captured), and 1st item post-indent (implied in group capture).
+				"([ \t]*)([0-9]+)[%.%)][ \t]+", listParser,
+				"([ \t]*)([%-%+%*])[ \t]+", listParser,
+				-- we've parsed _something,_ but a blank line is all that remains. do nothing
 				"[ \t]*", function (remainder, m)
 					if remainder ~= "" then return m .. remainder end
 					return ""
 				end,
-				-- paragraph
+				-- unhandled content; either add to existing paragraph or surrender
 				function (remainder)
-					openBlock({
-						node = {},
-						text = remainder,
-						handle = function (self, line)
-							self.text = self.text .. "\n" .. line
-							return "", true
-						end,
-						-- Blank lines always abort paragraphs
-						blankLineAbort = true,
-						close = function (self)
-							table.insert(self.node, h("p", {}, parserWithContents(inlineParser, self.text)))
-						end
-					})
+					local topBlock = blockStack[#blockStack]
+					if not (topBlock and topBlock:topUnhandled(remainder)) then
+						openBlock({
+							node = {},
+							text = remainder,
+							handle = function (self, line)
+								return line, true
+							end,
+							topUnhandled = function (self, line)
+								self.text = self.text .. "\n" .. line
+								return true
+							end,
+							-- Blank lines always abort paragraphs
+							blankLineAbort = true,
+							close = function (self)
+								table.insert(self.node, h("p", {}, parserWithContents(inlineParser, self.text)))
+							end
+						})
+					end
 					return ""
 				end
 			)(line) == "")
