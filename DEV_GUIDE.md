@@ -10,6 +10,12 @@ _However,_ for the purposes of a _release,_ there are a number of concerns:
 
 For this, the `fww` shell script is used. (Developers running Windows are advised of <https://github.com/jart/cosmopolitan> and its development environment.)
 
+## Release Naming
+
+Release tags are named `rYYMMDD-P`. The following Lua pattern works: `r[0-9][0-9][0-9][0-9][0-9][0-9]%-[a-z]`.
+
+The implication is that funcWebWiki doesn't have a distinct release pattern; it has snapshots.
+
 ## Version Compatibility Attempts
 
 The version compatibility goal is that once a version of funcWebWiki is released, the Git branch `anchor` will be created.
