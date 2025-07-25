@@ -73,6 +73,8 @@ build() {
 	set -e
 	kernel_build
 	wiki_build
+	rm -f release.zip
+	zip --quiet -r release.zip funcWebWiki.com funcWebWiki-kernel.com COPYING thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt
 }
 
 if [ "$CMD" = "help" ]; then
