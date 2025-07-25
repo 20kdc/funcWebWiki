@@ -179,7 +179,10 @@ end
 local function fsTransfer(from, to, verbed)
 	local count = 0
 	for name, _ in pairs(from.pathTable("")) do
+		local oldLogLevel = GetLogLevel()
+		SetLogLevel(kLogWarn)
 		to.write(name, from.read(name))
+		SetLogLevel(oldLogLevel)
 		count = count + 1
 	end
 	print(tostring(count) .. " files " .. verbed)

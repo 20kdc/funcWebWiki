@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-./build
-ape ./funcWebWiki.com -- --asset-wiki

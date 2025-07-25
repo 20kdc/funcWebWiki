@@ -133,8 +133,13 @@ return {
 		end
 
 		function fs.delete(path)
-			-- ugh this is so bad!
-			return fs.write(path, "")
+			-- so we only want to delete a file if it existed in the first place
+			-- this is an append-only log, so we can't afford to be silly
+			if fs.read(path) then
+				return fs.write(path, "")
+			else
+				return nil, "file didn't exist"
+			end
 		end
 
 		return fs

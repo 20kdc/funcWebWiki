@@ -1,5 +1,0 @@
-#!/bin/sh
-set -e
-./build
-export WIKI_TWM_PASSWORD=test
-ape ./funcWebWiki-kernel.com
