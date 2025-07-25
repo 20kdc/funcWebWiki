@@ -1,3 +1,4 @@
 #!/bin/sh
+set -e
 curl "localhost:8080/?action=graphviz&nospecial=1&linkType=$1" > graph.dot
 xdot -f fdp graph.dot

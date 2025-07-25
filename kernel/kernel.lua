@@ -302,25 +302,41 @@ function wikiMakeEnv()
 	return sandbox
 end
 
+function wikiMakeEnvEmuRequest(options)
+	local method = options.method or "GET"
+	local params = options.params or {}
+	local parsedUrl = options.parsedUrl or ParseUrl(options.url, kUrlPlus)
+	for _, v in ipairs(parsedUrl.params) do
+		params[v[1]] = v[2]
+	end
+	-- dummy out some Redbean functions so that triggers can receive parameters and report output
+	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
+	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
+	local sandbox = wikiMakeEnv()
+	sandbox.SetStatus = function () end
+	sandbox.SetHeader = function () end
+	sandbox.ServeRedirect = function () end
+	sandbox.Write = function (data) options.writer(tostring(data)) end
+	sandbox.GetPath = function (k) return parsedUrl.path end
+	sandbox.GetParam = function (k) return params[k] end
+	sandbox.GetParams = function (k) return params end
+	sandbox.GetHeader = function (k) return nil end
+	sandbox.GetMethod = function (k) return method end
+	return sandbox
+end
+
 -- Anything that needs to happen after we have initialized funcWebWiki but before Redbean has opened the server happens here.
 
 -- exposed to REPL
 function wikiRunTrigger(v)
 	Log(kLogInfo, "running trigger: " .. v)
+	-- the path on this is *intentionally* left wrong
 	local parsedUrl = ParseUrl(v, kUrlPlus)
-	local params = {}
-	for _, v in ipairs(parsedUrl.params) do
-		params[v[1]] = v[2]
-	end
-	local triggerEnv = wikiMakeEnv()
-	-- dummy out some Redbean functions so that triggers can receive parameters and report output
-	-- for example, an SSG trigger might output, say, a TAR or ZIP file via Write & report it as application/octet-stream
-	-- the reason for these semantics in triggers is so that a simple 'bridge' verb can be used to execute triggers from the web UI
-	triggerEnv.SetStatus = function () end
-	triggerEnv.SetHeader = function () end
-	triggerEnv.Write = function (data) io.write(tostring(data)) end
-	triggerEnv.GetParam = function (k) return params[k] end
-	triggerEnv.GetParams = function (k) return params end
+	local triggerEnv = wikiMakeEnvEmuRequest({
+		writer = io.write,
+		url = v,
+		method = "POST"
+	})
 	triggerEnv.dofile("system/trigger/" .. (parsedUrl.path or "") .. ".lua")
 	io.flush()
 end

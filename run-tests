@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+./build
+ape ./funcWebWiki-kernel.com -F tests.lua --

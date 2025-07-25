@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 ./build
 # redbean-3.0.0 doesn't support -*
 cp thirdparty/redbean-2.2.com funcWebWiki-rx.com

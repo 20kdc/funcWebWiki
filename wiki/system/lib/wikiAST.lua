@@ -166,9 +166,14 @@ end
 
 -- Renders to the Redbean Write function.
 -- Assumes that renderOptions (if provided) has been immediately generated and modifies it accordingly.
+-- Implements the `disableErrorIsolation` URL parameter for testing.
 function wikiAST.serveRender(n, renderOptions)
 	renderOptions = renderOptions or {}
 	renderOptions.getParam = GetParam
+	if GetParam("disableErrorIsolation") == "1" then
+		renderOptions.disableErrorIsolation = true
+		-- error("alarm test")
+	end
 	if renderOptions.renderType == "renderPlain" then
 		SetHeader("Content-Type", "text/plain")
 	else

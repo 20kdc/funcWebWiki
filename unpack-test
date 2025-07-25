@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 ./build
 rm -rf unpack-dir
 ape ./funcWebWiki.com -- --wiki-base unpack-dir --unpack
