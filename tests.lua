@@ -5,7 +5,8 @@ argv = arg
 load(LoadAsset("kernel.lua"))(...)
 -- test... --
 local function runTest(name, reqRes, options)
-	print("-- " .. name .. " --")
+	io.write("-- " .. name .. " -- ")
+	io.flush()
 	local res = ""
 	if type(options) == "string" then
 		options = { url = options }

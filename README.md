@@ -12,11 +12,10 @@ Pull requests and feature requests are probably a little endangered; if a pull r
 
 ## Scary Parts
 
-funcWebWiki is not the most robust system, and the markup engine could use some work.
-
-Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
-
-There are probably a _lot_ of scary bottlenecks in the code, particularly around backlinks. The caching system should be reasonably stable now, though.
+* funcWebWiki is not the most robust system, and the markup engine could use some work.
+* Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
+	* The `wikiAuthCheck` hook should be present _enough_ to provide a hint but not obtrusive enough to not be easily removed by someone who thinks it's a pain.
+* There are probably a _lot_ of scary bottlenecks in the code, particularly around backlinks. The caching system should be reasonably stable now, though.
 
 ## Licensing
 

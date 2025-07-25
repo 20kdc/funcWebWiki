@@ -67,7 +67,8 @@ body {
 }
 
 .action-bar li {
-	display: block;
+	/* using inline here makes Firefox-2006 do mostly what we want while not affecting modern browsers (which rely on the flex) */
+	display: inline;
 	padding-right: 1em;
 }
 

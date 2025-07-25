@@ -26,16 +26,14 @@ kernel_build() {
 	kernel_clean
 	# make kernel build
 	cp thirdparty/redbean-3.0.0.com funcWebWiki-kernel.com
-	cd kernel
-	zip --quiet -r ../funcWebWiki-kernel.com .
-	cd ..
-	zip --quiet -r ../funcWebWiki-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt
 	# redbean-3.0.0 doesn't support -*
 	cp thirdparty/redbean-2.2.com funcWebWiki-rx-kernel.com
 	cd kernel
+	zip --quiet -r ../funcWebWiki-kernel.com .
 	zip --quiet -r ../funcWebWiki-rx-kernel.com .
 	cd ..
-	zip --quiet -r ../funcWebWiki-rx-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt
+	zip --quiet -r funcWebWiki-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
+	zip --quiet -r funcWebWiki-rx-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
 }
 
 wiki_clean() {
@@ -54,8 +52,8 @@ wiki_build() {
 	$REDBEAN -D kernel -- --trigger genSiteTar > static.tar
 	# create embedded wiki coms
 	cp funcWebWiki-kernel.com funcWebWiki.com
-	zip --quiet -r funcWebWiki.com wiki
 	cp funcWebWiki-rx-kernel.com funcWebWiki-rx.com
+	zip --quiet -r funcWebWiki.com wiki
 	zip --quiet -r funcWebWiki-rx.com wiki
 	# extract static
 	rm -rf static-dir
@@ -80,7 +78,12 @@ build() {
 if [ "$CMD" = "help" ]; then
 	echo "-- funcWebWiki developer build system --"
 	echo "REDBEAN = $REDBEAN"
-	echo "commands: help, build, run, run-prefix, run-ro, run-rx, run-tests, run-unsandboxed"
+	echo "commands:"
+	echo " help: shows this text"
+	echo " build: builds the wiki ; creates funcWebWiki-kernel.com, funcWebWiki.com, funcWebWiki-rx-kernel.com, funcWebWiki-rx.com"
+	echo " of these, funcWebWiki-kernel.com and funcWebWiki.com should be safe to release"
+	echo " run, run-prefix, run-ro, run-rx, run-unsandboxed: run, run in site prefix mode, run in read-only mode, run in self-modifying mode, run in unsandboxed mode"
+	echo " make-anchor-wiki-tar: uses git archive to extract the 'anchor' tag"
 elif [ "$CMD" = "clean" ]; then
 	clean
 elif [ "$CMD" = "build" ]; then
@@ -99,12 +102,19 @@ elif [ "$CMD" = "run-rx" ]; then
 	build
 	cp funcWebWiki-rx.com funcWebWiki-scratch.com
 	ape ./funcWebWiki-scratch.com -* -- --asset-wiki
-elif [ "$CMD" = "run-tests" ]; then
-	build
-	ape ./funcWebWiki-kernel.com -F tests.lua --
 elif [ "$CMD" = "run-unsandboxed" ]; then
 	build
 	ape ./funcWebWiki-kernel.com -- --unsandboxed-unsafe
+elif [ "$CMD" = "test" ]; then
+	build
+	ape ./funcWebWiki-kernel.com -F tests.lua --
+	rm -rf anchor-dir
+	mkdir anchor-dir
+	cd anchor-dir
+	tar -xf ../anchor.tar
+	ape ../funcWebWiki-kernel.com -F tests.lua --
+elif [ "$CMD" = "make-anchor-wiki-tar" ]; then
+	git archive anchor wiki tests.lua -o anchor.tar
 else
 	echo "unknown command (try help)"
 fi

@@ -65,14 +65,6 @@ On wikis being read from Redbean assets, due to ZIP file limitations, this primi
 
 In this case wiki code must either regenerate on each access or trust that the current cache contents are accurate.
 
-## Copied out of `Start.md` for being off-topic
-
-I wrote a functioning version of funcWebWiki in a weekend after bouncing off of TiddlyWiki5 for being too complex and burning out trying to graft what I wanted into TiddlyWiki Classic with a bunch of things going on at once. It has ultimately become a week project due to polishing and Markdown issues, but I think I can justify a release.
-
-The authentication hook should be present _enough_ to provide a hint but not obtrusive enough to not be easily removed by someone who thinks it's a pain. It should be easy to remove unessential functions like the graphviz exporter via simply deleting their files, and it just works.
-
-Something I would have added if it wouldn't have been too much trouble would be a way to generate a static site from the wiki. I believe it's possible, though.
-
 ## The Context
 
 The particular problem that got me started on this mess basically amounts to a relatively large address book.

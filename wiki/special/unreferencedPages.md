@@ -16,7 +16,7 @@ for _, v in ipairs(lst) do
 end
 
 for _, v in ipairs(lst) do
-	if wikiEnumPageFilter(v, renderOptions) then
+	if wikiEnumPageFilter(v, renderOptions, true) then
 		for k, _ in pairs(wikiPageLinks(v)) do
 			unreferenced[k] = nil
 		end

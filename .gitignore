@@ -2,6 +2,8 @@ graph.dot
 graph.svg
 *.com
 unpack-dir/*
+anchor-dir/*
 wiki.sum
 static.tar
 static-dir/*
+anchor.tar
