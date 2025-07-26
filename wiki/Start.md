@@ -45,25 +45,25 @@ return WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, fa
 2. funcWebWiki uses a 'noun/verb' system, where nouns are pages and verbs are called [actions](system/action). The default verb is <?lua h("code", {}, wikiDefaultAction) ?>.
 3. Global scripts intended for maintenance are known as [triggers](system/trigger).
 4. [Renderers](system/extensions/render) are responsible for translating markup into the internal [wikiAST](system/lib/wikiAST), which can be examined for link mapping and so forth.
-   See file extensions below for how they are matched.
+	See file extensions below for how they are matched.
 5. The code to create various Lua global functions and variables is stored in <system/lib>.
 6. Actions, renderers, and Lua globals (where not from `kernel.lua`) are all pages, and can thus be added and modified by page editing.
-   * If you're interested, an index of the code can be found at <special/systemPages>. The assignment of Lua globals allows for in-code hyperlinking.
+	* If you're interested, an index of the code can be found at <special/systemPages>. The assignment of Lua globals allows for in-code hyperlinking.
 7. File extensions mean a lot in funcWebWiki. They have two uses:
-   * 'Flags'.
-     * `.z.` hides pages from the left navigation sidebar and the top action bar.
-     * `.w.` is used to indicate actions that write (and should not be available on a read-only wiki, where they won't work).
-   * An extension can also be seen as a series of smaller extensions (see <system/lib/wikiExtIter>). This view is used when a file needs a global 'type'.
-     * For example, `.t.lua` is read as the extension `t.lua` (Lua template) and `lua` (Lua code). The largest registered extension wins, so `t.lua` is run.
+	* 'Flags'.
+		* `.z.` hides pages from the left navigation sidebar and the top action bar.
+		* `.w.` is used to indicate actions that write (and should not be available on a read-only wiki, where they won't work).
+	* An extension can also be seen as a series of smaller extensions (see <system/lib/wikiExtIter>). This view is used when a file needs a global 'type'.
+		* For example, `.t.lua` is read as the extension `t.lua` (Lua template) and `lua` (Lua code). The largest registered extension wins, so `t.lua` is run.
 8. The character `_` is used to emulate directory separators without creating the issues that would result from real directories. Inside the wiki, it is known as `/`.
 9. Page titles are stylized for convenience.
-   * `system/` pages (considered part of the wiki software itself) are stylized as `~/`.
-   * `special/` pages (intended as bookmarks) are stylized as `! `.
+	* `system/` pages (considered part of the wiki software itself) are stylized as `~/`.
+	* `special/` pages (intended as bookmarks) are stylized as `! `.
 10. All pages are also templates that can be included in other pages.
 11. Whenever possible, custom languages were avoided.
-    * The [funcWebWiki Markdown parser](system/extensions/render/md) has its oddities.
-    * Where it was necessary to add metadata, the filenames are used.
-    * When a more general-purpose answer was required, Lua was used; for example, this text calculates <?lua 6 * 7?> from 6 * 7.
+	* The [funcWebWiki Markdown parser](system/extensions/render/md) has its oddities.
+	* Where it was necessary to add metadata, the filenames are used.
+	* When a more general-purpose answer was required, Lua was used; for example, this text calculates <?lua 6 * 7?> from 6 * 7.
 
 ## Using the Redbean REPL
 
@@ -78,7 +78,7 @@ For instance, `makeEnv().wikiDefaultExt` will return <code >"<?lua tostring(wiki
 * <Start?action=graphviz> -- DOT file for the whole wiki! (<system/action/graphviz> for code.)
 * <system/index/frame> is responsible for the 'outer shell'. It displays neatly enough inside the wiki itself.
 * <system/templates/logo> is the logo.
-  Theoretically, it could be anything renderable, but it's been setup to try and match the page top bar.
+	Theoretically, it could be anything renderable, but it's been setup to try and match the page top bar.
 * <system/request> is the entrypoint for requests; it describes what role the kernel has, versus the much more tightly-coupled rest of the system.
 * <system/extensions/render/md> contains the somewhat cobbled-together semi-Markdown parser.
 * <system/extensions/render/lua> contains the code which displays Lua, including mixed Lua/Markdown content.
@@ -104,8 +104,8 @@ funcWebWiki does not attempt a full translation system. However, room has been l
 Some particular notes:
 
 * System pages are usually 'technically interconnected' and thus shouldn't be internally renamed.
-  <system/pageTitle> exists for translation purposes, and it's used for special pages.
+	<system/pageTitle> exists for translation purposes, and it's used for special pages.
 * <system/actionName> can be used to translate the visual action names without changing their technical IDs (and breaking everything).
-  These and the special page titles make up essentially all of the 'core' UI visible at a glance.
-  ('raw' is renamed 'download' to test this mechanism without bloating everything.)
+	These and the special page titles make up essentially all of the 'core' UI visible at a glance.
+	('raw' is renamed 'download' to test this mechanism without bloating everything.)
 * It's variable as to if a message is hard-coded or not, but there are only so many places to look.

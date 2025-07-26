@@ -219,16 +219,27 @@ else
 			closeTopBlock()
 		end
 	end
-	-- theoretically, this 'should' be handling tab=4. however, doing that caused a bunch of issues, so. uh. no?
+	-- This converts some text to an abstract 'indentation object' (a number, presently).
 	local function toIndent(text)
-		return text:gsub("[^\t ]", " ")
+		return #(text:gsub("\t", "    "):gsub("[^ ]", " "))
+	end
+	local function addIndent(a, b)
+		return a + b
 	end
 	local function isIndent(text, indent)
-		if text:sub(1, #indent) == indent then
-			return true, text:sub(#indent + 1)
-		else
-			return false
+		local ptr = 1
+		while indent > 0 do
+			local chr = text:sub(ptr, ptr)
+			if chr == " " then
+				indent = indent - 1
+			elseif chr == "\t" then
+				indent = indent - 4
+			else
+				return false
+			end
+			ptr = ptr + 1
 		end
+		return true, text:sub(ptr)
 	end
 	for _, line in ipairs(lines) do
 		if line:match("^[\t ]*") == line then
@@ -278,7 +289,7 @@ else
 								local m2 = res:match(itemPattern)
 								if m2 then
 									forceCloseUntilThisBlock(self)
-									itemIndent = toIndent(preIndent .. m2)
+									itemIndent = addIndent(preIndent, toIndent(m2))
 									itemContents = {}
 									table.insert(listItems, itemContents)
 									self.contents = itemContents
