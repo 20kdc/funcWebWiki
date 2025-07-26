@@ -18,12 +18,16 @@ else
 	end
 end
 
+local errorMessage = ""
 if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	-- confirmed edit; do it
-	wikiWrite(requestPath, code)
-	wikiFlushCacheForPageEdit(requestPath)
-	ServeRedirect(303, wikiAbsoluteBase .. requestPath)
-	return
+	local writeOk
+	writeOk, errorMessage = wikiWrite(requestPath, code)
+	if writeOk then
+		wikiFlushCacheForPageEdit(requestPath)
+		ServeRedirect(303, wikiAbsoluteBase .. requestPath)
+		return
+	end
 end
 
 local preview = not not code
@@ -36,7 +40,8 @@ if preview then
 		props = {
 			path = requestPath,
 			ext = requestExt,
-			code = code
+			code = code,
+			errorMessage = errorMessage
 		}
 	}))
 else
@@ -47,7 +52,8 @@ else
 		props = {
 			path = requestPath,
 			ext = requestExt,
-			code = code
+			code = code,
+			errorMessage = errorMessage
 		}
 	}))
 end

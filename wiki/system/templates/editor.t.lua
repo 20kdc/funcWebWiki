@@ -1,5 +1,11 @@
 local props = ...
 
+local errorMessage = props.errorMessage or "This is an example error message."
+
+if errorMessage ~= "" then
+	errorMessage = h("p", {class="editor-error"}, tostring(errorMessage))
+end
+
 -- see also <system/templates/editorAndPreview>
 local pathStr, pathExt = tostring(props.path or wikiEditorTestPath), tostring(props.ext or wikiDefaultExt)
 
@@ -8,6 +14,7 @@ local pathStr, pathExt = tostring(props.path or wikiEditorTestPath), tostring(pr
 if wikiExtText(pathExt) then
 	local code = tostring(props.code or wikiRead(pathStr) or "")
 	return {
+		errorMessage,
 		WikiLink(pathStr, {
 			h("textarea", {id="editor", name="code", rows="25", cols="80"}, code),
 			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
@@ -19,6 +26,7 @@ if wikiExtText(pathExt) then
 	}
 else
 	return {
+		errorMessage,
 		WikiLink(pathStr, {
 			pathStr, " ",
 			h("input", {type="file", id="fileinput"}),
