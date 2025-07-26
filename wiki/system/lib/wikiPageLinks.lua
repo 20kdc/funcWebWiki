@@ -84,8 +84,7 @@ return function (path)
 			markLink(node.path, node.type)
 		elseif cls == WikiTemplate then
 			if type(node.templatePath) == "string" then
-				local resolved = wikiResolvePage(node.templatePath)
-				markLink(resolved, "template")
+				markLink(node.templatePath, "template")
 			end
 		elseif cls == WikiDepMarker then
 			if node.depPath then

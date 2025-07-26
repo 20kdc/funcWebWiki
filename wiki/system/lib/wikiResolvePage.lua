@@ -27,7 +27,7 @@ return function (wikiPath)
 	end
 	-- attempt 4: give up
 	if not wikiPathParsed then
-		return wikiPath, wikiDefaultExt
+		return nil, wikiDefaultExt
 	end
 	-- now that we have parsed it, canonicalize.
 	wikiPath = wikiPathUnparse(wikiPathParsed)

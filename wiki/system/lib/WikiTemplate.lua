@@ -8,16 +8,15 @@
 local templateCache = {}
 local templateHighlightCache = {}
 
-local function wikiLoadTemplate(template, codeFlag)
-	if type(template) ~= "string" then
-		return template
+local function wikiLoadTemplate(templatePath, templateExt, codeFlag)
+	if type(templatePath) ~= "string" then
+		return templatePath
 	end
 
 	local cache = templateCache
 	if codeFlag then
 		cache = templateHighlightCache
 	end
-	local templatePath, templateExt = wikiResolvePage(template)
 	if cache[templatePath] then
 		return cache[templatePath]
 	end
@@ -25,7 +24,7 @@ local function wikiLoadTemplate(template, codeFlag)
 	local code, codeErr = wikiRead(templatePath)
 	if not code then
 		local res
-		if template == "system/templates/missingTemplate" then
+		if templatePath:sub(1, 32) == "system/templates/missingTemplate" then
 			-- system/templates/missingTemplate has a fallback to prevent recursion
 			res = function (props, renderOptions)
 				-- <system/action/edit>
@@ -107,9 +106,19 @@ return wikiAST.newClass({
 		end
 	end
 }, function (self, template, props, ...)
+	local templateExt = wikiDefaultExt
+	if type(template) == "string" then
+		-- catch, i.e. ![](./exampleInvalidLink)
+		local original = template
+		template, templateExt = wikiResolvePage(template)
+		if not template then
+			template = wikiResolvePage("system/templates/invalidPathError")
+			props = {path = original, inline = true}
+		end
+	end
 	return setmetatable({
 		templatePath = template,
-		template = wikiLoadTemplate(template, ...),
+		template = wikiLoadTemplate(template, templateExt, ...),
 		props = props or {}
 	}, self)
 end)

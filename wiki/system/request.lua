@@ -52,7 +52,17 @@ end
 
 -- resolve page
 
+local requestPathUnfiltered = requestPath
 local requestPath, requestExt = wikiResolvePage(requestPath)
+
+if not requestPath then
+	wikiAST.serveRender(WikiTemplate("system/index/frame", {
+		title = {"Invalid Path"},
+		path = "system/templates/invalidPathError",
+		props = {path = requestPathUnfiltered}
+	}))
+	return
+end
 
 -- auth checks
 

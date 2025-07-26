@@ -1,0 +1,1 @@
+\[The page path <?lua h("code", {}, props.path) ?> is invalid.\]

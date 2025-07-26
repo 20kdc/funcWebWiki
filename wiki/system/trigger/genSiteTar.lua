@@ -48,7 +48,7 @@ else
 	for _, v in ipairs(wikiPathList()) do
 		-- re-virtualize names to avoid needing to handle relative traversal for file:
 		local vAdjName = v:gsub("/", "_")
-		local _, vExt = wikiResolvePage(v)
+		local vExt = v:match("%.(.+)") or wikiDefaultExt
 		if extNeedsRaw(vExt) then
 			dumpTarFile(vAdjName, wikiRead(v))
 		end

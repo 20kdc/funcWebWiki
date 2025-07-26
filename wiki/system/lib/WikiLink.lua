@@ -73,6 +73,9 @@ return wikiAST.newClass({
 	end
 	-- early resolve; saves doing it during link mapping, and lets us be sure of things during rendering
 	local path = wikiResolvePage(page)
+	if not path then
+		return WikiTemplate("system/template/invalidPathError", {path = page, inline = true})
+	end
 	if action then
 		query = "action=" .. action
 	end

@@ -8,7 +8,7 @@ return function (path)
 		pathNoExt = path:sub(1, idx - 1)
 	end
 	local forced = wikiResolvePage("system/pageTitle/" .. pathNoExt)
-	if wikiReadStamp(forced) then
+	if forced and wikiReadStamp(forced) then
 		return WikiTemplate(forced, {inline = true})
 	end
 	if path:sub(1, 8) == "special/" then
