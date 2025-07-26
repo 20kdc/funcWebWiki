@@ -51,7 +51,7 @@ wiki_build() {
 	set -e
 	wiki_clean
 	# build wiki
-	$REDBEAN -D kernel -- --trigger updateSystemHashes --trigger flushCaches --trigger errorSweep --trigger buildCaches
+	$REDBEAN -D kernel -- --trigger updateSystemHashes --trigger "buildCaches?flush=1" --trigger errorSweep
 	# build static
 	$REDBEAN -D kernel -- --trigger genSiteTar > static.tar
 	# create embedded wiki coms

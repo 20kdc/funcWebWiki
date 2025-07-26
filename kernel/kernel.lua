@@ -43,6 +43,7 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --no-favicon : disables hard-coded routes for `/favicon.ico` & `robots.txt`.
   --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
     in read-only mode, Redbean's default is used. this overrides both
+  --browse : launches browser
 
 'operators' (if any specified, exits after all complete. '--continue' cancels)
   --trigger TRIGGER : runs system/triggers/TRIGGER.lua
@@ -74,6 +75,7 @@ local publicUnsafe = false
 local unsandboxedUnsafe = false
 local doUnpack = false
 local doPack = false
+local doLaunchBrowser = false
 local scheduledTriggers = {}
 -- doContinue overrules doExit
 local doContinue = false
@@ -144,6 +146,8 @@ local function parseArgs()
 			favicon = false
 		elseif arg == "--payload-size" then
 			payloadSizeOverride = assert(tonumber(getNextArg()), "bad parameter given to --payload-size")
+		elseif arg == "--browse" then
+			doLaunchBrowser = true
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
@@ -426,9 +430,6 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
-	-- Redbean sometimes has persistent connection processes.
-	-- For this reason, the FS layer has a hook to try and keep some level of sequencing.
-	primaryFs.onRequest()
 
 	if BASIC_AUTH then
 		if GetHeader("Authorization") ~= BASIC_AUTH then
@@ -437,6 +438,10 @@ function OnHttpRequest()
 			return
 		end
 	end
+
+	-- Redbean sometimes has persistent connection processes.
+	-- For this reason, the FS layer has a hook to try and keep some level of sequencing.
+	primaryFs.onRequest()
 
 	local path = GetPath()
 
@@ -507,4 +512,8 @@ function OnHttpRequest()
 		sandbox.GetPath = function () return path end
 	end
 	sandbox.dofile("system/request.lua")
+end
+
+if doLaunchBrowser then
+	LaunchBrowser()
 end

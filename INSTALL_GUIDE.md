@@ -14,9 +14,9 @@ When `--` is passed, Redbean command-line arguments go before it; funcWebWiki co
 
 The second thing to note is that the wiki is only accessible to localhost by default to prevent remote access.
 
-This can be skipped with `-- --public-unsafe`, _but writable funcWebWiki has no authentication by default and thus is not safe for public access._
+This can be skipped with `-- --public-unsafe`, _but writable funcWebWiki has **no authentication** by default and thus is not safe for public access._
 
-A single global HTTP basic auth `username:password` required for absolutely everything can be set with the environment variable `WIKI_BASIC_AUTH`.
+A single global HTTP basic auth `username:password` required for any interaction whatsoever can be set with the environment variable `WIKI_BASIC_AUTH`.
 
 Finally, there are a number of command-line options; a command such as `somewiki.com -- --help` can be used to view them.
 
@@ -37,3 +37,14 @@ Conceivably, you could use this to bootstrap a new wiki on the same kernel; but 
 By zipping the `wiki/` directory into a copy of `funcWebWiki.com`, a "packed wiki" can be created.
 
 Unless this executable sees a `wiki/` directory. it will serve in read-only mode. (_When built with capable Redbean versions, and when the `-*` Redbean option is enabled, a writable wiki is possible, with caveats._)
+
+## Triggers & Static Site Generation
+
+The `--trigger` funcWebWiki option can perform a number of maintenance tasks:
+
+* `--trigger buildCaches`: Tries to incrementally update the 'link cache' used for backlinks.
+* `--trigger "buildCaches?flush=1"`: Flushes and rebuilds the 'link cache' used for backlinks.
+* `--trigger errorSweep`: Checks for any Lua errors when templating all pages. (Really intended more as a developer tool.)
+* `--trigger genSiteTar`: Writes a TAR file to standard output containing a static site.
+
+On a writable wiki, these triggers can also be run via the hidden 'execute' action, i.e. `/system/trigger/genSiteTar?action=execute` can be used to download the static site TAR.
