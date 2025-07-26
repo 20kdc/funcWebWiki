@@ -158,19 +158,49 @@ local diskFs = wikifs.newDiskFS(wikiBase)
 
 local assetFs = wikifs.newAssetFS("/wiki/")
 
-if not pcall(function ()
+local selfModifyTestOk, selfModifyTestMsg = pcall(function ()
+	-- Redbean refuses to tell us if it can self-modify, so we have to guess.
+
+	-- Under the following conditions, Redbean *never* supports self-modification...
+	local redbeanVersion = GetRedbeanVersion()
+	local redbeanOs = GetHostOs()
+
+	if
+		-- Redbean 3.0 cannot self-modify.
+		-- We won't make assumptions about future versions; we just don't want release copies to break.
+		(redbeanVersion == 0x30000)
+	then
+		error("-* is known to fail on Redbean 3.0.0 because __open_executable isn't available.")
+	end
+
+	if
+		-- StoreAsset contains an explicit check, mirror it
+		(redbeanVersion <= 0x30000) and
+		(
+			(redbeanOs == "WINDOWS") or
+			(redbeanOs == "OPENBSD") or
+			(redbeanOs == "NETBSD")
+		)
+	then
+		error("Redbean <= 3.0.0 will give an error in StoreAsset on this OS")
+	end
+
 	-- Redbean doesn't appear to report if it's allowed to self-modify.
 	-- But we can make a very sketchy guess based on Redbean 2.2's behaviour.
 	if not unix.fcntl(3, unix.F_SETLKW, unix.F_WRLCK) then
-		-- failed
-		wikifs.makeFSReadOnly(assetFs)
+		error("The executable was not opened for write (-* probably not passed)")
 	else
 		-- ok, unlock
 		unix.fcntl(3, unix.F_SETLKW, unix.F_UNLCK)
 	end
-end) then
+end)
+
+if not selfModifyTestOk then
+	Log(kLogInfo, "Redbean can't self-modify because: " .. tostring(selfModifyTestMsg))
 	-- if things go really wrong, make *sure* we mark the FS read-only
 	wikifs.makeFSReadOnly(assetFs)
+else
+	Log(kLogInfo, "Redbean looks like it can self-modify")
 end
 
 -- do pack/unpack from assets if asked.
@@ -350,7 +380,7 @@ end
 
 -- Packing is done late to allow triggers (used to setup the cache) to run before packing.
 if doPack then
-	assert(not assetFs.readOnly, "self-modification (-*) not enabled")
+	assert(not assetFs.readOnly, "self-modification not enabled/possible (a kLogInfo message should describe why)")
 	fsTransfer(diskFs, assetFs, "packed")
 	-- Someone, theoretically, may have a script which packs the wiki and then serves it...
 	primaryFs = assetFs
@@ -396,6 +426,10 @@ function OnWorkerStart()
 end
 
 function OnHttpRequest()
+	-- Redbean sometimes has persistent connection processes.
+	-- For this reason, the FS layer has a hook to try and keep some level of sequencing.
+	primaryFs.onRequest()
+
 	if BASIC_AUTH then
 		if GetHeader("Authorization") ~= BASIC_AUTH then
 			SetStatus(401)

@@ -142,6 +142,9 @@ return {
 			end
 		end
 
+		function fs.onRequest()
+		end
+
 		return fs
 	end,
 	newDiskFS = function (base)
@@ -254,6 +257,10 @@ return {
 			end
 			listingCache = nil
 			return a, b and tostring(b)
+		end
+
+		function fs.onRequest()
+			listingCache = nil
 		end
 
 		return fs

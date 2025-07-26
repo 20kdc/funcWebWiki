@@ -34,6 +34,7 @@ kernel_build() {
 	cd ..
 	zip --quiet -r funcWebWiki-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
 	zip --quiet -r funcWebWiki-rx-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
+	chmod +x funcWebWiki-kernel.com funcWebWiki-rx-kernel.com
 }
 
 wiki_clean() {
@@ -82,9 +83,13 @@ if [ "$CMD" = "help" ]; then
 	echo "REDBEAN = $REDBEAN"
 	echo "commands:"
 	echo " help: shows this text"
-	echo " build: builds the wiki ; creates funcWebWiki-kernel.com, funcWebWiki.com, funcWebWiki-rx-kernel.com, funcWebWiki-rx.com"
-	echo " of these, funcWebWiki-kernel.com and funcWebWiki.com should be safe to release"
-	echo " run, run-prefix, run-ro, run-rx, run-unsandboxed: run, run in site prefix mode, run in read-only mode, run in self-modifying mode, run in unsandboxed mode"
+	echo " clean: cleans all build outputs"
+	echo " build: builds the wiki ; creates funcWebWiki-kernel.com, funcWebWiki.com,"
+	echo "  funcWebWiki-rx-kernel.com, funcWebWiki-rx.com"
+	echo "  of these, funcWebWiki-kernel.com and funcWebWiki.com should be safe to release"
+	echo " run, run-prefix, run-ro, run-rx, run-unsandboxed: run, run in site prefix mode,"
+	echo "  run in read-only mode, run in self-modifying mode, run in unsandboxed mode"
+	echo " test: runs the tests, including on 'anchor'"
 	echo " make-anchor-wiki-tar: uses git archive to extract the 'anchor' tag"
 elif [ "$CMD" = "clean" ]; then
 	clean
