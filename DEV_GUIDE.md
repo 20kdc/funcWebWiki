@@ -1,14 +1,23 @@
 # Developer's Guide
 
-Because funcWebWiki is built essentially as an image of a 'live system,' and `redbean -D kernel` handles the rest, there isn't much of a build step involved in running it.
+_If you just want to run a quick test patch on the Git repository, `thirdparty/redbean-3.0.0.com -D kernel` will work._
+
+funcWebWiki is built essentially as an image of a 'live system.'
 
 _However,_ for the purposes of a _release,_ there are a number of concerns:
 
 1. Testing.
 2. Ensuring updates to `kernel/` are compatible with the first release (the `anchor` tag, if it exists when you're reading this).
-3. Building [APE](https://justine.lol/ape.html) files with everything pre-embedded.
+3. Running triggers to ensure in-wiki caches aren't stale.
+4. Building [APE](https://justine.lol/ape.html) files with everything pre-embedded.
 
 For this, the `fww` shell script is used. (Developers running Windows are advised of <https://github.com/jart/cosmopolitan> and its development environment.)
+
+This shell script's `build` command runs a number of triggers:
+
+1. Flushing and rebuilding the link cache.
+2. Sweeping the entire wiki for errors.
+3. Updating `system/hashes.json`.
 
 ## Release Naming
 

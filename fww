@@ -10,14 +10,17 @@ fi
 
 . ./setup.sh
 
+KERNEL_FN=funcWebWiki.com
+
 fused_clean() {
 	set -e
-	rm -f funcWebWiki.com funcWebWiki-rx.com
+	rm -f funcWebWiki-rx.com
+	rm -f release.zip
 }
 
 kernel_clean() {
 	set -e
-	rm -f funcWebWiki-kernel.com funcWebWiki-rx-kernel.com
+	rm -f "$KERNEL_FN" funcWebWiki-rx-kernel.com
 	fused_clean
 }
 
@@ -25,16 +28,16 @@ kernel_build() {
 	set -e
 	kernel_clean
 	# make kernel build
-	cp thirdparty/redbean-3.0.0.com funcWebWiki-kernel.com
+	cp thirdparty/redbean-3.0.0.com "$KERNEL_FN"
 	# redbean-3.0.0 doesn't support -*
 	cp thirdparty/redbean-2.2.com funcWebWiki-rx-kernel.com
 	cd kernel
-	zip --quiet -r ../funcWebWiki-kernel.com .
+	zip --quiet -r "../$KERNEL_FN" .
 	zip --quiet -r ../funcWebWiki-rx-kernel.com .
 	cd ..
-	zip --quiet -r funcWebWiki-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
+	zip --quiet -r "$KERNEL_FN" thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
 	zip --quiet -r funcWebWiki-rx-kernel.com thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt COPYING
-	chmod +x funcWebWiki-kernel.com funcWebWiki-rx-kernel.com
+	chmod +x "$KERNEL_FN" funcWebWiki-rx-kernel.com
 }
 
 wiki_clean() {
@@ -52,9 +55,7 @@ wiki_build() {
 	# build static
 	$REDBEAN -D kernel -- --trigger genSiteTar > static.tar
 	# create embedded wiki coms
-	cp funcWebWiki-kernel.com funcWebWiki.com
 	cp funcWebWiki-rx-kernel.com funcWebWiki-rx.com
-	zip --quiet -r funcWebWiki.com wiki
 	zip --quiet -r funcWebWiki-rx.com wiki
 	# extract static
 	rm -rf static-dir
@@ -74,8 +75,7 @@ build() {
 	set -e
 	kernel_build
 	wiki_build
-	rm -f release.zip
-	zip --quiet -r release.zip funcWebWiki.com funcWebWiki-kernel.com COPYING thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt
+	zip --quiet -r release.zip "$KERNEL_FN" COPYING INSTALL_GUIDE.md thirdparty/licenses thirdparty/redbean-3.0.0-licenses.txt wiki
 }
 
 if [ "$CMD" = "help" ]; then
@@ -98,28 +98,28 @@ elif [ "$CMD" = "build" ]; then
 elif [ "$CMD" = "run" ]; then
 	build
 	export WIKI_TWM_PASSWORD=test
-	ape ./funcWebWiki-kernel.com
+	ape "./$KERNEL_FN"
 elif [ "$CMD" = "run-prefix" ]; then
 	build
-	ape ./funcWebWiki-kernel.com -- --url-base /test/ --strip-prefix /test/
+	ape "./$KERNEL_FN" -- --url-base /test/ --strip-prefix /test/
 elif [ "$CMD" = "run-ro" ]; then
 	build
-	ape ./funcWebWiki.com -- --asset-wiki
+	ape ./funcWebWiki-rx.com -- --asset-wiki
 elif [ "$CMD" = "run-rx" ]; then
 	build
 	cp funcWebWiki-rx.com funcWebWiki-scratch.com
 	ape ./funcWebWiki-scratch.com -* -- --asset-wiki
 elif [ "$CMD" = "run-unsandboxed" ]; then
 	build
-	ape ./funcWebWiki-kernel.com -- --unsandboxed-unsafe
+	ape "./$KERNEL_FN" -- --unsandboxed-unsafe
 elif [ "$CMD" = "test" ]; then
 	build
-	ape ./funcWebWiki-kernel.com -F tests.lua --
+	ape "./$KERNEL_FN" -F tests.lua --
 	rm -rf anchor-dir
 	mkdir anchor-dir
 	cd anchor-dir
 	tar -xf ../anchor.tar
-	ape ../funcWebWiki-kernel.com -F tests.lua --
+	ape "../$KERNEL_FN" -F tests.lua --
 elif [ "$CMD" = "make-anchor-wiki-tar" ]; then
 	git archive anchor wiki tests.lua -o anchor.tar
 else
