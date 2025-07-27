@@ -70,15 +70,17 @@ local function wikiRenderer(templateExt, promiseThisIsText, codeFlag)
 		end
 		renderer = renderer or lastResortRenderer
 		local rendererOld = renderer
-		if true then
-			-- debug validation
-			renderer = function (path, code, props, renderOptions)
-				assert(type(path) == "string", "path must be string")
-				assert(type(code) == "string", "code must be string")
-				assert(type(props) == "table", "props must be table")
-				assert(type(renderOptions) == "table", "renderOptions must be table")
-				return rendererOld(path, code, props, renderOptions)
+		-- debug validation
+		renderer = function (path, code, props, renderOptions)
+			assert(type(path) == "string", "path must be string")
+			assert(type(code) == "string", "code must be string")
+			assert(type(props) == "table", "props must be table")
+			assert(type(renderOptions) == "table", "renderOptions must be table")
+			local ok, res = wikiPCall(rendererOld, path, code, props, renderOptions)
+			if not ok then
+				res = h("pre", {}, tostring(res))
 			end
+			return res
 		end
 		rendererCache[templateExt] = renderer
 	end
