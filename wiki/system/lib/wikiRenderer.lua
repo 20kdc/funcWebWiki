@@ -76,11 +76,15 @@ local function wikiRenderer(templateExt, promiseThisIsText, codeFlag)
 			assert(type(code) == "string", "code must be string")
 			assert(type(props) == "table", "props must be table")
 			assert(type(renderOptions) == "table", "renderOptions must be table")
-			local ok, res = wikiPCall(rendererOld, path, code, props, renderOptions)
-			if not ok then
-				res = h("pre", {}, tostring(res))
+			if not renderOptions.disableErrorIsolation then
+				local ok, res = wikiPCall(rendererOld, path, code, props, renderOptions)
+				if not ok then
+					res = h("pre", {}, tostring(res))
+				end
+				return res
+			else
+				return rendererOld(path, code, props, renderOptions)
 			end
-			return res
 		end
 		rendererCache[templateExt] = renderer
 	end
