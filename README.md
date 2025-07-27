@@ -21,6 +21,7 @@ Pull requests and feature requests are probably a little endangered; if a pull r
 * Bolting on a login system should be easy enough but there's no guarantees it'll be 100% secure, safe, etc.
 	* The `wikiAuthCheck` hook should be present _enough_ to provide a hint but not obtrusive enough to not be easily removed by someone who thinks it's a pain.
 * There are probably a _lot_ of scary bottlenecks in the code, particularly around backlinks. The caching system should be reasonably stable now, though.
+	* Performance seems to noticably worsen after adding around about 1000 pages. Things can probably be done to improve it, but while preserving the (kind of important) ability to run without a proper database it's a bit of an uphill battle. Profiling needs to be done, also.
 
 ## Licensing
 
