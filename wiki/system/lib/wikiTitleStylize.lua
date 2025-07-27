@@ -20,5 +20,7 @@ return function (path)
 		-- System pages are rendered with their extensions.
 		return {"~/", path:sub(8)}
 	end
-	return {pathNoExt}
+	-- Regular pages get / spaced out to look nicer.
+	local text = pathNoExt:gsub("/", " / ")
+	return {text}
 end

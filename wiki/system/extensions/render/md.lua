@@ -42,7 +42,7 @@ local inlineEscapeParser = wikiParser(
 	end,
 	-- 6.9: **fastpath - any character that won't trigger another rule should be consumed here**
 	-- **by extension: inline characters which do trigger rules must be added here**
-	"[^<*_`%[\\!\n]+", function (remainder, m)
+	"[^<*_`%[\\!\n~]+", function (remainder, m)
 		table.insert(contents, m)
 		return remainder
 	end,
@@ -130,6 +130,7 @@ inlineParser = wikiParser(
 		return remainder
 	end,
 	-- 6.2: emphasis and strong emphasis parsers
+	"~~", boldParser("~~", "strike"), -- DFM? Pandoc is happy so I'm happy
 	"__", boldParser("__", "u"), -- DFM
 	"%*%*", boldParser("%*%*", "b"),
 	"_", boldParser("_", "i"),

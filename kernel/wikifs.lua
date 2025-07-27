@@ -203,7 +203,8 @@ return {
 				return nil, nil, tostring(err)
 			end
 			local size = stat:size()
-			return size, tostring(stat:mtim()) .. "|" .. tostring(stat:ino()) .. "|" .. tostring(size), nil
+			-- the inode was removed, it was causing lots of fun issues w/encfs in 'production'
+			return size, tostring(stat:mtim()) .. "|" .. tostring(size), nil
 		end
 
 		function fs.pathTable(prefix)
