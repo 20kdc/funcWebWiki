@@ -1,4 +1,4 @@
-local size1, size2 = 128, 128
+local size1, size2 = 1000, 128
 for i = 1, size1 do
 	f = io.open("wiki/chaff_" .. tostring(i) .. ".md", "w")
 	for j = 1, size2 do

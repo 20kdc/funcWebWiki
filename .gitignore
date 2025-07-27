@@ -8,3 +8,6 @@ static.tar
 static-dir/*
 anchor.tar
 release.zip
+# this is a bit odd but we don't want the wiki .gitignore interfering
+# with user contents
+wiki/chaff_*
