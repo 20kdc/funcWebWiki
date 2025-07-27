@@ -153,22 +153,23 @@ return {
 		-- The Listing Cache exists because the wiki performs listing a _lot_ for various functions; we would like this to be fast, within reason.
 
 		local listingCache = nil
-		local function addFileToListingCache(virtualPath)
-			local parsed, _ = wikiPathParse(virtualPath)
-			if parsed then
-				local unparse = wikiPathUnparse(parsed)
-				listingCache[unparse] = true
-			end
-		end
 		-- virtualBase might be "", "someDir/" ; never a filename
-		local function addDirToListingCache(realBase, virtualBase)
-			for name, kind, ino, off in assert(unix.opendir(realBase)) do
-				if name == "." or name == ".." then
-					-- just wonder what we've gotten ourselves into
-				elseif kind == unix.DT_DIR then
-					addDirToListingCache(realBase .. name .. "/", virtualBase .. name .. "/")
-				elseif kind == unix.DT_REG then
-					addFileToListingCache(virtualBase .. name)
+		local function addDirToListingCache(realBase, virtualBase, virtualFile)
+			local dirish = unix.opendir(realBase)
+			if dirish then
+				for name, kind, ino, off in dirish do
+					if name == "." or name == ".." then
+						-- just wonder what we've gotten ourselves into
+					else
+						addDirToListingCache(realBase .. name .. "/", virtualBase .. name .. "/")
+					end
+				end
+			else
+				-- last / will be auto-ignored thankfully
+				local parsed, _ = wikiPathParse(virtualBase)
+				if parsed then
+					local unparse = wikiPathUnparse(parsed)
+					listingCache[unparse] = true
 				end
 			end
 		end

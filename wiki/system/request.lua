@@ -48,6 +48,7 @@ if not actionParsed then
 		ServeRedirect(303, redirectPath)
 		return
 	end
+	error("Invalid default action '" .. wikiDefaultAction .. "'. At Redbean REPL, try for debugging:\n\twikiPathList()\n\twikiMakeEnv().wikiActions")
 end
 
 -- resolve page
