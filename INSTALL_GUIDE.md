@@ -2,6 +2,8 @@
 
 _Before we begin,_ if you don't already know some of the potential oddities with APE `.com` files, please see [Cosmopolitan libc documentation](https://justine.lol/cosmopolitan/).
 
+In addition, Windows antiviruses appear to hate Redbean. We don't have a solution for this one, have fun with that.
+
 Assuming you have this covered (i.e. you can run `funcWebWiki.com`), continue.
 
 The funcWebWiki you have downloaded comes as a file and a directory:

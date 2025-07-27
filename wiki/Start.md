@@ -96,9 +96,25 @@ Something I have come to realize is that with how funcWebWiki is setup, _any cha
 
 With that in mind, the best I can offer is that once a version of funcWebWiki is released, _`kernel.lua` compatibility_ will be maintained as best as reasonably possible with that version.
 
-In other words, that version of the project is expected to work as well as it does on release on any future `funcWebWiki-kernel.com` runtime, even if this means wrapping/emulation of Redbean APIs.
+In other words, that version of the project is expected to work as well as it does on release on any future `funcWebWiki.com` runtime, even if this means wrapping/emulation of Redbean APIs.
 
 By holding to this guarantee, things should be reasonably recoverable.
+
+Even without modifying the `system/` code, the Lua templating allows for adding convenience tools directly to pages, such as:
+
+```t.css
+.journal-css-transclude-test {
+	padding: 0.5em;
+	margin: 0.5em;
+	border: 1px solid black;
+}
+```
+
+```t.lua
+-- we would like this link to be *deliberately* invisible to the link scanner
+local name = "Journal/" .. os.date("%Y/%m/%d") .. ".z." .. wikiDefaultExt
+return h("a", {class="journal-css-transclude-test", href = (wikiAbsoluteBase .. name .. "?action=edit")}, name)
+```
 
 ## Translating To Your Language
 
