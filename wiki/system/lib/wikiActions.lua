@@ -8,11 +8,7 @@ for _, v in ipairs(wikiPathList("system/action/")) do
 	-- (prefix...)/action[.z][.w].lua
 	local action, typeIndicator = v:match("/([^./]+)([^/]+)$")
 	if action then
-		local nameResolved = wikiResolvePage("system/actionName/" .. action)
 		local nameTemplate = function () return action end
-		if wikiReadStamp(nameResolved) then
-			nameTemplate = nameResolved
-		end
 		local struct = wikiCheckedStruct("WikiParsedAction", {
 			path = v,
 			action = action,
@@ -24,6 +20,16 @@ for _, v in ipairs(wikiPathList("system/action/")) do
 		})
 		actionTable[action] = struct
 		table.insert(actionTable, struct)
+	end
+end
+for _, v in ipairs(wikiPathList("system/actionName/")) do
+	local forAction = v:match("/([^./]+)[^/]+$")
+	if forAction then
+		-- Log(kLogInfo, "! " .. v .. " = " .. forAction)
+		local action = actionTable[forAction]
+		if action then
+			action.nameTemplate = v
+		end
 	end
 end
 

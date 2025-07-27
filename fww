@@ -42,7 +42,7 @@ kernel_build() {
 
 wiki_clean() {
 	set -e
-	rm -f wiki/chaff_*
+	rm -rf wiki/chaff
 	rm -rf wiki/system/cache unpack-dir static-dir static.tar
 	fused_clean
 }
@@ -89,6 +89,7 @@ if [ "$CMD" = "help" ]; then
 	echo "  of these, funcWebWiki-kernel.com and funcWebWiki.com should be safe to release"
 	echo " run, run-prefix, run-ro, run-rx, run-unsandboxed: run, run in site prefix mode,"
 	echo "  run in read-only mode, run in self-modifying mode, run in unsandboxed mode"
+	echo " run-chaff-perf: Run with 'chaff' pages in performance logging mode."
 	echo " test: runs the tests, including on 'anchor'"
 	echo " make-anchor-wiki-tar: uses git archive to extract the 'anchor' tag"
 elif [ "$CMD" = "clean" ]; then
@@ -112,6 +113,10 @@ elif [ "$CMD" = "run-rx" ]; then
 elif [ "$CMD" = "run-unsandboxed" ]; then
 	build
 	ape "./$KERNEL_FN" -- --unsandboxed-unsafe
+elif [ "$CMD" = "run-chaff-perf" ]; then
+	build
+	lua gen_chaff.lua
+	ape "./$KERNEL_FN" -- --performance-log
 elif [ "$CMD" = "test" ]; then
 	build
 	ape "./$KERNEL_FN" -F tests.lua --

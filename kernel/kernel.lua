@@ -44,6 +44,7 @@ Redbean options accepted as normal; '--' divides between Redbean options and
   --payload-size BYTES : the funcWebWiki sets payload size to 16MB by default
     in read-only mode, Redbean's default is used. this overrides both
   --browse : launches browser
+  --performance-log : Performance: Logs operations that imply expensive things.
 
 'operators' (if any specified, exits after all complete. '--continue' cancels)
   --trigger TRIGGER : runs system/triggers/TRIGGER.lua
@@ -75,6 +76,7 @@ local publicUnsafe = false
 local unsandboxedUnsafe = false
 local doUnpack = false
 local doPack = false
+local doPerformanceLog = false
 local doLaunchBrowser = false
 local scheduledTriggers = {}
 -- doContinue overrules doExit
@@ -148,6 +150,8 @@ local function parseArgs()
 			payloadSizeOverride = assert(tonumber(getNextArg()), "bad parameter given to --payload-size")
 		elseif arg == "--browse" then
 			doLaunchBrowser = true
+		elseif arg == "--performance-log" then
+			doPerformanceLog = true
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
@@ -266,6 +270,14 @@ local function rebuildFSGlobals()
 	wikiPathTable = primaryFs.pathTable
 	wikiWrite = primaryFs.write
 	wikiDelete = primaryFs.delete
+	if doPerformanceLog then
+		function wikiPathTable(prefix, ...)
+			local traceback = debug.traceback(coroutine.running(), nil, 3)
+			traceback = traceback:match("\n[^\n]+"):sub(2)
+			Log(kLogInfo, "Performance: wikiPathTable(" .. EncodeLua(prefix) .. ") @ " .. traceback)
+			return primaryFs.pathTable(prefix, ...)
+		end
+	end
 end
 rebuildFSGlobals()
 
