@@ -203,7 +203,7 @@ return {
 				return nil, nil, tostring(err)
 			end
 			local size = stat:size()
-			-- the inode was removed, it was causing lots of fun issues w/encfs in 'production'
+			-- the inode was removed, it was causing lots of fun issues in 'production'
 			return size, tostring(stat:mtim()) .. "|" .. tostring(size), nil
 		end
 

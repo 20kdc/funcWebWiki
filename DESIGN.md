@@ -55,7 +55,7 @@ The assumptions are:
 1. Only one user is editing the wiki at a time, and their edit requests do not overlap.
 2. Git/sync operations are also edits. Git/sync operations may or may not ignore the cache entirely.
 3. Any operation that changes a file changes the result of any of `stat:mtim()`, ~~`stat:ino()`,~~ (Removed because it broke encfs) or `stat:size()`.
-4. Edits are atomic (`kernel.lua` ensures this through move-replace) __a__
+4. Edits are atomic (`kernel.lua` ensures this through move-replace)
 
 Based on these primitives, `kernel.lua` provides a _semi-reliable_ opaque 'file stamp' primitive, `wikiReadStamp` (returns `size, stamp, error`).
 
