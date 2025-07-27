@@ -369,7 +369,10 @@ else
 						blankLineAbort = false,
 						close = function (self)
 							-- Log(kLogInfo, self.code)
-							table.insert(self.node, wikiRenderer(kind, true)(path, self.code or "", props, renderOptions))
+							local res = wikiRenderer(kind, true, "codeBlock")(path, self.code or "", props, renderOptions)
+							if res ~= nil then
+								table.insert(self.node, res)
+							end
 						end
 					})
 					return ""

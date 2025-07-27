@@ -51,8 +51,11 @@ return WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, fa
 	* If you're interested, an index of the code can be found at <special/systemPages>. The assignment of Lua globals allows for in-code hyperlinking.
 7. File extensions mean a lot in funcWebWiki. They have two uses:
 	* 'Flags'.
-		* `.z.` hides pages from the left navigation sidebar and the top action bar.
+		* `.c.` : Reserved for use by the targets of <system/extensions/code> entries for formats like Markdown which render templated by default.
+		* `.t.` : Allocated as a flag, but not truly one: `t.` is a prefix to an extension indicating template-versus-code.
+			* Where this does get applied more seriously is in <system/lib/wikiRenderer>, which when in `"codeBlock"` mode uses the prefix as an opt-out.
 		* `.w.` is used to indicate actions that write (and should not be available on a read-only wiki, where they won't work).
+		* `.z.` hides pages from the left navigation sidebar and the top action bar.
 	* An extension can also be seen as a series of smaller extensions (see <system/lib/wikiExtIter>). This view is used when a file needs a global 'type'.
 		* For example, `.t.lua` is read as the extension `t.lua` (Lua template) and `lua` (Lua code). The largest registered extension wins, so `t.lua` is run.
 8. The character `_` is used to emulate directory separators without creating the issues that would result from real directories. Inside the wiki, it is known as `/`.

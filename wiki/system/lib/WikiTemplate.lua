@@ -3,20 +3,32 @@
 -- Notably, if the template path is something other than a string, it is returned directly.
 -- The idea behind this is to allow passing anonymous templates.
 
+-- Table-of-tables [codeFlag][path]
 -- Functions in this table are cached templates, passed (props, renderOptions).
 -- While this doesn't save reparsing (reuse per-request isn't high enough to justify making the renderer code much more complex), it does save reloading.
 local templateCache = {}
-local templateHighlightCache = {}
 
+--[[
+codeFlag can be:
+* nil/false: Run normal extension-matching logic.
+* true: Lookup in <system/extensions/code>, return "txt".
+* "codeBlock": _Extension is assumed to be manually specified._
+               If extension begins with "t.", see false. Otherwise, see true.
+               This means that, i.e. "t.md" renders Markdown, while "md" would fallback to "txt" (or a set handler).
+--]]
 local function wikiLoadTemplate(templatePath, templateExt, codeFlag)
 	if type(templatePath) ~= "string" then
 		return templatePath
 	end
 
-	local cache = templateCache
-	if codeFlag then
-		cache = templateHighlightCache
+	codeFlag = codeFlag or false
+
+	local cache = templateCache[codeFlag]
+	if not cache then
+		cache = {}
+		templateCache[codeFlag] = cache
 	end
+
 	if cache[templatePath] then
 		return cache[templatePath]
 	end
@@ -57,17 +69,7 @@ local function wikiLoadTemplate(templatePath, templateExt, codeFlag)
 		cache[templatePath] = res
 		return res
 	end
-	if codeFlag then
-		local repExt = nil
-		for ext in wikiExtIter(templateExt) do
-			repExt = wikiReadConfig("system/extensions/code/" .. ext .. ".txt", nil)
-			if repExt then
-				break
-			end
-		end
-		templateExt = repExt or wikiDefaultCodeExt
-	end
-	local renderer = wikiRenderer(templateExt)
+	local renderer = wikiRenderer(templateExt, false, codeFlag)
 	local res = function (props, renderOptions)
 		-- This wrapper can do various theoretical things.
 		-- In practice it's responsible for making sure that invoked templates are dependencies.
@@ -93,6 +95,7 @@ local function conditionalErrorHandler(ok, res, where, renderOptions)
 end
 
 -- Loads and executes a template for less awkward code.
+-- Passed (template, props, ) and then arguments to `wikiLoadTemplate` above.
 return wikiAST.newClass({
 	visit = function (self, writer, renderOptions)
 		-- render template content to res

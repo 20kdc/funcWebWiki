@@ -54,9 +54,17 @@
 	[=[Inline code of this form can hyperlink globals, such as ]=] .. wikiDefaultExt .. "."
 	```
 
+	```md
+	_As a general file extension, Markdown is rendered._
+	```
+
+	```t.md
+	_However, in a code block, a t. prefix is mandatory for this behaviour._
+	```
+
 	```t.lua
 	local props, renderOptions = ...
-	return h("p", {}, table.concat({"But", "there", "are", "positives", "in",
+	return h("p", {}, table.concat({"With", "this,", "render", "anything", "in",
 	(props.fromStartMD or "these unknown lands") .. "."}, " "))
 	```
 

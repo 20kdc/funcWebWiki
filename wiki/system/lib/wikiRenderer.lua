@@ -20,7 +20,24 @@ Other code should use its own judgement on what should be passed through and wha
 
 local rendererCache = {}
 
-local function wikiRenderer(templateExt, promiseThisIsText)
+local function wikiRenderer(templateExt, promiseThisIsText, codeFlag)
+	-- handle codeFlag
+	if codeFlag == "codeBlock" then
+		codeFlag = templateExt:sub(1, 2) ~= "t."
+	end
+
+	if codeFlag then
+		local repExt = nil
+		for ext in wikiExtIter(templateExt) do
+			repExt = wikiReadConfig("system/extensions/code/" .. ext .. ".txt", nil)
+			if repExt then
+				break
+			end
+		end
+		templateExt = repExt or wikiDefaultCodeExt
+	end
+
+	-- continue...
 	local function lastResortRenderer(path, code, props, renderOptions)
 		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
 			return h("pre", {}, code)

@@ -66,15 +66,7 @@ return h("html", {},
 			h("tr", {},
 				h("td", {class = "frame-nav"},
 					h("div", {class = "nav-panel"},
-						-- <system/action/navigate>
-						WikiLink(wikiDefaultPage, {
-							h("input", {name = "to", value = requestPath}),
-							h("input", {type = "submit", value = "Go"})
-						}, "navigate", "formPost"),
-						WikiDepMarker(),
-						WikiTemplate("system/templates/sortedPageList", {
-							pageList = nonSystemPages
-						})
+						WikiTemplate("system/index/navPanel", props)
 					)
 				),
 				h("td", {class = "frame-body"},
