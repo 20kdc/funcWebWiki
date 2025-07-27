@@ -116,7 +116,7 @@ elif [ "$CMD" = "run-unsandboxed" ]; then
 elif [ "$CMD" = "run-chaff-perf" ]; then
 	build
 	lua gen_chaff.lua
-	ape "./$KERNEL_FN" -- --performance-log
+	ape "./$KERNEL_FN" -- --trigger buildCaches --continue --performance-log
 elif [ "$CMD" = "test" ]; then
 	build
 	ape "./$KERNEL_FN" -F tests.lua --
