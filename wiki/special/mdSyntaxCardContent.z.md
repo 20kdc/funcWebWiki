@@ -54,12 +54,14 @@
 	[=[Inline code of this form can hyperlink globals, such as ]=] .. wikiDefaultExt .. "."
 	```
 
-	```md
-	_As a general file extension, Markdown is rendered._
+	```html
+	<p><i>As a general file extension, HTML is rendered,
+	but not in a codeblock.</i></p>
 	```
 
-	```t.md
-	_However, in a code block, a t. prefix is mandatory for this behaviour._
+	```t.html
+	<p><i>A <code>t.</code> prefix is <?lua h("u", {}, "mandatory")?>
+	for this behaviour.</i></p>
 	```
 
 	```t.lua

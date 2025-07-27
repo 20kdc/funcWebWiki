@@ -86,17 +86,7 @@ inlineParser = wikiParser(
 	-- In my personal opinion, though, I find more beauty in the `t.lua` code-blocks.
 	"<%?lua ", function (remainder, m)
 		return wikiParserMatched(remainder, m, "?>", true, function (code)
-			local v1, v2 = load("local props, renderOptions = ... return " .. code)
-			if not v1 then
-				table.insert(contents, h("code", {}, tostring(v2)))
-			else
-				v1, v2 = wikiPCall(v1, props, renderOptions)
-				if not v1 then
-					table.insert(contents, h("code", {}, tostring(v2)))
-				else
-					table.insert(contents, v2)
-				end
-			end
+			wikiEvalLuaInsert(contents, code, path, props, renderOptions)
 		end)
 	end,
 	-- 6.6: raw HTML - comments: <!-- this text is invisible -->
