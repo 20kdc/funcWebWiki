@@ -56,6 +56,11 @@ body {
 	padding-right: 2em;
 }
 
+.page-list-tree {
+	list-style-type: none;
+	padding-inline-start: 1em;
+}
+
 .action-bar {
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;

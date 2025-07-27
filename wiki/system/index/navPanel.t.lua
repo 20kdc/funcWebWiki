@@ -31,6 +31,7 @@ return {
 	}, "navigate", "formPost"),
 	WikiDepMarker(),
 	WikiTemplate("system/templates/sortedPageList", {
+		tree = true,
 		pageList = nonSystemPages
 	})
 }
