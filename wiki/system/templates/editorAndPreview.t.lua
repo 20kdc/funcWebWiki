@@ -7,11 +7,12 @@ local code = tostring(props.code or wikiRead(pathStr) or "")
 
 local leftColumn = WikiTemplate("system/templates/editor", props)
 
-local rightColumn = nil
-
 local renderer = wikiRenderer(pathExt)
 
-rightColumn = renderer(pathStr, code, {}, renderOptions)
+local rightColumnOk, rightColumn = wikiPCall(renderer, pathStr, code, {}, renderOptions)
+if not rightColumnOk then
+	rightColumn = h("pre", {}, tostring(rightColumn))
+end
 
 return h("div", {class = "editor2pane"},
 	h("div", {class = "editor2pane-left"}, leftColumn),
