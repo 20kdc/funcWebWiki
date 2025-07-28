@@ -35,20 +35,22 @@ if requestPath:sub(1, 9) == "/_assets/" then
 	return ServeAsset(requestPath:sub(9))
 end
 
+-- This is the only place the default action is referenced.
+local defaultAction = "view"
 
 -- The action parameter of the request.
-local requestAction = GetParam("action") or wikiDefaultAction
+local requestAction = GetParam("action") or defaultAction
 
 local actionParsed = wikiActions[requestAction]
 
 if not actionParsed then
-	if requestAction ~= wikiDefaultAction then
+	if requestAction ~= defaultAction then
 		local redirectPath = wikiAbsoluteBase .. (requestPath:sub(2))
 		-- print(redirectPath)
 		ServeRedirect(303, redirectPath)
 		return
 	end
-	error("Invalid default action '" .. wikiDefaultAction .. "'. At Redbean REPL, try for debugging:\n\twikiPathList()\n\twikiMakeEnv().wikiActions")
+	error("Invalid default action '" .. defaultAction .. "'. At Redbean REPL, try for debugging:\n\twikiPathList()\n\twikiMakeEnv().wikiActions")
 end
 
 -- resolve page

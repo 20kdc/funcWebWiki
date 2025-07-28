@@ -42,7 +42,7 @@ return WikiTemplate("special/mdSyntaxCard", {fromStartMD = "the Quickstart"}, fa
 ## How Things Work (Or, Core Concepts)
 
 1. Outside of the 'kernel', _each funcWebWiki request essentially reloads everything._ (See <system/request> if you're curious as to what, exactly, this means.)
-2. funcWebWiki uses a 'noun/verb' system, where nouns are pages and verbs are called [actions](system/action). The default verb is <?lua h("code", {}, wikiDefaultAction) ?>.
+2. funcWebWiki uses a 'noun/verb' system, where nouns are pages and verbs are called [actions](system/action). The default verb is `view` (see, again, <system/request>).
 3. Global scripts intended for maintenance are known as [triggers](system/trigger).
 4. [Renderers](system/extensions/render) are responsible for translating markup into the internal [wikiAST](system/lib/wikiAST), which can be examined for link mapping and so forth.
 	See file extensions below for how they are matched.
