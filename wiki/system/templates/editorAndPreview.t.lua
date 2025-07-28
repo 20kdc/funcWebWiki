@@ -13,5 +13,5 @@ local rightColumn = renderer(pathStr, code, {}, renderOptions)
 
 return h("div", {class = "editor2pane"},
 	h("div", {class = "editor2pane-left"}, leftColumn),
-	h("div", {class = "editor2pane-right"}, rightColumn)
+	h("div", {id = "editorLivePreview", ["data-xhr"] = (wikiAbsoluteBase .. pathStr .. "?action=livePreview"), class = "editor2pane-right"}, rightColumn)
 )

@@ -112,7 +112,7 @@ Even without modifying the `system/` code, the Lua templating allows for adding 
 
 ```t.lua
 -- we would like this link to be *deliberately* invisible to the link scanner
-local name = "Journal/" .. os.date("%Y/%m/%d") .. ".z." .. wikiDefaultExt
+local name = "Journal/" .. os.date("%Y/%m/%d") .. "." .. wikiDefaultExt
 return h("a", {class="journal-css-transclude-test", href = (wikiAbsoluteBase .. name .. "?action=edit")}, name)
 ```
 

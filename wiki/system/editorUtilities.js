@@ -6,7 +6,28 @@ if (editor) {
 			// console.log("debug", ev);
 			ev.preventDefault();
 		}
-	}
+	};
+	document.addEventListener("DOMContentLoaded", function () {
+		console.log("starting editor live preview...");
+		window.editorLivePreview = document.getElementById("editorLivePreview");
+		if (editorLivePreview) {
+			window.editorLPRequestDebounceCode = editor.value;
+			window.editorLPXHR = new XMLHttpRequest();
+			setInterval(function () {
+				if (editorLPXHR.readyState == 0 || editorLPXHR.readyState == 4) {
+					if (editorLPXHR.readyState == 4) {
+						editorLivePreview.innerHTML = editorLPXHR.responseText;
+					}
+					if (editorLPRequestDebounceCode != editor.value) {
+						editorLPRequestDebounceCode = editor.value;
+						var url = editorLivePreview.attributes["data-xhr"].value;
+						editorLPXHR.open("POST", url, true);
+						editorLPXHR.send(editor.value);
+					}
+				}
+			}, 100);
+		}
+	});
 }
 var fileshunt = document.getElementById("fileshunt");
 if (fileshunt) {
