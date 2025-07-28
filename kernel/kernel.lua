@@ -45,6 +45,8 @@ Redbean options accepted as normal; '--' divides between Redbean options and
     in read-only mode, Redbean's default is used. this overrides both
   --browse : launches browser
   --performance-log : Performance: Logs operations that imply expensive things.
+  --stamp-mode MODE : MODE is `none` (same as ZIP) / `len` / `mtime` / `ino`.
+    Default is `mtime`.
 
 'operators' (if any specified, exits after all complete. '--continue' cancels)
   --trigger TRIGGER : runs system/triggers/TRIGGER.lua
@@ -77,6 +79,7 @@ local unsandboxedUnsafe = false
 local doUnpack = false
 local doPack = false
 local doPerformanceLog = false
+local stampMode = "mtime"
 local doLaunchBrowser = false
 local scheduledTriggers = {}
 -- doContinue overrules doExit
@@ -152,6 +155,8 @@ local function parseArgs()
 			doLaunchBrowser = true
 		elseif arg == "--performance-log" then
 			doPerformanceLog = true
+		elseif arg == "--stamp-mode" then
+			stampMode = assert(getNextArg(), "no parameter given to --stamp-mode")
 		else
 			error("Unrecognized arg " .. arg .. "\n" .. help)
 		end
@@ -162,7 +167,7 @@ parseArgs()
 
 -- setup FS and detect self-modification capability
 
-local diskFs = wikifs.newDiskFS(wikiBase)
+local diskFs = wikifs.newDiskFS(wikiBase, stampMode)
 
 local assetFs = wikifs.newAssetFS("/wiki/")
 

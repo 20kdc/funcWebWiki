@@ -147,7 +147,7 @@ return {
 
 		return fs
 	end,
-	newDiskFS = function (base)
+	newDiskFS = function (base, stampMode)
 		local fs = { readOnly = false }
 
 		-- The Listing Cache exists because the wiki performs listing a _lot_ for various functions; we would like this to be fast, within reason.
@@ -203,8 +203,16 @@ return {
 				return nil, nil, tostring(err)
 			end
 			local size = stat:size()
-			-- the inode was removed, it was causing lots of fun issues in 'production'
-			return size, tostring(stat:mtim()) .. "|" .. tostring(size), nil
+			if stampMode == "ino" then
+				return size, tostring(stat:ino()) .. "|" .. tostring(stat:mtim()) .. "|" .. tostring(size), nil
+			elseif stampMode == "mtime" then
+				return size, tostring(stat:mtim()) .. "|" .. tostring(size), nil
+			elseif stampMode == "len" then
+				return size, "|" .. tostring(size), nil
+			else
+				-- none
+				return size, "", nil
+			end
 		end
 
 		function fs.pathTable(prefix)
