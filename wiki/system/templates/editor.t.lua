@@ -12,12 +12,17 @@ local pathStr, pathExt = tostring(props.path or wikiEditorTestPath), tostring(pr
 -- <system/action/edit>
 
 if wikiExtText(pathExt) then
+	local wouldAppendGoHere = {}
+	if props.append then
+		wouldAppendGoHere = h("script", {}, "editor.scrollTop = editor.scrollHeight;")
+	end
 	local code = tostring(props.code or wikiRead(pathStr) or "")
 	return {
 		errorMessage,
 		WikiLink(pathStr, {
-			h("textarea", {id="editor", name="code", rows="25", cols="80"}, code),
+			h("textarea", {id="editor", name="code", rows=(props.rows or "25"), cols="80"}, code),
 			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
+			wouldAppendGoHere,
 			h("br"),
 			pathStr, " ",
 			h("input", {type="submit", name="preview", value="Preview"}),
