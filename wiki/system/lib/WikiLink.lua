@@ -52,6 +52,12 @@ return wikiAST.newClass({
 				writer(" alt=\"" .. EscapeHtml(altText) .. "\"")
 			end
 			writer(">")
+		elseif self.type == "audio" then
+			-- alt text doesn't seem to be supported :(
+			writer("<audio controls src=\"" .. EscapeHtml(href) .. "\"></audio>")
+		elseif self.type == "video" then
+			-- alt text doesn't seem to be supported :(
+			writer("<video controls src=\"" .. EscapeHtml(href) .. "\"></video>")
 		elseif self.type == "script" then
 			writer("<script src=\"" .. EscapeHtml(href) .. "\"></script>")
 		else

@@ -112,4 +112,4 @@ local remainder = wikiParser(
 
 assert(remainder == "", remainder)
 
-return h("pre", {}, contents)
+return h("p", {}, h("pre", {}, contents))

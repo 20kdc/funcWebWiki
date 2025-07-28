@@ -2,16 +2,27 @@
 
 -- Built-in entries that, being statements about MIME types, really don't need dedicated files.
 local defaultSet = {
+	-- text
 	["css"] = "text/css",
 	["html"] = "text/html",
-	["ico"] = "image/vnd.microsoft.icon",
 	["js"] = "text/javascript",
 	["json"] = "text/json",
 	["lua"] = "text/lua",
 	["md"] = "text/markdown",
+	["txt"] = "text/plain",
+	-- image
+	["ico"] = "image/vnd.microsoft.icon",
 	["png"] = "image/png",
 	["svg"] = "image/svg+xml",
-	["txt"] = "text/plain"
+	-- audio
+	["wav"] = "audio/vnd.wave",
+	["mp3"] = "audio/mpeg",
+	["ogg"] = "audio/ogg",
+	["opus"] = "audio/ogg",
+	-- video
+	["mkv"] = "video/matroska",
+	["ogv"] = "video/ogg",
+	["mp4"] = "video/mp4"
 }
 
 return function (path)

@@ -39,14 +39,23 @@ local function wikiRenderer(templateExt, promiseThisIsText, codeFlag)
 
 	-- continue...
 	local function lastResortRenderer(path, code, props, renderOptions)
-		if promiseThisIsText or (wikiExtToMime(templateExt) or ""):sub(1, 5) == "text/" then
-			return h("pre", {}, code)
+		local alt = props.alt
+		if alt == "" then
+			alt = nil
+		end
+		local mime = wikiExtToMime(templateExt) or ""
+		local mimeS6 = mime:sub(1, 6)
+		if promiseThisIsText or mime:sub(1, 5) == "text/" then
+			return h("p", {}, h("pre", {}, code))
 		else
-			local alt = props.alt
-			if alt == "" then
-				alt = nil
+			-- these are all basically the same
+			local linkType = nil
+			if mimeS6 == "image/" or mimeS6 == "audio/" or mimeS6 == "video/" then
+				linkType = mime:sub(1, 5)
 			end
-			return WikiLink(path, { alt or wikiTitleStylize(path) }, "raw", "image")
+			return h("div", { class = "media-box" },
+				WikiLink(path, { alt or wikiTitleStylize(path) }, "raw", linkType)
+			)
 		end
 	end
 

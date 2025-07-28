@@ -52,6 +52,8 @@
 
 	```lua
 	[=[Inline code of this form can hyperlink globals, such as ]=] .. wikiDefaultExt .. "."
+
+	-- _Comments are rendered in Markdown._
 	```
 
 	```html
