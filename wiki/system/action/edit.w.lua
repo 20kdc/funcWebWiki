@@ -25,7 +25,8 @@ if GetMethod() == "POST" and code and (GetParam("confirm") or "") ~= "" then
 	writeOk, errorMessage = wikiWrite(requestPath, code)
 	if writeOk then
 		wikiFlushCacheForPageEdit(requestPath)
-		ServeRedirect(303, wikiAbsoluteBase .. requestPath)
+		-- This 'post-edit' anchor is a hook used by journal pages in production.
+		ServeRedirect(303, wikiAbsoluteBase .. requestPath .. "#post-edit")
 		return
 	end
 end
