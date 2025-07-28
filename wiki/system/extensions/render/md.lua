@@ -176,6 +176,7 @@ else
 	  if not contents then this is a leaf block, so we need to close it before we can insert a new block
 	* (optional) handle (function (self, line) -> remainder, preserve)
 	* (optional) topUnhandled (function (self, line) -> wasHandled) (paragraphs use this to capture lines after they may be intercepted by other parsers)
+	* (optional) topBlankLine (function (self)) (code blocks use this to capture blank lines for their uses)
 	* blankLineAbort (boolean)
 	* close (function (self))
 	--]]
@@ -202,6 +203,7 @@ else
 	end
 	local function openBlock(block)
 		block.topUnhandled = block.topUnhandled or function (self, line) return false end
+		block.topBlankLine = block.topBlankLine or function () end
 		table.insert(prepareForInsert(), block.node)
 		table.insert(blockStack, block)
 	end
@@ -234,11 +236,14 @@ else
 	end
 	for _, line in ipairs(lines) do
 		if line:match("^[\t ]*") == line then
-			for _, v in ipairs(blockStack) do
+			for k, v in ipairs(blockStack) do
 				if v.blankLineAbort then
 					forceCloseUntilThisBlock(v)
 					closeTopBlock()
 					break
+				end
+				if k == #blockStack then
+					v:topBlankLine()
 				end
 			end
 		else
@@ -355,6 +360,13 @@ else
 									self.code = line
 								end
 								return "", true
+							end
+						end,
+						topBlankLine = function (self)
+							if self.code then
+								self.code = self.code .. "\n"
+							else
+								self.code = ""
 							end
 						end,
 						blankLineAbort = false,
