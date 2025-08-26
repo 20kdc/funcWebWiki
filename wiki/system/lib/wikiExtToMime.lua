@@ -13,6 +13,10 @@ local defaultSet = {
 	-- image
 	["ico"] = "image/vnd.microsoft.icon",
 	["png"] = "image/png",
+	["gif"] = "image/gif",
+	["jpg"] = "image/jpeg",
+	["jpeg"] = "image/jpeg",
+	["webp"] = "image/webp",
 	["svg"] = "image/svg+xml",
 	-- audio
 	["wav"] = "audio/vnd.wave",
