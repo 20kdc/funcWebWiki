@@ -1,6 +1,8 @@
 --[[
 This function resolves a 'page path' (can be extension-less) to a 'real' wiki path.
 
+There is also an optional (string or null) `relativeTo` resolved path.
+
 Something to keep in mind is that the `wikiPathParse` rules are that `.` can only be on the last path component (and at least one `.` must be present).
 
 Be careful with when you call this!
@@ -28,7 +30,7 @@ for _, v in ipairs(wikiPathList()) do
 	end
 end
 
-return function (wikiPath)
+return function (wikiPath, relativeTo)
 	-- early cache skip
 	local cached = resolveCache[wikiPath]
 	if cached then

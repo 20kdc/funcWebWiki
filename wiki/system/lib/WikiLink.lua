@@ -69,7 +69,7 @@ return wikiAST.newClass({
 	visit = function (self, writer, renderOptions)
 		wikiAST.render(writer, self.children, renderOptions)
 	end
-}, function (_, page, children, action, type)
+}, function (_, page, children, action, type, relativeTo)
 	-- if page contains a query-string, we use it
 	local queryAt = page:find("?", 1, true)
 	local query = ""
@@ -78,7 +78,7 @@ return wikiAST.newClass({
 		page = page:sub(1, queryAt - 1)
 	end
 	-- early resolve; saves doing it during link mapping, and lets us be sure of things during rendering
-	local path = wikiResolvePage(page)
+	local path = wikiResolvePage(page, relativeTo)
 	if not path then
 		return WikiTemplate("system/template/invalidPathError", {path = page, inline = true})
 	end

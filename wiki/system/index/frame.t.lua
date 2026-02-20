@@ -32,6 +32,7 @@ return h("html", {},
 							if (not wikiReadOnly) and wikiAuthCheck(stylizePath, "edit") then
 								res(" ")
 								res(h("li", {class = "action-bar-action"},
+									-- <system/action/edit>
 									WikiLink(stylizePath, WikiTemplate("system/templates/stylizeAct", {inline = true}), "edit")
 								))
 								res("\n")

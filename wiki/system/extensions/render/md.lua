@@ -20,7 +20,7 @@ local function implLink(href, stuff, isImage)
 		if isExternalLink then
 			table.insert(contents, h("a", {href = href}, (stuff or href)))
 		else
-			table.insert(contents, WikiLink(href, stuff))
+			table.insert(contents, WikiLink(href, stuff, nil, nil, path))
 		end
 	end
 end
