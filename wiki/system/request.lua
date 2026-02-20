@@ -60,7 +60,7 @@ local requestPath, requestExt = wikiResolvePage(requestPath)
 
 if not requestPath then
 	wikiAST.serveRender(WikiTemplate("system/index/frame", {
-		title = {"Invalid Path"},
+		title = wikiTitleStylize("system/templates/invalidPathError"),
 		path = "system/templates/invalidPathError",
 		props = {path = requestPathUnfiltered}
 	}))

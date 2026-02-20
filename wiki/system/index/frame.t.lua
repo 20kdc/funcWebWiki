@@ -26,7 +26,17 @@ return h("html", {},
 				),
 				h("td", {class = "frame-action-bar"},
 					h("ul", {class = "action-bar"}, function (res)
-						res(h("li", {class = "action-bar-title"}, h("h1", {}, title)))
+						res(h("li", {class = "action-bar-title"}, h("h1", {}, function (res)
+							res(title)
+							local stylizePath = "system/pageTitle/" .. requestPath
+							if (not wikiReadOnly) and wikiAuthCheck(stylizePath, "edit") then
+								res(" ")
+								res(h("li", {class = "action-bar-action"},
+									WikiLink(stylizePath, WikiTemplate("system/templates/stylizeAct", {inline = true}), "edit")
+								))
+								res("\n")
+							end
+						end)))
 						if not renderOptions.staticSite then
 							for _, v in ipairs(wikiActions) do
 								local hidden = v.hidden or (wikiReadOnly and v.mutator) or not wikiAuthCheck(requestPath, v.action)

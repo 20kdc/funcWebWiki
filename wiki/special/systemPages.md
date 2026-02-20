@@ -17,7 +17,8 @@ for _, v in ipairs(wikiPathList("system/")) do
 	didFind[v] = true
 	-- cache entries are always ignored!
 	if v:sub(1, 13) ~= "system/cache/" then
-		local styled = WikiLink(v)
+		-- maybe don't style these, because filenames
+		local styled = WikiLink(v, {v})
 		if v ~= "system/hashes.json" and v ~= "system/newHashes.json" then
 			local hash = systemHashes[v]
 			local hashNew = systemNewHashes[v]
@@ -44,7 +45,7 @@ for _, v in ipairs(wikiPathList("system/")) do
 end
 for k, _ in pairs(systemNewHashes) do
 	if not didFind[k] then
-		local styled = {WikiLink(k), h("b", {}, " (added by update; maybe install before other files)")}
+		local styled = {WikiLink(k, {k}), h("b", {}, " (added by update; maybe install before other files)")}
 		table.insert(t, 1, h("li", {}, styled))
 	end
 end
