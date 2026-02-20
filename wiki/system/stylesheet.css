@@ -64,26 +64,32 @@ body {
 .action-bar {
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
 	margin: 0;
 	background: #f0f0f0;
+	vertical-align: middle;
+	list-style-type: none;
 }
 
 .action-bar li {
-	/* using inline here makes Firefox-2006 do mostly what we want while not affecting modern browsers (which rely on the flex) */
+	/* Firefox2006 doesn't understand inline-block, but it reacts decently with this instead */
 	display: inline;
+	/* using inline-block is pretty much exactly what we want */
+	display: inline-block;
 	padding-right: 1em;
+	/* apparently this doesn't count if applied in the action-bar-action class */
+	vertical-align: middle;
 }
 
 .action-bar-title {
-	flex-grow: 1;
 }
 
 .action-bar-title h1 {
 	padding-right: 1em;
 	margin: 0;
+	display: inline;
+}
+
+.action-bar-action {
 }
 
 .editor2pane {

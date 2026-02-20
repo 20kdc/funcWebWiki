@@ -1,5 +1,17 @@
--- In-wiki link.
--- Almost all in-wiki links should use this class, as it is used to determine linkage between pages for fancy graphs, missing page detection, etc.
+--[[
+In-wiki link.
+Almost all in-wiki links should use this class, as it is used to determine linkage between pages for fancy graphs, missing page detection, etc.
+Links come in several flavours:
+* "link" : Standard `<a>` link.
+* "optLink" : Same, but this link is 'expected to be missing'.
+* "formPost": Form with POST action.
+* "formGet": Form with GET action.
+* "stylesheet": Stylesheet link.
+* "image": `<img>` element
+* "audio": `<audio>` element (with controls)
+* "video": `<video>` element (with controls)
+* "script": `<script>` element
+]]
 
 return wikiAST.newClass({
 	renderHtml = function (self, writer, renderOptions)
@@ -14,7 +26,7 @@ return wikiAST.newClass({
 		end
 		-- these link types are 'safe' to strip extensions from
 		-- we don't want to, say, delete the wrong page
-		if self.type == "link" then
+		if self.type == "link" or self.type == "optLink" then
 			if renderOptions.staticSite then
 				if self.query ~= "" then
 					-- Query strings don't work, so downgrade the link.
