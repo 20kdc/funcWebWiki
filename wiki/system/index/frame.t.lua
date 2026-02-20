@@ -29,7 +29,7 @@ return h("html", {},
 						res(h("li", {class = "action-bar-title"}, h("h1", {}, function (res)
 							res(title)
 							local stylizePath = "system/pageTitle/" .. requestPath
-							if (not wikiReadOnly) and wikiAuthCheck(stylizePath, "edit") then
+							if (not renderOptions.staticSite) and (not wikiReadOnly) and wikiAuthCheck(stylizePath, "edit") then
 								res(" ")
 								res(h("li", {class = "action-bar-action"},
 									-- <system/action/edit>
