@@ -27,11 +27,12 @@ local remainder = wikiParser(
 		end
 		return remainder:sub((eot or #remainder) + 1)
 	end,
-	"%-%-([^\n]+)\n", function (remainder, m, content)
+	-- Line comments.
+	-- This used to include the newline, but this interacts weird w/ codeblocks.
+	"%-%-([^\n]+)", function (remainder, m, content)
 		table.insert(contents, h("span", {class="code-comment"}, {
 			"--",
-			mdRenderer(path, content, {inline = true}, renderOptions),
-			"\n"
+			mdRenderer(path, content, {inline = true}, renderOptions)
 		}))
 		return remainder
 	end,
