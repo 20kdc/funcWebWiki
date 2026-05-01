@@ -7,6 +7,8 @@ Pages which have been changed relative to <system/hashes.json> are marked with `
 If there is a file `system/newHashes.json`, installation assistance is given:
 
 * New files, to install before the rest of the update, are shown at the start of the list.
+* _Once you've copied/fixed files appropriately,_ <system/trigger/finishSystemUpdate?action=execute> copies `system/newHashes.json` to `system/hashes.json`.
+	* This implies conflicts are assumed to be resolved, and any non-updated files are assumed to be intentional deviations.
 
 ```t.lua
 local t = {}
