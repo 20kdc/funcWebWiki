@@ -1,19 +1,34 @@
 var editor = document.getElementById("editor");
 if (editor) {
 	editor.onkeydown = function (ev) {
-		if (ev.key == "Tab") {
-			editor.setRangeText("\t", editor.selectionStart, editor.selectionEnd, "end");
+		// console.log("debug", ev);
+		if (ev.key == "Tab" && !ev.shiftKey) {
+			// indent
+			var repl = editor.value.substring(editor.selectionStart, editor.selectionEnd);
+			// 🎸 what is this code lollll
+			repl = (("\n" + repl)).replaceAll("\n", "\n\t").substring(1);
+			var mode = editor.selectionStart == editor.selectionEnd ? "end" : "preserve";
+			editor.setRangeText(repl, editor.selectionStart, editor.selectionEnd, mode);
+			ev.preventDefault();
+		} else if (ev.key == "Tab" && ev.shiftKey) {
+			// unindent.
+			var repl = editor.value.substring(editor.selectionStart, editor.selectionEnd);
+			repl = (("\n" + repl)).replaceAll("\n\t", "\n").substring(1);
+			var mode = editor.selectionStart == editor.selectionEnd ? "end" : "preserve";
+			editor.setRangeText(repl, editor.selectionStart, editor.selectionEnd, mode);
 			// console.log("debug", ev);
 			ev.preventDefault();
 		}
 	};
 	document.addEventListener("DOMContentLoaded", function () {
-		console.log("starting editor live preview...");
+		window.editorLineSpan = document.getElementById("editorLineSpan");
 		window.editorLivePreview = document.getElementById("editorLivePreview");
 		if (editorLivePreview) {
 			window.editorLPRequestDebounceCode = editor.value;
 			window.editorLPXHR = new XMLHttpRequest();
-			setInterval(function () {
+		}
+		setInterval(function () {
+			if (editorLivePreview) {
 				if (editorLPXHR.readyState == 0 || editorLPXHR.readyState == 4) {
 					if (editorLPXHR.readyState == 4) {
 						editorLivePreview.innerHTML = editorLPXHR.responseText;
@@ -25,8 +40,13 @@ if (editor) {
 						editorLPXHR.send(editor.value);
 					}
 				}
-			}, 100);
-		}
+			}
+			if (editorLineSpan) {
+				var lineMatch = editor.value.substring(0, editor.selectionStart).match(/\n/g);
+				var lineNumber = (lineMatch || []).length + 1;
+				editorLineSpan.innerText = "" + lineNumber;
+			}
+		}, 100);
 	});
 }
 var fileshunt = document.getElementById("fileshunt");

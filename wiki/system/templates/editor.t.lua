@@ -16,17 +16,21 @@ if wikiExtText(pathExt) then
 	if props.append then
 		wouldAppendGoHere = h("script", {}, "editor.scrollTop = editor.scrollHeight;")
 	end
-	local code = tostring(props.code or wikiRead(pathStr) or "")
+	local defaultCodeForThisType = ""
+	local defaultCols, defaultRows = "80", "25"
+	local code = tostring(props.code or wikiRead(pathStr) or defaultCodeForThisType)
 	return {
 		errorMessage,
 		WikiLink(pathStr, {
-			h("textarea", {id="editor", name="code", rows=(props.rows or "25"), cols="80"}, code),
+			h("textarea", {id="editor", name="code", rows=(props.rows or defaultRows), cols=(props.cols or defaultCols)}, code),
 			WikiLink("system/editorUtilities.js", {}, "raw", "script"),
 			wouldAppendGoHere,
 			h("br"),
 			pathStr, " ",
 			h("input", {type="submit", name="preview", value="Preview"}),
-			h("input", {type="submit", name="confirm", value="Confirm"})
+			h("input", {type="submit", name="confirm", value="Confirm"}),
+			" ",
+			h("span", {id="editorLineSpan"}, "?")
 		}, "edit", "formPost")
 	}
 else
