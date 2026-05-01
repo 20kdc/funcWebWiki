@@ -5,7 +5,10 @@ local requestPath, requestExt = ...
 -- That said, it might be an idea to restrict this to <system/action> entirely.
 if GetMethod() == "POST" and (GetParam("confirm") or "") ~= "" then
 	assert(requestExt == "lua", "execute cannot be used on a file without a pure 'lua' extension")
-	dofile(requestPath)
+	if dofile(requestPath) then
+		-- we serve the redirect since trigger didn't error or respond
+		ServeRedirect(303, wikiAbsoluteBase .. requestPath)
+	end
 	return
 end
 

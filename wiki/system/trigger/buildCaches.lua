@@ -10,3 +10,4 @@ end
 for _, v in ipairs(wikiPathList()) do
 	wikiPageLinks(v)
 end
+return true

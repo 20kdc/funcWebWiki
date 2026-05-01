@@ -5,3 +5,4 @@ for _, v in ipairs(wikiPathList()) do
 	wikiAST.render(function () end, template, { renderType = "renderPlain", disableErrorIsolation = true })
 	wikiAST.render(function () end, template, { renderType = "visit", disableErrorIsolation = true })
 end
+return true

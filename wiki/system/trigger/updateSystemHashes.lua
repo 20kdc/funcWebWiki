@@ -7,3 +7,4 @@ for _, v in ipairs(wikiPathList("system/")) do
 	end
 end
 wikiWrite("system/hashes.json", EncodeJson(res, {pretty = true}))
+return true
